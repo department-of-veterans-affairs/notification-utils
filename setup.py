@@ -28,7 +28,7 @@ setup(
         'requests==2.23.0',
         'python-json-logger==0.1.11',
         'Flask>=0.12.2',
-        'orderedset==2.0.1',
+        'orderedset==2.0.3',
         'Jinja2==2.11.1',
         'statsd==3.3.0',
         'Flask-Redis==0.4.0',
