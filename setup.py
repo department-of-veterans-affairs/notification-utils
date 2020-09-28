@@ -26,7 +26,7 @@ setup(
         'bleach==3.1.5',
         'mistune==0.8.4',
         'requests==2.23.0',
-        'python-json-logger==0.1.11',
+        'python-json-logger==2.0.0',
         'Flask>=0.12.2',
         'orderedset==2.0.3',
         'Jinja2==2.11.1',
