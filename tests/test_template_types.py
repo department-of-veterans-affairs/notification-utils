@@ -39,6 +39,36 @@ def test_html_email_inserts_body():
 
 
 @pytest.mark.parametrize(
+    "content, ga_pixel_url, params", [
+        ('some text', 'pix-url', None),
+        ('some text containing ((param1))', 'pix-url', {'param1': 'value1'})
+    ]
+)
+def test_html_email_inserts_gapixel_img_when_ga_pixel_url_is_present(content, ga_pixel_url, params):
+    email_body = HTMLEmailTemplate(
+        {'content': content, 'subject': ''},
+        values=params,
+        ga_pixel_url=ga_pixel_url
+    )
+    assert '<img id="ga_pixel_url" src="{}'.format(ga_pixel_url) in str(email_body)
+
+
+@pytest.mark.parametrize(
+    "content, params", [
+        ('some text', None),
+        ('some text containing ((param1))', {'param1': 'value1'})
+    ]
+)
+def test_html_email_no_gapixel_img_when_ga_pixel_url_is_not_present(content, params):
+    email_body = HTMLEmailTemplate(
+        {'content': content, 'subject': ''},
+        values=params,
+        ga_pixel_url=None
+    )
+    assert '<img id="ga_pixel_url" src=' not in str(email_body)
+
+
+@pytest.mark.parametrize(
     "content", ('DOCTYPE', 'html', 'body', 'hello world')
 )
 def test_default_template(content):

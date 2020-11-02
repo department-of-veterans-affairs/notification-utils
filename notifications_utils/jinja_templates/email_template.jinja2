@@ -204,6 +204,9 @@
   {{ body|safe }}
 {% endif %}
 
+{% if ga_pixel_url %}
+<img id="ga_pixel_url" src="{{ ga_pixel_url }}" />
+{% endif %}
 {% if complete_html %}
 </body>
 </html>

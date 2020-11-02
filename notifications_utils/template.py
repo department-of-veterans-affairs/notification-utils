@@ -345,6 +345,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         brand_banner=False,
         brand_name=None,
         jinja_path=None,
+        ga_pixel_url=None
     ):
         super().__init__(template, values, jinja_path=jinja_path)
         self.default_banner = default_banner
@@ -354,6 +355,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         self.brand_colour = brand_colour
         self.brand_banner = brand_banner
         self.brand_name = brand_name
+        self.ga_pixel_url = ga_pixel_url
         # set this again to make sure the correct either utils / downstream local jinja is used
         # however, don't set if we are in a test environment (to preserve the above mock)
         if("pytest" not in sys.modules):
@@ -392,6 +394,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
             'brand_colour': self.brand_colour,
             'brand_banner': self.brand_banner,
             'brand_name': self.brand_name,
+            'ga_pixel_url': self.ga_pixel_url
         })
 
 
