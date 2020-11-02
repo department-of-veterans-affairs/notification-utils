@@ -1,5 +1,5 @@
 -r requirements.txt
-phonenumbers==8.10.13
+phonenumbers==8.12.12
 pytest==5.1.2
 pytest-mock==1.10.4
 pytest-cov==2.10.1
