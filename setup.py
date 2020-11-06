@@ -25,9 +25,9 @@ setup(
     install_requires=[
         'bleach==3.1.5',
         'mistune==0.8.4',
-        'requests==2.23.0',
+        'requests==2.24.0',
         'python-json-logger==0.1.11',
-        'Flask>=0.12.2',
+        'Flask>=1.1.1',
         'orderedset==2.0.3',
         'Jinja2==2.11.1',
         'statsd==3.3.0',
@@ -40,7 +40,7 @@ setup(
         'pypdf2==1.26.0',
 
         # required by both api and admin
-        'awscli==1.18.13',
-        'boto3==1.12.13',
+        'awscli==1.18.150',
+        'boto3==1.15.9',
     ]
 )
