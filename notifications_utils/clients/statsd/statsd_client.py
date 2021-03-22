@@ -1,27 +1,9 @@
-from statsd.client.base import StatsClientBase
-from socket import socket, AF_INET, SOCK_DGRAM
-from flask import current_app
+from typing import List
 
-
-class NotifyStatsClient(StatsClientBase):
-    def __init__(self, host, port, prefix):
-        self._host = host
-        self._port = port
-        self._prefix = prefix
-        self._sock = socket(AF_INET, SOCK_DGRAM)
-
-    def _send(self, data):
-        try:
-            self._sock.sendto(data.encode('ascii'), (self._host, self._port))
-        except Exception as e:
-            current_app.logger.warning('Error sending statsd metric: {}'.format(str(e)))
-            pass
+from datadog import initialize, statsd
 
 
 class StatsdClient():
-    def __init__(self):
-        self.statsd_client = None
-
     def init_app(self, app, *args, **kwargs):
         app.statsd_client = self
         self.active = app.config.get('STATSD_ENABLED')
@@ -31,28 +13,29 @@ class StatsdClient():
         )
 
         if self.active:
-            self.statsd_client = NotifyStatsClient(
-                app.config.get('STATSD_HOST'),
-                app.config.get('STATSD_PORT'),
-                prefix=app.config.get('STATSD_PREFIX')
-            )
+            options = {
+                'statsd_host': app.config.get('STATSD_HOST'),
+                'statsd_port': app.config.get('STATSD_PORT'),
+            }
+
+            initialize(**options)
 
     def format_stat_name(self, stat):
         return self.namespace + stat
 
-    def incr(self, stat, count=1, rate=1):
+    def incr(self, stat, count=1, rate=1, tags: List[str] = None):
         if self.active:
-            self.statsd_client.incr(self.format_stat_name(stat), count, rate)
+            statsd.increment(self.format_stat_name(stat), value=count, sample_rate=rate, tags=tags)
 
-    def gauge(self, stat, count):
+    def gauge(self, stat, count, tags: List[str] = None):
         if self.active:
-            self.statsd_client.gauge(self.format_stat_name(stat), count)
+            statsd.gauge(self.format_stat_name(stat), count, tags=tags)
 
-    def timing(self, stat, delta, rate=1):
+    def timing(self, stat, delta, rate=1, tags: List[str] = None):
         if self.active:
-            self.statsd_client.timing(self.format_stat_name(stat), delta, rate)
+            statsd.histogram(self.format_stat_name(stat), value=delta, sample_rate=rate, tags=tags)
 
-    def timing_with_dates(self, stat, start, end, rate=1):
+    def timing_with_dates(self, stat, start, end, rate=1, tags: List[str] = None):
         if self.active:
             delta = (start - end).total_seconds()
-            self.statsd_client.timing(self.format_stat_name(stat), delta, rate)
+            statsd.histogram(self.format_stat_name(stat), value=delta, sample_rate=rate, tags=tags)
