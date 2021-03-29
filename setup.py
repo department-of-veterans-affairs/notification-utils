@@ -42,6 +42,6 @@ setup(
 
         # required by both api and admin
         'awscli==1.19.12',
-        'boto3==1.17.12',
+        'boto3==1.17.39',
     ]
 )
