@@ -353,7 +353,25 @@ class NotifyLetterMarkdownPreviewRenderer(mistune.Renderer):
         return text
 
 
+class PlaceHolder(object):
+    def __init__(self):
+        self._list = []
+
+    def __iadd__(self, other):
+        self._list.append(other)
+        return self
+
+    def strip(self):
+        return ''.join(map(str, self._list)).strip()
+
+    def __str__(self):
+        return ''.join(map(str, self._list))
+
+
 class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
+
+    def placeholder(self):
+        return PlaceHolder()
 
     def header(self, text, level, raw=None):
         if level == 1:
@@ -572,8 +590,49 @@ class NotifyEmailPreheaderMarkdownRenderer(NotifyPlainTextEmailMarkdownRenderer)
         ))
 
 
+class NotifyEmailBlockLexer(mistune.BlockLexer):
+
+    def __init__(self, rules=None, **kwargs):
+        super().__init__(rules, **kwargs)
+
+    def parse(self, text, rules=None):
+        tokens = super().parse(text, rules)
+        return tokens
+
+    def parse_newline(self, m):
+        if self._list_depth == 0:
+            super().parse_newline(m)
+
+    def parse_list_block(self, m):
+        super().parse_list_block(m)
+
+    def parse_paragraph(self, m):
+        super().parse_paragraph(m)
+
+    def parse_text(self, m):
+        super().parse_text(m)
+
+
+class NotifyEmailInlineLexer(mistune.InlineLexer):
+
+    def __init__(self, renderer, rules=None, **kwargs):
+        super().__init__(renderer, **kwargs)
+
+    def setup(self, links, footnotes):
+        super().setup(links, footnotes)
+
+
+class NotifyEmailMarkdown(mistune.Markdown):
+
+    def __init__(self, renderer=None, inline=None, block=None, **kwargs):
+        super().__init__(renderer, inline, block, **kwargs)
+
+
+notify_email_markdown_renderer = NotifyEmailMarkdownRenderer()
 notify_email_markdown = mistune.Markdown(
-    renderer=NotifyEmailMarkdownRenderer(),
+    renderer=notify_email_markdown_renderer,
+    block=NotifyEmailBlockLexer,
+    inline=NotifyEmailInlineLexer,
     hard_wrap=True,
     use_xhtml=False,
 )
