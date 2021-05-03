@@ -394,47 +394,116 @@ def test_ordered_list(markdown_function, expected):
     ) == expected
 
 
-@pytest.mark.parametrize('markdown_function, expected', (
+@pytest.mark.parametrize('markdown_function, test_text, expected', (
     [
         notify_email_markdown,
+        (
+            '1. List item 1\n\n'
+            '\tShould be paragraph in the list item without extra br above'
+        ),
         (
             '<table role="presentation" style="padding: 0 0 20px 0;">'
             '<tr>'
             '<td style="font-family: Helvetica, Arial, sans-serif;">'
             '<ol style="Margin: 0 0 0 20px; padding: 0; list-style-type: decimal;">'
             '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
-            'line-height: 25px; color: #323A45;">one</li>'
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">nested 1</p>'
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">nested 2</p>'
-            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
-            'line-height: 25px; color: #323A45;">two</li>'
-            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
-            'line-height: 25px; color: #323A45;">three</li>'
+            'line-height: 25px; color: #323A45;">'
+            '<p style="Margin: 0 0 0 0; font-size: 16px; line-height: 25px; color: #323A45;">List item 1</p>'
+            '<p style="Margin: 0 0 0 0; font-size: 16px; line-height: 25px; color: #323A45;">'
+            '  Should be paragraph in the list item without extra br above</p>'
+            '</li>'
             '</ol>'
             '</td>'
             '</tr>'
             '</table>'
         )
     ],
+    [
+        notify_email_markdown,
+        (
+                '1. List item 1\n\n'
+                ' Should be paragraph in the list item without extra br above'
+        ),
+        (
+                '<table role="presentation" style="padding: 0 0 20px 0;">'
+                '<tr>'
+                '<td style="font-family: Helvetica, Arial, sans-serif;">'
+                '<ol style="Margin: 0 0 0 20px; padding: 0; list-style-type: decimal;">'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
+                'line-height: 25px; color: #323A45;">'
+                '<p style="Margin: 0 0 0 0; font-size: 16px; line-height: 25px; color: #323A45;">List item 1</p>'
+                '<p style="Margin: 0 0 0 0; font-size: 16px; line-height: 25px; color: #323A45;">'
+                'Should be paragraph in the list item without extra br above</p>'
+                '</li>'
+                '</ol>'
+                '</td>'
+                '</tr>'
+                '</table>'
+        )
+    ],
+    [
+        notify_email_markdown,
+        (
+                '1. one'
+                '\n\n nested 1'
+                '\n\n nested 2'
+                '\n1. two'
+                '\n1. three'
+        ),
+        (
+                '<table role="presentation" style="padding: 0 0 20px 0;">'
+                '<tr>'
+                '<td style="font-family: Helvetica, Arial, sans-serif;">'
+                '<ol style="Margin: 0 0 0 20px; padding: 0; list-style-type: decimal;">'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
+                'line-height: 25px; color: #323A45;">'
+                '<p style="Margin: 0 0 0 0; font-size: 16px; line-height: 25px; color: #323A45;">one</p>'
+                '<p style="Margin: 0 0 0 0; font-size: 16px; line-height: 25px; color: #323A45;">nested 1</p>'
+                '<p style="Margin: 0 0 0 0; font-size: 16px; line-height: 25px; color: #323A45;">nested 2</p>'
+                '</li>'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
+                'line-height: 25px; color: #323A45;">two</li>'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
+                'line-height: 25px; color: #323A45;">three</li>'
+                '</ol>'
+                '</td>'
+                '</tr>'
+                '</table>'
+        )
+    ],
+    [
+        notify_email_markdown,
+        (
+                '* one'
+                '\n\n nested 1'
+                '\n\n nested 2'
+                '\n* two'
+                '\n* three'
+        ),
+        (
+                '<table role="presentation" style="padding: 0 0 20px 0;">'
+                '<tr>'
+                '<td style="font-family: Helvetica, Arial, sans-serif;">'
+                '<ul style="Margin: 0 0 0 20px; padding: 0; list-style-type: disc;">'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
+                'line-height: 25px; color: #323A45;">'
+                '<p style="Margin: 0 0 0 0; font-size: 16px; line-height: 25px; color: #323A45;">one</p>'
+                '<p style="Margin: 0 0 0 0; font-size: 16px; line-height: 25px; color: #323A45;">nested 1</p>'
+                '<p style="Margin: 0 0 0 0; font-size: 16px; line-height: 25px; color: #323A45;">nested 2</p>'
+                '</li>'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
+                'line-height: 25px; color: #323A45;">two</li>'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
+                'line-height: 25px; color: #323A45;">three</li>'
+                '</ul>'
+                '</td>'
+                '</tr>'
+                '</table>'
+        )
+    ],
 ))
-def test_ordered_nested_list(markdown_function, expected):
-    # text = markdown_function(
-    #     '# header1\n\nAs of __bold1__ some.\n\nKeep reading.\n\n##header2\n\nWe  [link1](https://www.cdc.gov).\n\nMany:\n\n* bullet1, __bold2__\n* bullet2 [link2](https://www.cdc.gov).\n\nSome are older.\n\nPlease:\n\n*bullet3\n\n*bullet4\n\n*bullet5\n\n*bullet6\n\n__If bold__, [link3](https://www.va.gov). Once.\n\n__bold3:__ We’ll.\n\n## Hheader2\n\nYour.\n\nText __53079__. Emails a __va.gov__ email.\n\n__bold4:__ Severe. [link4](https://www.va.gov)\n\n## header2\n\n* __You’ll (like).__ This i.\n* __bold6.__ Data.\n* __bold7,__ you.\n* __bold8,__ you, tell.\n\nTo.\n\n__bold7:__\n\n* [link5](https://www.fda.gov)\n* [link6](https://www.fda.gov)\n\n__bold8:__\n\n* [link6](https://www.fda.gov)\n* [link7](https://www.fda.gov/#additional)\n\nGo [link8](https://www.cdc.gov).\n\nGo to [link8](https://www.va.gov).\n\n---\nfooter start. If [link10](https://www.va.gov).\n\nIf, [link11](https://www.va.gov/((sid))).\n\nPlease, go to [link12](https://www.va.gov).'
-    # )
-
-    text = markdown_function(
-        '1. one'
-        '\n\n\tnested 1'
-        '\n\n nested 2'
-        '\n1.two'
-        '\n1.three'
-    )
-
-    # text = markdown_function(
-    #     '1. List item 1\n\n'
-    #     '\tShould be paragraph in the list item without extra br above'
-    # )
-    assert text is not None
+def test_paragraph_in_list_has_no_linebreak(markdown_function, test_text, expected):
+    assert markdown_function(test_text) == expected
 
 
 @pytest.mark.parametrize('markdown', (
