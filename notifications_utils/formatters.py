@@ -353,26 +353,7 @@ class NotifyLetterMarkdownPreviewRenderer(mistune.Renderer):
         return text
 
 
-class LoosePlaceHolder(object):
-
-    def __init__(self):
-        self._list = []
-
-    def __iadd__(self, other):
-        self._list.append(other)
-        return self
-
-    def strip(self):
-        return ''.join(map(str, self._list)).strip()
-
-    def __str__(self):
-        return ''.join(map(str, self._list))
-
-
 class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
-
-    def loose_placeholder(self):
-        return LoosePlaceHolder()
 
     def header(self, text, level, raw=None):
         if level == 1:
@@ -544,7 +525,7 @@ class NotifyPlainTextEmailMarkdownRenderer(NotifyEmailMarkdownRenderer):
             text.strip(),
         ))
 
-    def paragraph(self, text):
+    def paragraph(self, text, is_loose_item=False):
         if text.strip():
             return ''.join((
                 self.linebreak() * 2,
@@ -593,31 +574,9 @@ class NotifyEmailBlockLexer(mistune.BlockLexer):
     def __init__(self, rules=None, **kwargs):
         super().__init__(rules, **kwargs)
 
-    def parse(self, text, rules=None):
-        tokens = super().parse(text, rules)
-        return tokens
-
     def parse_newline(self, m):
         if self._list_depth == 0:
             super().parse_newline(m)
-
-    def parse_list_block(self, m):
-        super().parse_list_block(m)
-
-    def parse_paragraph(self, m):
-        super().parse_paragraph(m)
-
-    def parse_text(self, m):
-        super().parse_text(m)
-
-
-class NotifyEmailInlineLexer(mistune.InlineLexer):
-
-    def __init__(self, renderer, rules=None, **kwargs):
-        super().__init__(renderer, **kwargs)
-
-    def setup(self, links, footnotes):
-        super().setup(links, footnotes)
 
 
 class NotifyEmailMarkdown(mistune.Markdown):
@@ -626,19 +585,8 @@ class NotifyEmailMarkdown(mistune.Markdown):
         super().__init__(renderer, inline, block, **kwargs)
         self._loose_item = False
 
-    def output(self, text, rules=None):
-        self.tokens = self.block(text, rules)
-        self.tokens.reverse()
-
-        self.inline.setup(self.block.def_links, self.block.def_footnotes)
-
-        out = self.renderer.placeholder()
-        while self.pop():
-            out += self.tok()
-        return out
-
     def output_loose_item(self):
-        body = self.renderer.loose_placeholder()
+        body = self.renderer.placeholder()
         self._loose_item = True
         while self.pop()['type'] != 'list_item_end':
             body += self.tok()
@@ -663,7 +611,6 @@ notify_email_markdown_renderer = NotifyEmailMarkdownRenderer()
 notify_email_markdown = NotifyEmailMarkdown(
     renderer=notify_email_markdown_renderer,
     block=NotifyEmailBlockLexer,
-    inline=NotifyEmailInlineLexer,
     hard_wrap=True,
     use_xhtml=False,
 )
