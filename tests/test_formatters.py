@@ -29,9 +29,7 @@ from notifications_utils.template import (
     SMSPreviewTemplate
 )
 
-PARAGRAPH_TEXT = '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">' \
-       '{}' \
-       '</p>'
+PARAGRAPH_TEXT = '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">{}</p>'
 
 
 @pytest.mark.parametrize(
@@ -394,7 +392,7 @@ def test_ordered_list(markdown_function, expected):
     ) == expected
 
 
-@pytest.mark.parametrize('markdown_function, test_text, expected', (
+@pytest.mark.parametrize('markdown_function, test_text, expected', (  # noqa: E126
     [
         notify_email_markdown,
         (
