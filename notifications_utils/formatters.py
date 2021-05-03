@@ -440,13 +440,10 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
             text.strip()
         )
 
-    def paragraph(self, text):
+    def paragraph(self, text, is_loose_item=False):
+        margin = 'Margin: 0 0 0 0' if is_loose_item else 'Margin: 0 0 20px 0'
         if text.strip():
-            return (
-                '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">{}</p>'
-            ).format(
-                text
-            )
+            return f'<p style="{margin}; font-size: 16px; line-height: 25px; color: #323A45;">{text}</p>'
         return ""
 
     def block_quote(self, text):
@@ -654,6 +651,12 @@ class NotifyEmailMarkdown(mistune.Markdown):
             return self.inline(self.token['text'])
         else:
             return super().tok_text()
+
+    def output_text(self):
+        if self._loose_item:
+            return self.renderer.paragraph(self.tok_text(), True)
+        else:
+            return super().output_text()
 
 
 notify_email_markdown_renderer = NotifyEmailMarkdownRenderer()
