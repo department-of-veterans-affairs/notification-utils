@@ -418,13 +418,22 @@ def test_ordered_list(markdown_function, expected):
     ],
 ))
 def test_ordered_nested_list(markdown_function, expected):
+    # text = markdown_function(
+    #     '# header1\n\nAs of __bold1__ some.\n\nKeep reading.\n\n##header2\n\nWe  [link1](https://www.cdc.gov).\n\nMany:\n\n* bullet1, __bold2__\n* bullet2 [link2](https://www.cdc.gov).\n\nSome are older.\n\nPlease:\n\n*bullet3\n\n*bullet4\n\n*bullet5\n\n*bullet6\n\n__If bold__, [link3](https://www.va.gov). Once.\n\n__bold3:__ We’ll.\n\n## Hheader2\n\nYour.\n\nText __53079__. Emails a __va.gov__ email.\n\n__bold4:__ Severe. [link4](https://www.va.gov)\n\n## header2\n\n* __You’ll (like).__ This i.\n* __bold6.__ Data.\n* __bold7,__ you.\n* __bold8,__ you, tell.\n\nTo.\n\n__bold7:__\n\n* [link5](https://www.fda.gov)\n* [link6](https://www.fda.gov)\n\n__bold8:__\n\n* [link6](https://www.fda.gov)\n* [link7](https://www.fda.gov/#additional)\n\nGo [link8](https://www.cdc.gov).\n\nGo to [link8](https://www.va.gov).\n\n---\nfooter start. If [link10](https://www.va.gov).\n\nIf, [link11](https://www.va.gov/((sid))).\n\nPlease, go to [link12](https://www.va.gov).'
+    # )
+
     text = markdown_function(
         '1. one'
         '\n\n\tnested 1'
-        '\n\n\tnested 2'
+        '\n\n nested 2'
         '\n1.two'
         '\n1.three'
     )
+
+    # text = markdown_function(
+    #     '1. List item 1\n\n'
+    #     '\tShould be paragraph in the list item without extra br above'
+    # )
     assert text is not None
 
 

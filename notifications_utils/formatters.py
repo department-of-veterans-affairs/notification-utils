@@ -353,7 +353,8 @@ class NotifyLetterMarkdownPreviewRenderer(mistune.Renderer):
         return text
 
 
-class PlaceHolder(object):
+class LoosePlaceHolder(object):
+
     def __init__(self):
         self._list = []
 
@@ -370,8 +371,8 @@ class PlaceHolder(object):
 
 class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
 
-    def placeholder(self):
-        return PlaceHolder()
+    def loose_placeholder(self):
+        return LoosePlaceHolder()
 
     def header(self, text, level, raw=None):
         if level == 1:
@@ -626,10 +627,37 @@ class NotifyEmailMarkdown(mistune.Markdown):
 
     def __init__(self, renderer=None, inline=None, block=None, **kwargs):
         super().__init__(renderer, inline, block, **kwargs)
+        self._loose_item = False
+
+    def output(self, text, rules=None):
+        self.tokens = self.block(text, rules)
+        self.tokens.reverse()
+
+        self.inline.setup(self.block.def_links, self.block.def_footnotes)
+
+        out = self.renderer.placeholder()
+        while self.pop():
+            out += self.tok()
+        return out
+
+    def output_loose_item(self):
+        body = self.renderer.loose_placeholder()
+        self._loose_item = True
+        while self.pop()['type'] != 'list_item_end':
+            body += self.tok()
+
+        self._loose_item = False
+        return self.renderer.list_item(body)
+
+    def tok_text(self):
+        if self._loose_item:
+            return self.inline(self.token['text'])
+        else:
+            return super().tok_text()
 
 
 notify_email_markdown_renderer = NotifyEmailMarkdownRenderer()
-notify_email_markdown = mistune.Markdown(
+notify_email_markdown = NotifyEmailMarkdown(
     renderer=notify_email_markdown_renderer,
     block=NotifyEmailBlockLexer,
     inline=NotifyEmailInlineLexer,
