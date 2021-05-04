@@ -421,8 +421,8 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
             text.strip()
         )
 
-    def paragraph(self, text, is_loose_item=False):
-        margin = 'Margin: 0 0 0 0' if is_loose_item else 'Margin: 0 0 20px 0'
+    def paragraph(self, text, is_inside_list=False):
+        margin = 'Margin: 5px 0 5px 0' if is_inside_list else 'Margin: 0 0 20px 0'
         if text.strip():
             return f'<p style="{margin}; font-size: 16px; line-height: 25px; color: #323A45;">{text}</p>'
         return ""
@@ -525,7 +525,7 @@ class NotifyPlainTextEmailMarkdownRenderer(NotifyEmailMarkdownRenderer):
             text.strip(),
         ))
 
-    def paragraph(self, text, is_loose_item=False):
+    def paragraph(self, text, is_inside_list=False):
         if text.strip():
             return ''.join((
                 self.linebreak() * 2,
