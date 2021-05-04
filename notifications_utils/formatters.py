@@ -607,9 +607,8 @@ class NotifyEmailMarkdown(mistune.Markdown):
             return super().output_text()
 
 
-notify_email_markdown_renderer = NotifyEmailMarkdownRenderer()
 notify_email_markdown = NotifyEmailMarkdown(
-    renderer=notify_email_markdown_renderer,
+    renderer=NotifyEmailMarkdownRenderer(),
     block=NotifyEmailBlockLexer,
     hard_wrap=True,
     use_xhtml=False,
