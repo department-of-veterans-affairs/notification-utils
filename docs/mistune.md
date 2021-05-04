@@ -33,3 +33,10 @@ NotifyEmailPreheaderMarkdownRenderer(NotifyPlainTextEmailMarkdownRenderer)
 
 Some Mistune grammar regular expressions are overridden rather than defining new grammar and lexer classes. This is not
 a complaint but rather an observation.
+
+## overriding the linebreak behavior
+
+NotifyEmailBlockLexer inherits from BlockLexer and NotifyEmailMarkdown inherits from Markdown, so the generated html
+paragraphs can have different styles depending on whether part of a list block or not. Another approach would have been
+to refactor the `formatters.py` code which would have been high risk as the reason for overriding the regular
+expressions was not documented in any of the change history.
