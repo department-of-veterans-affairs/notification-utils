@@ -583,28 +583,25 @@ class NotifyEmailMarkdown(mistune.Markdown):
 
     def __init__(self, renderer=None, inline=None, block=None, **kwargs):
         super().__init__(renderer, inline, block, **kwargs)
-        self._loose_item = False
+        self._is_inside_list = False
 
     def output_loose_item(self):
         body = self.renderer.placeholder()
-        self._loose_item = True
+        self._is_inside_list = True
         while self.pop()['type'] != 'list_item_end':
             body += self.tok()
 
-        self._loose_item = False
+        self._is_inside_list = False
         return self.renderer.list_item(body)
 
     def tok_text(self):
-        if self._loose_item:
+        if self._is_inside_list:
             return self.inline(self.token['text'])
         else:
             return super().tok_text()
 
     def output_text(self):
-        if self._loose_item:
-            return self.renderer.paragraph(self.tok_text(), True)
-        else:
-            return super().output_text()
+        return self.renderer.paragraph(self.tok_text(), self._is_inside_list)
 
 
 notify_email_markdown = NotifyEmailMarkdown(
