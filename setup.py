@@ -41,7 +41,7 @@ setup(
         'pypdf2==1.26.0',
 
         # required by both api and admin
-        'awscli==1.19.12',
-        'boto3==1.17.12',
+        'awscli==1.19.65',
+        'boto3==1.17.65',
     ]
 )
