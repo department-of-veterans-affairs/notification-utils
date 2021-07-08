@@ -4,7 +4,7 @@ import re
 import sys
 
 from flask import request, g
-from flask.ctx import has_request_context
+from flask.ctx import has_request_context, has_app_context
 from pythonjsonlogger.jsonlogger import JsonFormatter as BaseJSONFormatter
 from time import monotonic
 
@@ -141,6 +141,7 @@ def configure_handler(handler, app, formatter):
     handler.setFormatter(formatter)
     handler.addFilter(AppNameFilter(app.config['NOTIFY_APP_NAME']))
     handler.addFilter(RequestIdFilter())
+    handler.addFilter(AppContextFilter())
 
     return handler
 
@@ -165,6 +166,18 @@ class RequestIdFilter(logging.Filter):
 
     def filter(self, record):
         record.request_id = self.request_id
+
+        return record
+
+
+class AppContextFilter(logging.Filter):
+
+    fields_to_add_from_app_context_to_record = ['service_id', 'service_name']
+
+    def filter(self, record):
+        for field_name in self.fields_to_add_from_app_context_to_record:
+            if has_app_context() and field_name in g:
+                setattr(record, field_name, g.get(field_name))
 
         return record
 
