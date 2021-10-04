@@ -35,7 +35,7 @@ setup(
         'Flask-Redis==0.4.0',
         'pyyaml>=5.4,<5.5',
         'phonenumbers==8.12.12',
-        'pytz==2020.5',
+        'pytz==2021.3',
         'smartypants==2.0.1',
         'monotonic==1.5',
         'pypdf2==1.26.0',
