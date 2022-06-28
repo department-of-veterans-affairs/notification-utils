@@ -5,7 +5,7 @@ flake8-print==3.1.4
 freezegun==1.0.0
 phonenumbers==8.12.12
 pytest==5.1.2
-pytest-cov==2.10.1
+pytest-cov==3.0.0
 pytest-mock==1.10.4
 pytest-xdist==1.29.0
 requests-mock==1.8.0
