@@ -446,7 +446,7 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
 
     def link(self, link, title, content):
         return (
-            '<a style="{}"{}{}>{}</a>'
+            '<a style="{}"{}{} target="_blank">{}</a>'
         ).format(
             LINK_STYLE,
             ' href="{}"'.format(link),

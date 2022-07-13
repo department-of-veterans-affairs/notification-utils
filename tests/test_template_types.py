@@ -2027,7 +2027,7 @@ def test_plain_text_email_whitespace():
     (HTMLEmailTemplate, (
         '<h1 style="Margin: 0 0 20px 0; padding: 0; font-size: 32px; '
         'line-height: 35px; font-weight: bold; color: #323A45;">'
-        'Heading <a style="word-wrap: break-word; color: #004795;" href="https://example.com">link</a>'
+        'Heading <a style="word-wrap: break-word; color: #004795;" href="https://example.com" target="_blank">link</a>'
         '</h1>'
     )),
     (LetterPreviewTemplate, (

@@ -841,7 +841,7 @@ def test_image(markdown_function):
         (
             '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; '
             'color: #323A45;">'
-            '<a style="word-wrap: break-word; color: #004795;" href="http://example.com">Example</a>'
+            '<a style="word-wrap: break-word; color: #004795;" href="http://example.com" target="_blank">Example</a>'
             '</p>'
         )
     ],
@@ -871,7 +871,8 @@ def test_link(markdown_function, expected):
         (
             '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; '
             'color: #323A45;">'
-            '<a style="word-wrap: break-word; color: #004795;" href="http://example.com" title="An example URL">'
+            '<a style="word-wrap: break-word; color: #004795;" href="http://example.com" '
+            'title="An example URL" target="_blank">'
             'Example'
             '</a>'
             '</p>'
