@@ -100,8 +100,8 @@ class SanitiseSMS(SanitiseText):
     WELSH_NON_GSM_CHARACTERS = set('ÂâÊêÎîÔôÛûŴŵŶŷ')
 
     ALLOWED_CHARACTERS = set(
-        '@£$¥èéùìòÇ\nØø\rÅåΔ_ΦΓΛΩΠΨΣΘΞ\x1bÆæßÉ !"#¤%&\'()*+,-./0123456789:;<=>?' +
-        '¡ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÑÜ§¿abcdefghijklmnopqrstuvwxyzäöñüà' +
+        '@£$¥èéùìòÇ\nØø\rÅåΔ_ΦΓΛΩΠΨΣΘΞ\x1bÆæßÉ !"#¤%&\'()*+,-./0123456789:;<=>?'
+        '¡ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÑÜ§¿abcdefghijklmnopqrstuvwxyzäöñüà'
         # character set extension
         '^{}\\[~]|€'
     ) | WELSH_NON_GSM_CHARACTERS
@@ -113,6 +113,6 @@ class SanitiseASCII(SanitiseText):
     [chr(x) for x in range(32, 127)]
     """
     ALLOWED_CHARACTERS = set(
-        ' !"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ' +
+        ' !"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ'
         '[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~'
     )

@@ -1,0 +1,3 @@
+fileignoreconfig:
+- filename: notifications_utils/sanitise_text.py
+  checksum: 96cf794e49031d454616ae36522a62082e68e3019ba4533084cebf6a6ce0ec0d

@@ -123,12 +123,12 @@ class RecipientCSV():
     @property
     def has_errors(self):
         return bool(
-            self.missing_column_headers or
-            self.duplicate_recipient_column_headers or
-            self.more_rows_than_can_send or
-            self.too_many_rows or
-            (not self.allowed_to_send_to) or
-            any(self.rows_with_errors)
+            self.missing_column_headers
+            or self.duplicate_recipient_column_headers
+            or self.more_rows_than_can_send
+            or self.too_many_rows
+            or not self.allowed_to_send_to
+            or any(self.rows_with_errors)
         )  # `or` is 3x faster than using `any()` here
 
     @property
@@ -258,8 +258,8 @@ class RecipientCSV():
         return set(
             key for key in self.placeholders
             if (
-                Columns.make_key(key) not in self.column_headers_as_column_keys and
-                not self.is_optional_address_column(key)
+                Columns.make_key(key) not in self.column_headers_as_column_keys
+                and not self.is_optional_address_column(key)
             )
         )
 
@@ -388,7 +388,7 @@ def validate_local_phone_number(number, column=None):
 
 def validate_phone_number(number, column=None, international=False):
 
-    if(";" in number):
+    if ';' in number:
         raise InvalidPhoneError('Not a valid number')
 
     if (not international) or is_local_phone_number(number):

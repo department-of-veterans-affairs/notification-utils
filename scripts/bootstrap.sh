@@ -1,9 +1,7 @@
 #!/bin/bash
 #
-# Bootstrap virtualenv environment and postgres databases locally.
-#
-# NOTE: This script expects to be run from the project root with
-# ./scripts/bootstrap.sh
+# NOTE: This script expects to be run from the project root with ./scripts/bootstrap.sh.
+# It is part of the Github CI workflow.
 
 set -o pipefail
 

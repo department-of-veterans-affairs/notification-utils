@@ -360,7 +360,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         self.preview_mode = preview_mode
         # set this again to make sure the correct either utils / downstream local jinja is used
         # however, don't set if we are in a test environment (to preserve the above mock)
-        if("pytest" not in sys.modules):
+        if "pytest" not in sys.modules:
             self.jinja_template = self.template_env.get_template('email_template.jinja2')
 
     @property

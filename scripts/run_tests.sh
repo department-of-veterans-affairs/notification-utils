@@ -2,10 +2,10 @@
 #
 # Run project tests
 #
-# NOTE: This script expects to be run from the project root with
-# ./scripts/run_tests.sh
+# NOTE: This script expects to be run from the project root with ./scripts/run_tests.sh.
+# It is part of the Github CI workflow.
 
-# Use default environment vars for localhost if not already set
+# Use default environment vars for localhost if not already set.
 
 set -o pipefail
 
@@ -22,7 +22,7 @@ function display_result {
   fi
 }
 
-flake8 .
+flake8 --config .flake8 .
 display_result $? 1 "Code style check"
 
 ## Code coverage
