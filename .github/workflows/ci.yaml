@@ -6,8 +6,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
-    - name: docker://python:3.6-stretch
-      uses: docker://python:3.6-stretch
+    - name: docker://python:3.8-bullseye
+      uses: docker://python:3.8-bullseye
       with:
           entrypoint: /bin/bash
           args: -c "/github/workspace/scripts/bootstrap.sh && /github/workspace/scripts/run_tests.sh"
