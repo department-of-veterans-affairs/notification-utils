@@ -35,7 +35,7 @@ setup(
         'monotonic>=1.6',
         'orderedset>=2.0.3',
         'phonenumbers~=8.12.12',
-        'pypdf2>=2.0.0',
+        'pypdf2~=1.26.0',
         'python-json-logger>=0.1.11',
         'pytz>=2021.3',
         'pyyaml==5.4.1',
