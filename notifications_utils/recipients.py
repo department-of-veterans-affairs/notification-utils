@@ -1,24 +1,23 @@
+import csv
+import os
+import phonenumbers
 import re
 import sys
-import csv
-import phonenumbers
-import os
-from io import StringIO
-from contextlib import suppress
-from functools import lru_cache, partial
-from itertools import islice
-from collections import OrderedDict, namedtuple
-from orderedset import OrderedSet
-
-from flask import current_app
-
 from . import EMAIL_REGEX_PATTERN, hostname_part, tld_part
+from collections import OrderedDict, namedtuple
+from contextlib import suppress
+from flask import current_app
+from functools import lru_cache
+from io import StringIO
+from itertools import islice
 from notifications_utils.formatters import strip_and_remove_obscure_whitespace, strip_whitespace
 from notifications_utils.template import Template
 from notifications_utils.columns import Columns, Row, Cell
 from notifications_utils.international_billing_rates import (
     INTERNATIONAL_BILLING_RATES,
 )
+from orderedset import OrderedSet
+from typing import Optional
 
 
 country_code = os.getenv("PHONE_COUNTRY_CODE", "1")
@@ -281,7 +280,7 @@ class RecipientCSV():
     def is_optional_address_column(self, key):
         return (
             self.template_type == 'letter'
-            and Columns.make_key(key) in Columns.from_keys(optional_address_columns).keys()
+            and Columns.make_key(key) in Columns.from_keys(optional_address_columns)
         )
 
     @property
@@ -334,20 +333,8 @@ class InvalidAddressError(InvalidEmailError):
     pass
 
 
-def normalise_phone_number(number):
-    match = parse_number(number, region_code) or parse_number(number)
-
-    if match:
-        return phonenumbers.format_number(match.number, phonenumbers.PhoneNumberFormat.E164)
-
-    return False
-
-
-def is_local_phone_number(number):
-    if parse_number(number, region_code) is False:
-        return False
-    else:
-        return True
+def is_local_phone_number(number) -> bool:
+    return bool(parse_number(number, region_code))
 
 
 international_phone_info = namedtuple('PhoneNumber', [
@@ -357,8 +344,7 @@ international_phone_info = namedtuple('PhoneNumber', [
 ])
 
 
-def get_international_phone_info(number):
-
+def get_international_phone_info(number: str):
     number = validate_phone_number(number, international=True)
     prefix = get_international_prefix(number)
 
@@ -369,62 +355,53 @@ def get_international_phone_info(number):
     )
 
 
-def get_international_prefix(number):
-    number = phonenumbers.parse(number, None)
-    return str(number.country_code)
+def get_international_prefix(number: str) -> str:
+    return str(phonenumbers.parse(number, None).country_code)
 
 
 def get_billable_units_for_prefix(prefix):
     return INTERNATIONAL_BILLING_RATES[prefix]['billable_units']
 
 
-def validate_local_phone_number(number, column=None):
-    match = parse_number(number, region_code)
-    if match:
-        return phonenumbers.format_number(match.number, phonenumbers.PhoneNumberFormat.E164)
-    else:
-        raise InvalidPhoneError('Not a valid local number')
+def validate_phone_number(number: str, international=False) -> str:
+    """
+    Return the normalized phone number, or raise an exception if the number is not valid.
+    """
 
+    # According to the unit tests, Cook Islands phone numbers can be 5 digits.
+    if len(number) < 5:
+        raise InvalidPhoneError(f"{number} does not have enough digits.")
 
-def validate_phone_number(number, column=None, international=False):
+    phone_number_obj = parse_number(number, region_code)
 
-    if ';' in number:
-        raise InvalidPhoneError('Not a valid number')
+    if phone_number_obj is None:
+        if not international or is_local_phone_number(number):
+            raise InvalidPhoneError(f"Not a valid local number: {number}")
+        raise InvalidPhoneError(f"Not a valid international number: {number}")
 
-    if (not international) or is_local_phone_number(number):
-        return validate_local_phone_number(number)
+    if not phonenumbers.is_possible_number(phone_number_obj):
+        raise InvalidPhoneError(f"{number} is not a possible phone number.")
 
-    number = normalise_phone_number(number)
-
-    if number is False:
-        raise InvalidPhoneError('Not a valid international number')
-
-    if len(number) < 8:
-        raise InvalidPhoneError('Not enough digits')
-
-    if get_international_prefix(number) is None:
-        raise InvalidPhoneError('Not a valid country prefix')
-
-    return number
+    return phonenumbers.format_number(phone_number_obj, phonenumbers.PhoneNumberFormat.E164)
 
 
 validate_and_format_phone_number = validate_phone_number
 
 
-def try_validate_and_format_phone_number(number, column=None, international=None, log_msg=None):
+def try_validate_and_format_phone_number(number: str, international=None, log_msg=None) -> str:
     """
-    For use in places where you shouldn't error if the phone number is invalid - for example if firetext pass us
-    something in
+    Use when raising an exception is inappropriate.  For example, firetext pass something in.
     """
+
     try:
-        return validate_and_format_phone_number(number, column, international)
+        return validate_and_format_phone_number(number, international)
     except InvalidPhoneError as exc:
         if log_msg:
             current_app.logger.warning('{}: {}'.format(log_msg, exc))
         return number
 
 
-def validate_email_address(email_address, column=None):  # noqa (C901 too complex)
+def validate_email_address(email_address):  # noqa (C901 too complex)
     # almost exactly the same as by https://github.com/wtforms/wtforms/blob/master/wtforms/validators.py,
     # with minor tweaks for SES compatibility - to avoid complications we are a lot stricter with the local part
     # than neccessary - we don't allow any double quotes or semicolons to prevent SES Technical Failures
@@ -476,9 +453,9 @@ def validate_and_format_email_address(email_address):
 
 
 def validate_address(address_line, column):
-    if Columns.make_key(column) in Columns.from_keys(optional_address_columns).keys():
+    if Columns.make_key(column) in Columns.from_keys(optional_address_columns):
         return address_line
-    if Columns.make_key(column) not in Columns.from_keys(first_column_headings['letter']).keys():
+    if Columns.make_key(column) not in Columns.from_keys(first_column_headings['letter']):
         raise TypeError
     if not address_line or not strip_whitespace(address_line):
         raise InvalidAddressError('Missing')
@@ -486,11 +463,14 @@ def validate_address(address_line, column):
 
 
 def validate_recipient(recipient, template_type, column=None, international_sms=False):
-    return {
-        'email': validate_email_address,
-        'sms': partial(validate_phone_number, international=international_sms),
-        'letter': validate_address,
-    }[template_type](recipient, column)
+    if template_type == "email":
+        return validate_email_address(recipient)
+    elif template_type == "sms":
+        return validate_phone_number(recipient, international_sms)
+    elif template_type == "letter":
+        validate_address(recipient, column)
+    else:
+        raise ValueError(f"Unrecognized template type: {template_type}")
 
 
 @lru_cache(maxsize=32, typed=False)
@@ -504,19 +484,17 @@ def format_recipient(recipient):
     return recipient
 
 
-def format_phone_number_human_readable(phone_number):
-    match = parse_number(phone_number, region_code) or parse_number(phone_number)
+def format_phone_number_human_readable(phone_number: str) -> str:
+    phone_number_obj = parse_number(phone_number, region_code)
 
-    if match:
-        return phonenumbers.format_number(match.number, phonenumbers.PhoneNumberFormat.INTERNATIONAL)
+    if phone_number_obj is None:
+        return phone_number
 
-    return phone_number
+    return phonenumbers.format_number(phone_number_obj, phonenumbers.PhoneNumberFormat.INTERNATIONAL)
 
 
 def allowed_to_send_to(recipient, whitelist):
-    return format_recipient(recipient) in [
-        format_recipient(recipient) for recipient in whitelist
-    ]
+    return format_recipient(recipient) in (format_recipient(recipient) for recipient in whitelist)
 
 
 def insert_or_append_to_dict(dict_, key, value):
@@ -529,17 +507,13 @@ def insert_or_append_to_dict(dict_, key, value):
         dict_.update({key: value})
 
 
-def parse_number(number, region=None):
-    matches = []
-    for match in phonenumbers.PhoneNumberMatcher(number, region):
-        matches.append(match)
+def parse_number(number: str, region: str = None) -> Optional[phonenumbers.PhoneNumber]:
+    try:
+        phone_number_obj = phonenumbers.parse(number, region)
+    except phonenumbers.phonenumberutil.NumberParseException:
+        return None
 
-    if len(matches) > 0:
-        if region is not None:
-            if matches[0].number.country_code == int(country_code):
-                return matches[0]
-            else:
-                return False
-        return matches[0]
-    else:
-        return False
+    if region is None:
+        return phone_number_obj
+
+    return phone_number_obj if phone_number_obj.country_code == int(country_code) else None
