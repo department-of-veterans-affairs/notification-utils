@@ -31,7 +31,7 @@ setup(
         'Flask>=1.1.1',
         'Flask-Redis>=0.4.0',
         'Jinja2>=2.11.3',
-        'mistune==0.8.4',
+        'mistune==2.0.4',
         'monotonic>=1.6',
         'orderedset>=2.0.3',
         'phonenumbers~=8.12.12',
