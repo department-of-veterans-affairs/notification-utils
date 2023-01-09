@@ -1,3 +1,4 @@
+import logging
 import re
 import sys
 import csv
@@ -9,9 +10,6 @@ from functools import lru_cache, partial
 from itertools import islice
 from collections import OrderedDict, namedtuple
 from orderedset import OrderedSet
-
-from flask import current_app
-
 from . import EMAIL_REGEX_PATTERN, hostname_part, tld_part
 from notifications_utils.formatters import strip_and_remove_obscure_whitespace, strip_whitespace
 from notifications_utils.template import Template
@@ -386,7 +384,7 @@ def validate_local_phone_number(number, column=None):
         raise InvalidPhoneError('Not a valid local number')
 
 
-def validate_phone_number(number, column=None, international=False):
+def validate_phone_number(number, column=None, international=False):  # noqa:   C901
 
     if(";" in number):
         raise InvalidPhoneError('Not a valid number')
@@ -394,18 +392,28 @@ def validate_phone_number(number, column=None, international=False):
     if (not international) or is_local_phone_number(number):
         return validate_local_phone_number(number)
 
-    number = normalise_phone_number(number)
+    normalized_number = normalise_phone_number(number)
 
-    if number is False:
-        raise InvalidPhoneError('Not a valid international number')
+    if not normalized_number:
+        try:
+            parsed_number = phonenumbers.parse(number, region_code)
+            is_valid_number = phonenumbers.is_valid_number(parsed_number)
+            if not is_valid_number:
+                logging.warning('Failed to validate parsed number: %s', parsed_number)
+                raise InvalidPhoneError(
+                    'Field contains an invalid number due to either formatting '
+                    'or an impossible combination of area code and/or telephone prefix.'
+                )
+        except phonenumbers.phonenumberutil.NumberParseException:
+            raise InvalidPhoneError('Not a valid number')
 
-    if len(number) < 8:
+    if len(normalized_number) < 8:
         raise InvalidPhoneError('Not enough digits')
 
-    if get_international_prefix(number) is None:
+    if get_international_prefix(normalized_number) is None:
         raise InvalidPhoneError('Not a valid country prefix')
 
-    return number
+    return normalized_number
 
 
 validate_and_format_phone_number = validate_phone_number
@@ -420,7 +428,8 @@ def try_validate_and_format_phone_number(number, column=None, international=None
         return validate_and_format_phone_number(number, column, international)
     except InvalidPhoneError as exc:
         if log_msg:
-            current_app.logger.warning('{}: {}'.format(log_msg, exc))
+            logging.warning(log_msg)
+            logging.exception(exc)
         return number
 
 

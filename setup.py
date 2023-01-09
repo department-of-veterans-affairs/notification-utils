@@ -38,7 +38,7 @@ setup(
         'pytz>=2021.3',
         'smartypants>=2.0.1',
         'monotonic>=1.6',
-        'pypdf2>=1.26.0',
+        'pypdf2 < 3.0.0',
 
         # required by both api and admin
         'awscli',

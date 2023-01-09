@@ -78,9 +78,36 @@ invalid_local_phone_numbers = sum([
 
 
 invalid_phone_numbers = [
-    ('800000000000', 'Not a valid international number'),
-    ('1234567', 'Not a valid international number'),
-    ('+682 1234', 'Not a valid international number'),  # Cook Islands phone numbers can be 5 digits
+    ('+21 4321 0987', 'Not a valid number'),
+    ('+003997 1234 7890', 'Not a valid number'),
+    (
+        '800000000000',
+        (
+            'Field contains an invalid number due to either formatting '
+            'or an impossible combination of area code and/or telephone prefix.'
+        )
+    ),
+    (
+        '1234567',
+        (
+            'Field contains an invalid number due to either formatting '
+            'or an impossible combination of area code and/or telephone prefix.'
+        )
+    ),
+    (
+        '+682 1234',
+        (
+            'Field contains an invalid number due to either formatting '
+            'or an impossible combination of area code and/or telephone prefix.'
+        )
+    ),  # Cook Islands phone numbers can be 5 digits
+    (
+        '+17553927664',
+        (
+            'Field contains an invalid number due to either formatting '
+            'or an impossible combination of area code and/or telephone prefix.'
+        )
+    ),
 ]
 
 
@@ -197,12 +224,12 @@ def test_normalise_phone_number_raises_if_unparseable_characters(phone_number):
 
 @pytest.mark.parametrize('phone_number', [
     '+21 4321 0987',
-    '00997 1234 7890',
+    '+003997 1234 7890',
 ])
 def test_get_international_info_raises(phone_number):
     with pytest.raises(InvalidPhoneError) as error:
         get_international_phone_info(phone_number)
-    assert str(error.value) == 'Not a valid international number'
+    assert str(error.value) == 'Not a valid number'
 
 
 @pytest.mark.parametrize("phone_number", valid_local_phone_numbers)
@@ -408,7 +435,7 @@ def test_format_recipient(recipient, expected_formatted):
 
 
 def test_try_format_recipient_doesnt_throw():
-    assert try_validate_and_format_phone_number('ALPHANUM3R1C') == 'ALPHANUM3R1C'
+    assert try_validate_and_format_phone_number('ALPHANUM3R1C', log_msg="Log this.") == 'ALPHANUM3R1C'
 
 
 def test_format_phone_number_human_readable_doenst_throw():
