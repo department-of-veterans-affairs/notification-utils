@@ -38,7 +38,7 @@ setup(
         'pypdf2 ~= 3.0.1',
         'python-json-logger>=0.1.11',
         'pytz>=2021.3',
-        'pyyaml==5.4.1',
+        'pyyaml==6.0',
         'requests>=2.26.0',
         'smartypants>=2.0.1',
         'statsd>=3.3.0',
