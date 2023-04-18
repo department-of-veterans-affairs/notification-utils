@@ -1,8 +1,9 @@
 """
 Python API client for VA Notify
 """
-import re
+
 import ast
+import re
 from setuptools import setup, find_packages
 
 
@@ -36,7 +37,7 @@ setup(
         'orderedset>=2.0.3',
         'phonenumbers~=8.12.12',
         'pypdf2 ~= 3.0.1',
-        'python-json-logger>=0.1.11',
+        'python-json-logger~=2.0.7',
         'pytz>=2021.3',
         'pyyaml==5.4.1',
         'requests>=2.26.0',

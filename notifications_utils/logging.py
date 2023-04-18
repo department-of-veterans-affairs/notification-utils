@@ -1,18 +1,18 @@
-from itertools import product
-from pathlib import Path
-import re
+import logging
 import sys
-
 from flask import request, g
 from flask.ctx import has_request_context
-from pythonjsonlogger.jsonlogger import JsonFormatter as BaseJSONFormatter
+from itertools import product
+from pathlib import Path
+from pythonjsonlogger.jsonlogger import JsonFormatter
 from time import monotonic
 
-import logging
-import logging.handlers
 
-LOG_FORMAT = '%(asctime)s %(app_name)s %(name)s %(levelname)s ' \
-             '%(request_id)s "%(message)s" [in %(pathname)s:%(lineno)d]'
+# The "application" and "requestId" fields are non-standard LogRecord attributes added below in the
+# "get_handler" function via filters.  If this causes errors, logging is misconfigured.
+#     https://docs.python.org/3.8/library/logging.html#logrecord-attributes
+LOG_FORMAT = '%(asctime)s %(application)s %(name)s %(levelname)s ' \
+             '%(requestId)s "%(message)s" [in %(pathname)s:%(lineno)d]'
 TIME_FORMAT = '%Y-%m-%dT%H:%M:%S'
 
 logger = logging.getLogger(__name__)
@@ -51,24 +51,18 @@ def init_app(app, statsd_client=None):
         extra_fields = {
             'method': request.method,
             'url': request.url,
-            'status': response.status_code
+            'status': response.status_code,
         }
 
         if 'service_id' in g:
-            extra_fields.update({
-                'service_id': g.service_id
-            })
+            extra_fields['service_id'] = g.service_id
 
         if 'start' in g:
             time_taken = monotonic() - g.start
-            extra_fields.update({
-                'time_taken': "%.5f" % time_taken
-            })
+            extra_fields['time_taken'] = "%.5f" % time_taken
 
         if 'endpoint' in g:
-            extra_fields.update({
-                'endpoint': g.endpoint
-            })
+            extra_fields['endpoint'] = g.endpoint
 
         if statsd_client:
             stat = build_statsd_line(extra_fields)
@@ -85,10 +79,10 @@ def init_app(app, statsd_client=None):
     del app.logger.handlers[:]
 
     ensure_log_path_exists(app.config['NOTIFY_LOG_PATH'])
-    handlers = get_handlers(app)
+    the_handler = get_handler(app)
     loglevel = logging.getLevelName(app.config['NOTIFY_LOG_LEVEL'])
     loggers = [app.logger, logging.getLogger('utils')]
-    for the_logger, handler in product(loggers, handlers):
+    for the_logger, handler in product(loggers, [the_handler]):
         the_logger.addHandler(handler)
         the_logger.setLevel(loglevel)
     logging.getLogger('boto3').setLevel(logging.WARNING)
@@ -101,48 +95,36 @@ def ensure_log_path_exists(path):
     This function assumes you're passing a path to a file and attempts to create
     the path leading to that file.
     """
+
     try:
         Path(path).parent.mkdir(mode=755, parents=True)
     except FileExistsError:
+        # The path and file already exist, which is acceptable.
         pass
 
 
-def get_handlers(app):
-    handlers = []
-    standard_formatter = CustomLogFormatter(LOG_FORMAT, TIME_FORMAT)
-    json_formatter = JSONFormatter(LOG_FORMAT, TIME_FORMAT)
+def is_200_static_log(log) -> bool:
+    """ Turn off 200 OK static logs in development. """
 
+    msg = log.getMessage()
+    return not ('GET /static/' in msg and ' 200 ' in msg)
+
+
+def get_handler(app):
     stream_handler = logging.StreamHandler(sys.stdout)
-    if not app.debug:
-        # machine readable json to both file and stdout
-        # file_handler = logging.handlers.WatchedFileHandler(
-        #     filename='{}.json'.format(app.config['NOTIFY_LOG_PATH'])
-        # )
+    stream_handler.setLevel(logging.getLevelName(app.config['NOTIFY_LOG_LEVEL']))
+    stream_handler.addFilter(AppNameFilter(app.config['NOTIFY_APP_NAME']))
+    stream_handler.addFilter(RequestIdFilter())
 
-        handlers.append(configure_handler(stream_handler, app, json_formatter))
-        # Do not write to files, stdout logging is only needed
-        # handlers.append(configure_handler(file_handler, app, json_formatter))
-    else:
-        # turn off 200 OK static logs in development
-        def is_200_static_log(log):
-            msg = log.getMessage()
-            return not ('GET /static/' in msg and ' 200 ' in msg)
-
+    if app.debug:
+        # Human readable stdout logs that omit static route 200 responses
         logging.getLogger('werkzeug').addFilter(is_200_static_log)
+        stream_handler.setFormatter(logging.Formatter(LOG_FORMAT, TIME_FORMAT))
+    else:
+        # Machine readable json to stdout
+        stream_handler.setFormatter(JsonFormatter(LOG_FORMAT, TIME_FORMAT))
 
-        # human readable stdout logs
-        handlers.append(configure_handler(stream_handler, app, standard_formatter))
-
-    return handlers
-
-
-def configure_handler(handler, app, formatter):
-    handler.setLevel(logging.getLevelName(app.config['NOTIFY_LOG_LEVEL']))
-    handler.setFormatter(formatter)
-    handler.addFilter(AppNameFilter(app.config['NOTIFY_APP_NAME']))
-    handler.addFilter(RequestIdFilter())
-
-    return handler
+    return stream_handler
 
 
 class AppNameFilter(logging.Filter):
@@ -150,8 +132,7 @@ class AppNameFilter(logging.Filter):
         self.app_name = app_name
 
     def filter(self, record):
-        record.app_name = self.app_name
-
+        record.application = self.app_name
         return record
 
 
@@ -160,46 +141,9 @@ class RequestIdFilter(logging.Filter):
     def request_id(self):
         if has_request_context() and hasattr(request, 'request_id'):
             return request.request_id
-        else:
-            return 'no-request-id'
+
+        return 'no-request-id'
 
     def filter(self, record):
-        record.request_id = self.request_id
-
+        record.requestId = self.request_id
         return record
-
-
-class CustomLogFormatter(logging.Formatter):
-    """Accepts a format string for the message and formats it with the extra fields"""
-
-    FORMAT_STRING_FIELDS_PATTERN = re.compile(r'\((.+?)\)', re.IGNORECASE)
-
-    def add_fields(self, record):
-        for field in self.FORMAT_STRING_FIELDS_PATTERN.findall(self._fmt):
-            record.__dict__[field] = record.__dict__.get(field)
-        return record
-
-    def format(self, record):
-        record = self.add_fields(record)
-        try:
-            record.msg = str(record.msg).format(**record.__dict__)
-        except Exception as e:
-            logger.exception("failed to format log message: {} not found".format(e))
-        return super(CustomLogFormatter, self).format(record)
-
-
-class JSONFormatter(BaseJSONFormatter):
-    def process_log_record(self, log_record):
-        rename_map = {
-            "asctime": "time",
-            "request_id": "requestId",
-            "app_name": "application",
-        }
-        for key, newkey in rename_map.items():
-            log_record[newkey] = log_record.pop(key)
-        log_record['logType'] = "application"
-        try:
-            log_record['message'] = log_record['message'].format(**log_record)
-        except Exception as e:
-            logger.exception("failed to format log message: {} not found".format(e))
-        return log_record

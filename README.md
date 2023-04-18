@@ -7,7 +7,8 @@ Shared Python 3 code for Notification to provide logging utilities, etc.  It has
 Run these commands from the project's root directory to install and activate a virtual environment and to install Python dependencies, including dependencies for running unit tests.
 
 1. `python3 -m venv venv/`
-2. `./scripts/bootstrap.sh`
+2. `. venv/bin/activate`
+3. `./scripts/bootstrap.sh`
 
 If you encounter an error about Wheel failing to build, ensure you have the Python3 development libraries installed on your machine.  On Linux, this is the package `libpython3-dev`.
 
