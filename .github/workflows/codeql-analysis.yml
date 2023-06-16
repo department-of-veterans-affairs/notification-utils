@@ -8,6 +8,7 @@ on:
     branches:
       - master
   schedule:
+      # Run the scan on Monday and Thursday mornings.
     - cron: 27 2 * * 1,4
   workflow_dispatch: null
 
