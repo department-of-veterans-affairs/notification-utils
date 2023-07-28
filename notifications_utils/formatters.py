@@ -9,6 +9,7 @@ from flask import Markup
 from . import email_with_smart_quotes_regex
 from notifications_utils.sanitise_text import SanitiseSMS
 import smartypants
+import pdb
 
 
 LINK_STYLE = 'word-wrap: break-word; color: #004795;'
@@ -22,30 +23,34 @@ OBSCURE_WHITESPACE = (
     '\uFEFF'  # zero width non-breaking space
 )
 
+# commented out because it generates errors
+# mistune._block_quote_leading_pattern = re.compile(r'^ *\^ ?', flags=re.M)
+mistune.block_parser._BLOCK_QUOTE_LEADING = re.compile(r'^ *\^ ?', flags=re.M)
 
-mistune._block_quote_leading_pattern = re.compile(r'^ *\^ ?', flags=re.M)
-mistune.BlockGrammar.block_quote = re.compile(r'^( *\^[^\n]+(\n[^\n]+)*\n*)+')
-mistune.BlockGrammar.list_block = re.compile(
-    r'^( *)([•*-]|\d+\.)[\s\S]+?'
-    r'(?:'
-    r'\n+(?=\1?(?:[-*_] *){3,}(?:\n+|$))'  # hrule
-    r'|\n+(?=%s)'  # def links
-    r'|\n+(?=%s)'  # def footnotes
-    r'|\n{2,}'
-    r'(?! )'
-    r'(?!\1(?:[•*-]|\d+\.) )\n*'
-    r'|'
-    r'\s*$)' % (
-        mistune._pure_pattern(mistune.BlockGrammar.def_links),
-        mistune._pure_pattern(mistune.BlockGrammar.def_footnotes),
-    )
-)
-mistune.BlockGrammar.list_item = re.compile(
-    r'^(( *)(?:[•*-]|\d+\.)[^\n]*'
-    r'(?:\n(?!\2(?:[•*-]|\d+\.))[^\n]*)*)',
-    flags=re.M
-)
-mistune.BlockGrammar.list_bullet = re.compile(r'^ *(?:[•*-]|\d+\.)')
+# mistune.BlockGrammar.block_quote = re.compile(r'^( *\^[^\n]+(\n[^\n]+)*\n*)+')
+mistune.block_parser._STRICT_BLOCK_QUOTE = re.compile(r'^( *\^[^\n]+(\n[^\n]+)*\n*)+')
+
+# mistune.BlockGrammar.list_block = re.compile(
+#     r'^( *)([•*-]|\d+\.)[\s\S]+?'
+#     r'(?:'
+#     r'\n+(?=\1?(?:[-*_] *){3,}(?:\n+|$))'  # hrule
+#     r'|\n+(?=%s)'  # def links
+#     r'|\n+(?=%s)'  # def footnotes
+#     r'|\n{2,}'
+#     r'(?! )'
+#     r'(?!\1(?:[•*-]|\d+\.) )\n*'
+#     r'|'
+#     r'\s*$)' % (
+#         mistune._pure_pattern(mistune.BlockGrammar.def_links),
+#         mistune._pure_pattern(mistune.BlockGrammar.def_footnotes),
+#     )
+# )
+# mistune.BlockGrammar.list_item = re.compile(
+#     r'^(( *)(?:[•*-]|\d+\.)[^\n]*'
+#     r'(?:\n(?!\2(?:[•*-]|\d+\.))[^\n]*)*)',
+#     flags=re.M
+# )
+# mistune.BlockGrammar.list_bullet = re.compile(r'^ *(?:[•*-]|\d+\.)')
 mistune.InlineGrammar.url = re.compile(r'''^(https?:\/\/[^\s<]+[^<.,:"')\]\s])''')
 
 govuk_not_a_link = re.compile(
@@ -74,7 +79,7 @@ magic_sequence_regex = re.compile(MAGIC_SEQUENCE)
 
 # The Mistune URL regex only matches URLs at the start of a string,
 # using `^`, so we slice that off and recompile
-url = re.compile(mistune.InlineGrammar.url.pattern[1:])
+# url = re.compile(mistune.InlineGrammar.url.pattern[1:])
 
 
 def unlink_govuk_escaped(message):
@@ -100,8 +105,10 @@ def add_prefix(body, prefix=None):
         return "{}: {}".format(prefix.strip(), body)
     return body
 
-
+# committed out because it throws an error when call the rendering engine
 def autolink_sms(body):
+
+    pdb.set_trace()
     return url.sub(
         lambda match: '<a style="{}" href="{}">{}</a>'.format(
             LINK_STYLE,
@@ -287,7 +294,7 @@ def normalise_whitespace(value):
     return ' '.join(strip_and_remove_obscure_whitespace(value).split())
 
 
-class NotifyLetterMarkdownPreviewRenderer(mistune.Renderer):
+class NotifyLetterMarkdownPreviewRenderer(mistune.HTMLRenderer):
 
     def block_code(self, code, language=None):
         return code
@@ -455,6 +462,7 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
         )
 
     def autolink(self, link, is_email=False):
+        pdb.set_trace()
         if is_email:
             return link
         return '<a style="{}" href="{}">{}</a>'.format(
@@ -568,15 +576,15 @@ class NotifyEmailPreheaderMarkdownRenderer(NotifyPlainTextEmailMarkdownRenderer)
             ' ({})'.format(title) if title else '',
         ))
 
-
-class NotifyEmailBlockLexer(mistune.BlockLexer):
-
-    def __init__(self, rules=None, **kwargs):
-        super().__init__(rules, **kwargs)
-
-    def parse_newline(self, m):
-        if self._list_depth == 0:
-            super().parse_newline(m)
+#
+# class NotifyEmailBlockLexer(mistune.BlockLexer):
+#
+#     def __init__(self, rules=None, **kwargs):
+#         super().__init__(rules, **kwargs)
+#
+#     def parse_newline(self, m):
+#         if self._list_depth == 0:
+#             super().parse_newline(m)
 
 
 class NotifyEmailMarkdown(mistune.Markdown):
@@ -604,22 +612,24 @@ class NotifyEmailMarkdown(mistune.Markdown):
         return self.renderer.paragraph(self.tok_text(), self._is_inside_list)
 
 
-notify_email_markdown = NotifyEmailMarkdown(
-    renderer=NotifyEmailMarkdownRenderer(),
-    block=NotifyEmailBlockLexer,
-    hard_wrap=True,
-    use_xhtml=False,
-)
-notify_plain_text_email_markdown = mistune.Markdown(
-    renderer=NotifyPlainTextEmailMarkdownRenderer(),
-    hard_wrap=True,
-)
-notify_email_preheader_markdown = mistune.Markdown(
-    renderer=NotifyEmailPreheaderMarkdownRenderer(),
-    hard_wrap=True,
-)
-notify_letter_preview_markdown = mistune.Markdown(
-    renderer=NotifyLetterMarkdownPreviewRenderer(),
-    hard_wrap=True,
-    use_xhtml=False,
-)
+# commented out but this will cause all test cases to fail
+#
+# notify_email_markdown = NotifyEmailMarkdown(
+#     renderer=NotifyEmailMarkdownRenderer(),
+#     block=NotifyEmailBlockLexer,
+#     hard_wrap=True,
+#     use_xhtml=False,
+# )
+# notify_plain_text_email_markdown = mistune.Markdown(
+#     renderer=NotifyPlainTextEmailMarkdownRenderer(),
+#     hard_wrap=True,
+# )
+# notify_email_preheader_markdown = mistune.Markdown(
+#     renderer=NotifyEmailPreheaderMarkdownRenderer(),
+#     hard_wrap=True,
+# )
+# notify_letter_preview_markdown = mistune.Markdown(
+#     renderer=NotifyLetterMarkdownPreviewRenderer(),
+#     hard_wrap=True,
+#     use_xhtml=False,
+# )
