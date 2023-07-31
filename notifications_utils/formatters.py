@@ -3,13 +3,13 @@ import re
 import urllib
 
 import mistune
+import mistune.plugins.url
 import bleach
 from itertools import count
 from flask import Markup
 from . import email_with_smart_quotes_regex
 from notifications_utils.sanitise_text import SanitiseSMS
 import smartypants
-import pdb
 
 
 LINK_STYLE = 'word-wrap: break-word; color: #004795;'
@@ -51,7 +51,7 @@ mistune.block_parser._STRICT_BLOCK_QUOTE = re.compile(r'^( *\^[^\n]+(\n[^\n]+)*\
 #     flags=re.M
 # )
 # mistune.BlockGrammar.list_bullet = re.compile(r'^ *(?:[•*-]|\d+\.)')
-mistune.InlineGrammar.url = re.compile(r'''^(https?:\/\/[^\s<]+[^<.,:"')\]\s])''')
+mistune.plugins.url = re.compile(r'''^(https?:\/\/[^\s<]+[^<.,:"')\]\s])''')
 
 govuk_not_a_link = re.compile(
     r'(?<!\.|\/)(GOV)\.(UK)(?!\/|\?)',
@@ -79,7 +79,7 @@ magic_sequence_regex = re.compile(MAGIC_SEQUENCE)
 
 # The Mistune URL regex only matches URLs at the start of a string,
 # using `^`, so we slice that off and recompile
-# url = re.compile(mistune.InlineGrammar.url.pattern[1:])
+url = re.compile(mistune.plugins.url.pattern[1:])
 
 
 def unlink_govuk_escaped(message):
@@ -105,10 +105,9 @@ def add_prefix(body, prefix=None):
         return "{}: {}".format(prefix.strip(), body)
     return body
 
+
 # committed out because it throws an error when call the rendering engine
 def autolink_sms(body):
-
-    pdb.set_trace()
     return url.sub(
         lambda match: '<a style="{}" href="{}">{}</a>'.format(
             LINK_STYLE,
@@ -462,7 +461,6 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
         )
 
     def autolink(self, link, is_email=False):
-        pdb.set_trace()
         if is_email:
             return link
         return '<a style="{}" href="{}">{}</a>'.format(
@@ -576,15 +574,15 @@ class NotifyEmailPreheaderMarkdownRenderer(NotifyPlainTextEmailMarkdownRenderer)
             ' ({})'.format(title) if title else '',
         ))
 
-#
-# class NotifyEmailBlockLexer(mistune.BlockLexer):
-#
-#     def __init__(self, rules=None, **kwargs):
-#         super().__init__(rules, **kwargs)
-#
-#     def parse_newline(self, m):
-#         if self._list_depth == 0:
-#             super().parse_newline(m)
+
+class NotifyEmailBlockLexer(mistune.block_parser.BlockParser):
+
+    def __init__(self, rules=None, **kwargs):
+        super().__init__(rules, **kwargs)
+
+    def parse_newline(self, m):
+        if self._list_depth == 0:
+            super().parse_newline(m)
 
 
 class NotifyEmailMarkdown(mistune.Markdown):
@@ -614,22 +612,22 @@ class NotifyEmailMarkdown(mistune.Markdown):
 
 # commented out but this will cause all test cases to fail
 #
-# notify_email_markdown = NotifyEmailMarkdown(
-#     renderer=NotifyEmailMarkdownRenderer(),
-#     block=NotifyEmailBlockLexer,
-#     hard_wrap=True,
-#     use_xhtml=False,
-# )
-# notify_plain_text_email_markdown = mistune.Markdown(
-#     renderer=NotifyPlainTextEmailMarkdownRenderer(),
-#     hard_wrap=True,
-# )
-# notify_email_preheader_markdown = mistune.Markdown(
-#     renderer=NotifyEmailPreheaderMarkdownRenderer(),
-#     hard_wrap=True,
-# )
-# notify_letter_preview_markdown = mistune.Markdown(
-#     renderer=NotifyLetterMarkdownPreviewRenderer(),
-#     hard_wrap=True,
-#     use_xhtml=False,
-# )
+notify_email_markdown = NotifyEmailMarkdown(
+    renderer=NotifyEmailMarkdownRenderer(),
+    # block=mistune.block_parser,
+    # hard_wrap=True,
+    # use_xhtml=False,
+)
+notify_plain_text_email_markdown = mistune.Markdown(
+    renderer=NotifyPlainTextEmailMarkdownRenderer(),
+    # hard_wrap=True,
+)
+notify_email_preheader_markdown = mistune.Markdown(
+    renderer=NotifyEmailPreheaderMarkdownRenderer(),
+    # hard_wrap=True,
+)
+notify_letter_preview_markdown = mistune.Markdown(
+    renderer=NotifyLetterMarkdownPreviewRenderer(),
+    # hard_wrap=True,
+    # use_xhtml=False,
+)

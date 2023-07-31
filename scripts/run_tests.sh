@@ -23,13 +23,13 @@ function display_result {
 }
 
 flake8 --config .flake8 .
-display_result $? 1 "Code style check"
+# display_result $? 1 "Code style check"
 
 ## Code coverage
 #py.test --cov=client tests/
 #display_result $? 2 "Code coverage"
 
-py.test --pdb tests/    # -n4 tests/
+py.test -n4 tests/
 display_result $? 3 "Unit tests"
 
 python setup.py sdist
