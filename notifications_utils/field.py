@@ -103,6 +103,8 @@ class Field:
             'strip_dvla_markup': strip_dvla_markup,
         }[html]
         self.redact_missing_personalisation = redact_missing_personalisation
+        self._placeholders = []  # Instance variable to store placeholders
+        self._urls = []  # Instance variable to store URLs
 
     def __str__(self):
         if self.values:
@@ -115,6 +117,10 @@ class Field:
     @property
     def values(self):
         return self._values
+
+    @property
+    def urls(self):
+        return self._urls
 
     @values.setter
     def values(self, value):
@@ -182,13 +188,65 @@ class Field:
 
     @property
     def _raw_formatted(self):
-        return re.sub(
-            self.placeholder_pattern, self.format_match, self.sanitizer(self.content)
-        )
+        # 1:  ((variable)) Hello [some url](https://google.com/((variable)))
+        # 2: VARIABLE_PLACEHOLDER::1 Hello [some url](https://google.com/VARIABLE_PLACEHOLDER::2/)
+        # 3: VARIABLE_PLACEHOLDER::1 Hello URL_PLACEHOLDER::1
+        # 4: ((variable)) Hello URL_PLACEHOLDER::1
+        # 5: ((variable)) Hello [some url](https://google.com/VARIABLE_PLACEHOLDER::2/)
+        # Detect URLs using the updated regex pattern
+        url_pattern = re.compile(r'\[.*?\]\(([^\[\]\(\)]+)\)')
+
+        def format_without_placeholders(text):
+            # Replace placeholders first
+
+            def replace_placeholder(match):
+                self._placeholders.append(match.group(0))
+                return f'VARIABLE_PLACEHOLDER::{len(self._placeholders)}'
+
+            text = re.sub(self.placeholder_pattern, replace_placeholder, self.sanitizer(text))
+
+            def replace_url(match):
+                url = match.group(0)
+                self._urls.append(url)
+                return f'URL_PLACEHOLDER::{len(self._urls)}'
+
+            formatted_text = re.sub(url_pattern, replace_url, text)
+
+            return formatted_text
+
+        # Restore the placeholders
+        def restore_placeholder(match):
+            index = int(match.group(1))
+            if 1 <= index <= len(self._placeholders):
+                return self._placeholders[index - 1]
+            return f'((VARIABLE_PLACEHOLDER::{index}))'
+
+
+        def restore_url(match):
+            index = int(match.group(1))
+            if 1 <= index <= len(self._urls):
+                return self._urls[index - 1]
+            return f'[URL_RESTORED]'
+
+        formatted_text = format_without_placeholders(self.content)
+        formatted_text = re.sub(r'VARIABLE_PLACEHOLDER::(\d+)', restore_placeholder, formatted_text)
+        formatted_text = re.sub(r'URL_PLACEHOLDER::(\d+)', restore_url, formatted_text)
+
+        return formatted_text
 
     @property
     def formatted(self):
-        return Markup(self._raw_formatted)
+        markup_formatted_text = Markup(self._raw_formatted)
+        # Restore the placeholders
+        def restore_placeholder(match):
+            index = int(match.group(1))
+            if 1 <= index <= len(self._placeholders):
+                return self._placeholders[index - 1]
+            return f'((VARIABLE_PLACEHOLDER::{index}))'
+        if not self.preview_mode:
+            return re.sub(r'VARIABLE_PLACEHOLDER::(\d+)', restore_placeholder, markup_formatted_text)
+        
+        return markup_formatted_text
 
     @property
     def placeholders(self):
