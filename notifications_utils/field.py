@@ -221,12 +221,11 @@ class Field:
                 return self._placeholders[index - 1]
             return f'((VARIABLE_PLACEHOLDER::{index}))'
 
-
         def restore_url(match):
             index = int(match.group(1))
             if 1 <= index <= len(self._urls):
                 return self._urls[index - 1]
-            return f'[URL_RESTORED]'
+            return '[URL_RESTORED]'
 
         formatted_text = format_without_placeholders(self.content)
         formatted_text = re.sub(r'VARIABLE_PLACEHOLDER::(\d+)', restore_placeholder, formatted_text)
@@ -237,6 +236,7 @@ class Field:
     @property
     def formatted(self):
         markup_formatted_text = Markup(self._raw_formatted)
+
         # Restore the placeholders
         def restore_placeholder(match):
             index = int(match.group(1))
@@ -245,7 +245,7 @@ class Field:
             return f'((VARIABLE_PLACEHOLDER::{index}))'
         if not self.preview_mode:
             return re.sub(r'VARIABLE_PLACEHOLDER::(\d+)', restore_placeholder, markup_formatted_text)
-        
+
         return markup_formatted_text
 
     @property
