@@ -5,7 +5,7 @@ import pytest
 
 from functools import partial
 from unittest import mock
-from flask import Markup
+from markupsafe import Markup
 from freezegun import freeze_time
 
 from notifications_utils.formatters import unlink_govuk_escaped
@@ -32,10 +32,10 @@ def test_pass_through_renderer():
     assert str(Template({'content': message})) == message
 
 
-# def test_html_email_inserts_body():
-#     assert 'the &lt;em&gt;quick&lt;/em&gt; brown fox' in str(HTMLEmailTemplate(
-#         {'content': 'the <em>quick</em> brown fox', 'subject': ''}
-#     ))
+def test_html_email_inserts_body():
+    assert 'the &lt;em&gt;quick&lt;/em&gt; brown fox' in str(HTMLEmailTemplate(
+        {'content': 'the <em>quick</em> brown fox', 'subject': ''}
+    ))
 
 
 @pytest.mark.parametrize(
@@ -227,73 +227,73 @@ def test_preheader_is_at_start_of_html_emails():
     )
 
 
-# @pytest.mark.parametrize('content, values, expected_preheader', [
-#     (
-#         (
-#             'Hello (( name ))\n'
-#             '\n'
-#             '# This - is a "heading"\n'
-#             '\n'
-#             'My favourite websites\' URLs are:\n'
-#             '- GOV.UK\n'
-#             '- https://www.example.com\n'
-#         ),
-#         {'name': 'Jo'},
-#         'Hello Jo This – is a “heading” My favourite websites’ URLs are: • GOV.​UK • https://www.example.com',
-#     ),
-#     (
-#         (
-#             '[Markdown link](https://www.example.com)\n'
-#         ),
-#         {},
-#         'Markdown link',
-#     ),
-#     (
-#         """
-#             Lorem Ipsum is simply dummy text of the printing and
-#             typesetting industry.
-#
-#             Lorem Ipsum has been the industry’s standard dummy text
-#             ever since the 1500s, when an unknown printer took a galley
-#             of type and scrambled it to make a type specimen book.
-#
-#             Lorem Ipsum is simply dummy text of the printing and
-#             typesetting industry.
-#
-#             Lorem Ipsum has been the industry’s standard dummy text
-#             ever since the 1500s, when an unknown printer took a galley
-#             of type and scrambled it to make a type specimen book.
-#         """,
-#         {},
-#         (
-#             'Lorem Ipsum is simply dummy text of the printing and '
-#             'typesetting industry. Lorem Ipsum has been the industry’s '
-#             'standard dummy text ever since the 1500s, when an unknown '
-#             'printer took a galley of type and scrambled it to make a '
-#             'type specimen book. Lorem Ipsu'
-#         ),
-#     ),
-#     (
-#         'short email',
-#         {},
-#         'short email',
-#     ),
-# ])
-# @mock.patch(
-#     'notifications_utils.template.HTMLEmailTemplate.jinja_template.render',
-#     return_value='mocked'
-# )
-# def test_content_of_preheader_in_html_emails(
-#     mock_jinja_template,
-#     content,
-#     values,
-#     expected_preheader,
-# ):
-#     assert str(HTMLEmailTemplate(
-#         {'content': content, 'subject': 'subject'},
-#         values
-#     )) == 'mocked'
-#     assert mock_jinja_template.call_args[0][0]['preheader'] == expected_preheader
+@pytest.mark.parametrize('content, values, expected_preheader', [
+    (
+        (
+            'Hello (( name ))\n'
+            '\n'
+            '# This - is a "heading"\n'
+            '\n'
+            'My favourite websites\' URLs are:\n'
+            '- GOV.UK\n'
+            '- https://www.example.com\n'
+        ),
+        {'name': 'Jo'},
+        'Hello Jo This – is a “heading” My favourite websites’ URLs are: • GOV.​UK • https://www.example.com',
+    ),
+    (
+        (
+            '[Markdown link](https://www.example.com)\n'
+        ),
+        {},
+        'Markdown link',
+    ),
+    (
+        """
+            Lorem Ipsum is simply dummy text of the printing and
+            typesetting industry.
+
+            Lorem Ipsum has been the industry’s standard dummy text
+            ever since the 1500s, when an unknown printer took a galley
+            of type and scrambled it to make a type specimen book.
+
+            Lorem Ipsum is simply dummy text of the printing and
+            typesetting industry.
+
+            Lorem Ipsum has been the industry’s standard dummy text
+            ever since the 1500s, when an unknown printer took a galley
+            of type and scrambled it to make a type specimen book.
+        """,
+        {},
+        (
+            'Lorem Ipsum is simply dummy text of the printing and '
+            'typesetting industry. Lorem Ipsum has been the industry’s '
+            'standard dummy text ever since the 1500s, when an unknown '
+            'printer took a galley of type and scrambled it to make a '
+            'type specimen book. Lorem Ipsu'
+        ),
+    ),
+    (
+        'short email',
+        {},
+        'short email',
+    ),
+])
+@mock.patch(
+    'notifications_utils.template.HTMLEmailTemplate.jinja_template.render',
+    return_value='mocked'
+)
+def test_content_of_preheader_in_html_emails(
+    mock_jinja_template,
+    content,
+    values,
+    expected_preheader,
+):
+    assert str(HTMLEmailTemplate(
+        {'content': content, 'subject': 'subject'},
+        values
+    )) == 'mocked'
+    assert mock_jinja_template.call_args[0][0]['preheader'] == expected_preheader
 
 
 @pytest.mark.parametrize('template_class, extra_args, result, markdown_renderer', [
@@ -340,69 +340,69 @@ def test_markdown_in_templates(
     mock_markdown_renderer.assert_called_once_with(result)
 
 
-# @pytest.mark.parametrize(
-#     'template_class', [
-#         HTMLEmailTemplate,
-#         EmailPreviewTemplate,
-#         SMSPreviewTemplate,
-#     ]
-# )
-# @pytest.mark.parametrize(
-#     "url, url_with_entities_replaced", [
-#         ("http://example.com", "http://example.com"),
-#         ("http://www.gov.uk/", "http://www.gov.uk/"),
-#         ("https://www.gov.uk/", "https://www.gov.uk/"),
-#         ("http://service.gov.uk", "http://service.gov.uk"),
-#         (
-#             "http://service.gov.uk/blah.ext?q=a%20b%20c&order=desc#fragment",
-#             "http://service.gov.uk/blah.ext?q=a%20b%20c&amp;order=desc#fragment",
-#         ),
-#         pytest.param("example.com", "example.com", marks=pytest.mark.xfail),
-#         pytest.param("www.example.com", "www.example.com", marks=pytest.mark.xfail),
-#         pytest.param(
-#             "http://service.gov.uk/blah.ext?q=one two three",
-#             "http://service.gov.uk/blah.ext?q=one two three",
-#             marks=pytest.mark.xfail,
-#         ),
-#         pytest.param("ftp://example.com", "ftp://example.com", marks=pytest.mark.xfail),
-#         pytest.param("mailto:test@example.com", "mailto:test@example.com", marks=pytest.mark.xfail),
-#     ]
-# )
-# def test_makes_links_out_of_URLs(template_class, url, url_with_entities_replaced):
-#     assert '<a style="word-wrap: break-word; color: #004795;" href="{}">{}</a>'.format(
-#         url_with_entities_replaced, url_with_entities_replaced
-#     ) in str(template_class({'content': url, 'subject': ''}))
+@pytest.mark.parametrize(
+    'template_class', [
+        HTMLEmailTemplate,
+        EmailPreviewTemplate,
+        SMSPreviewTemplate,
+    ]
+)
+@pytest.mark.parametrize(
+    "url, url_with_entities_replaced", [
+        ("http://example.com", "http://example.com"),
+        ("http://www.gov.uk/", "http://www.gov.uk/"),
+        ("https://www.gov.uk/", "https://www.gov.uk/"),
+        ("http://service.gov.uk", "http://service.gov.uk"),
+        (
+            "http://service.gov.uk/blah.ext?q=a%20b%20c&order=desc#fragment",
+            "http://service.gov.uk/blah.ext?q=a%20b%20c&amp;order=desc#fragment",
+        ),
+        pytest.param("example.com", "example.com", marks=pytest.mark.xfail),
+        pytest.param("www.example.com", "www.example.com", marks=pytest.mark.xfail),
+        pytest.param(
+            "http://service.gov.uk/blah.ext?q=one two three",
+            "http://service.gov.uk/blah.ext?q=one two three",
+            marks=pytest.mark.xfail,
+        ),
+        pytest.param("ftp://example.com", "ftp://example.com", marks=pytest.mark.xfail),
+        pytest.param("mailto:test@example.com", "mailto:test@example.com", marks=pytest.mark.xfail),
+    ]
+)
+def test_makes_links_out_of_URLs(template_class, url, url_with_entities_replaced):
+    assert '<a style="word-wrap: break-word; color: #004795;" href="{}">{}</a>'.format(
+        url_with_entities_replaced, url_with_entities_replaced
+    ) in str(template_class({'content': url, 'subject': ''}))
 
 
-# @pytest.mark.parametrize('content, html_snippet', (
-#     (
-#         (
-#             'You’ve been invited to a service. Click this link:\n'
-#             'https://service.example.com/accept_invite/a1b2c3d4\n'
-#             '\n'
-#             'Thanks\n'
-#         ),
-#         (
-#             '<a style="word-wrap: break-word; color: #004795;"'
-#             ' href="https://service.example.com/accept_invite/a1b2c3d4">'
-#             'https://service.example.com/accept_invite/a1b2c3d4'
-#             '</a>'
-#         ),
-#     ),
-#     (
-#         (
-#             'https://service.example.com/accept_invite/?a=b&c=d&'
-#         ),
-#         (
-#             '<a style="word-wrap: break-word; color: #004795;"'
-#             ' href="https://service.example.com/accept_invite/?a=b&amp;c=d&amp;">'
-#             'https://service.example.com/accept_invite/?a=b&amp;c=d&amp;'
-#             '</a>'
-#         ),
-#     ),
-# ))
-# def test_HTML_template_has_URLs_replaced_with_links(content, html_snippet):
-#     assert html_snippet in str(HTMLEmailTemplate({'content': content, 'subject': ''}))
+@pytest.mark.parametrize('content, html_snippet', (
+    (
+        (
+            'You’ve been invited to a service. Click this link:\n'
+            'https://service.example.com/accept_invite/a1b2c3d4\n'
+            '\n'
+            'Thanks\n'
+        ),
+        (
+            '<a style="word-wrap: break-word; color: #004795;"'
+            ' href="https://service.example.com/accept_invite/a1b2c3d4">'
+            'https://service.example.com/accept_invite/a1b2c3d4'
+            '</a>'
+        ),
+    ),
+    (
+        (
+            'https://service.example.com/accept_invite/?a=b&c=d&'
+        ),
+        (
+            '<a style="word-wrap: break-word; color: #004795;"'
+            ' href="https://service.example.com/accept_invite/?a=b&amp;c=d&amp;">'
+            'https://service.example.com/accept_invite/?a=b&amp;c=d&amp;'
+            '</a>'
+        ),
+    ),
+))
+def test_HTML_template_has_URLs_replaced_with_links(content, html_snippet):
+    assert html_snippet in str(HTMLEmailTemplate({'content': content, 'subject': ''}))
 
 
 @pytest.mark.parametrize(
@@ -1727,66 +1727,66 @@ def test_letter_address_format(address, expected):
     assert str(template)
 
 
-# @freeze_time("2001-01-01 12:00:00.000000")
-# @pytest.mark.parametrize('markdown, expected', [
-#     (
-#         (
-#             'Here is a list of bullets:\n'
-#             '\n'
-#             '* one\n'
-#             '* two\n'
-#             '* three\n'
-#             '\n'
-#             'New paragraph'
-#         ),
-#         (
-#             '<ul>\n'
-#             '<li>one</li>\n'
-#             '<li>two</li>\n'
-#             '<li>three</li>\n'
-#             '</ul>\n'
-#             '<p>New paragraph</p>\n'
-#         )
-#     ),
-#     (
-#         (
-#             '# List title:\n'
-#             '\n'
-#             '* one\n'
-#             '* two\n'
-#             '* three\n'
-#         ),
-#         (
-#             '<h2>List title:</h2>\n'
-#             '<ul>\n'
-#             '<li>one</li>\n'
-#             '<li>two</li>\n'
-#             '<li>three</li>\n'
-#             '</ul>\n'
-#         )
-#     ),
-#     (
-#         (
-#             'Here’s an ordered list:\n'
-#             '\n'
-#             '1. one\n'
-#             '2. two\n'
-#             '3. three\n'
-#         ),
-#         (
-#             '<p>Here’s an ordered list:</p><ol>\n'
-#             '<li>one</li>\n'
-#             '<li>two</li>\n'
-#             '<li>three</li>\n'
-#             '</ol>'
-#         )
-#     ),
-# ])
-# def test_lists_in_combination_with_other_elements_in_letters(markdown, expected):
-#     assert expected in str(LetterPreviewTemplate(
-#         {'content': markdown, 'subject': 'Hello'},
-#         {},
-#     ))
+@freeze_time("2001-01-01 12:00:00.000000")
+@pytest.mark.parametrize('markdown, expected', [
+    (
+        (
+            'Here is a list of bullets:\n'
+            '\n'
+            '* one\n'
+            '* two\n'
+            '* three\n'
+            '\n'
+            'New paragraph'
+        ),
+        (
+            '<ul>\n'
+            '<li>one</li>\n'
+            '<li>two</li>\n'
+            '<li>three</li>\n'
+            '</ul>\n'
+            '<p>New paragraph</p>\n'
+        )
+    ),
+    (
+        (
+            '# List title:\n'
+            '\n'
+            '* one\n'
+            '* two\n'
+            '* three\n'
+        ),
+        (
+            '<h2>List title:</h2>\n'
+            '<ul>\n'
+            '<li>one</li>\n'
+            '<li>two</li>\n'
+            '<li>three</li>\n'
+            '</ul>\n'
+        )
+    ),
+    (
+        (
+            'Here’s an ordered list:\n'
+            '\n'
+            '1. one\n'
+            '2. two\n'
+            '3. three\n'
+        ),
+        (
+            '<p>Here’s an ordered list:</p><ol>\n'
+            '<li>one</li>\n'
+            '<li>two</li>\n'
+            '<li>three</li>\n'
+            '</ol>'
+        )
+    ),
+])
+def test_lists_in_combination_with_other_elements_in_letters(markdown, expected):
+    assert expected in str(LetterPreviewTemplate(
+        {'content': markdown, 'subject': 'Hello'},
+        {},
+    ))
 
 
 @pytest.mark.parametrize('template_class', [
@@ -1812,50 +1812,50 @@ def test_non_sms_ignores_message_too_long(template_class, kwargs):
     assert template.is_message_too_long() is False
 
 
-# @pytest.mark.parametrize(
-#     (
-#         'content,'
-#         'expected_preview_markup,'
-#     ), [
-#         (
-#             'a\n\n\nb',
-#             (
-#                 '<p>a</p>'
-#                 '<p>b</p>'
-#             ),
-#         ),
-#         (
-#             (
-#                 'a\n'
-#                 '\n'
-#                 '* one\n'
-#                 '* two\n'
-#                 '* three\n'
-#                 'and a half\n'
-#                 '\n'
-#                 '\n'
-#                 '\n'
-#                 '\n'
-#                 'foo'
-#             ),
-#             (
-#                 '<p>a</p><ul>\n'
-#                 '<li>one</li>\n'
-#                 '<li>two</li>\n'
-#                 '<li>three<br>and a half</li>\n'
-#                 '</ul>\n'
-#                 '<p>foo</p>'
-#             ),
-#         ),
-#     ]
-# )
-# def test_multiple_newlines_in_letters(
-#     content,
-#     expected_preview_markup,
-# ):
-#     assert expected_preview_markup in str(LetterPreviewTemplate(
-#         {'content': content, 'subject': 'foo'}
-#     ))
+@pytest.mark.parametrize(
+    (
+        'content,'
+        'expected_preview_markup,'
+    ), [
+        (
+            'a\n\n\nb',
+            (
+                '<p>a</p>'
+                '<p>b</p>'
+            ),
+        ),
+        (
+            (
+                'a\n'
+                '\n'
+                '* one\n'
+                '* two\n'
+                '* three\n'
+                'and a half\n'
+                '\n'
+                '\n'
+                '\n'
+                '\n'
+                'foo'
+            ),
+            (
+                '<p>a</p><ul>\n'
+                '<li>one</li>\n'
+                '<li>two</li>\n'
+                '<li>three<br>and a half</li>\n'
+                '</ul>\n'
+                '<p>foo</p>'
+            ),
+        ),
+    ]
+)
+def test_multiple_newlines_in_letters(
+    content,
+    expected_preview_markup,
+):
+    assert expected_preview_markup in str(LetterPreviewTemplate(
+        {'content': content, 'subject': 'foo'}
+    ))
 
 
 @pytest.mark.parametrize('subject', [
@@ -1895,27 +1895,27 @@ def test_whitespace_in_subject_placeholders(template_class):
     ).subject == 'Your tax is due'
 
 
-# @pytest.mark.parametrize('template_class, expected_output', [
-#     (
-#         PlainTextEmailTemplate,
-#         'paragraph one\n\n\xa0\n\nparagraph two',
-#     ),
-#     (
-#         HTMLEmailTemplate,
-#         (
-#             '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">paragraph one</p>'
-#             '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">&nbsp;</p>'
-#             '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">paragraph two</p>'
-#         ),
-#     ),
-# ])
-# def test_govuk_email_whitespace_hack(template_class, expected_output):
-#
-#     template_instance = template_class({
-#         'content': 'paragraph one\n\n&nbsp;\n\nparagraph two',
-#         'subject': 'foo'
-#     })
-#     assert expected_output in str(template_instance)
+@pytest.mark.parametrize('template_class, expected_output', [
+    (
+        PlainTextEmailTemplate,
+        'paragraph one\n\n\xa0\n\nparagraph two',
+    ),
+    (
+        HTMLEmailTemplate,
+        (
+            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">paragraph one</p>'
+            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">&nbsp;</p>'
+            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">paragraph two</p>'
+        ),
+    ),
+])
+def test_govuk_email_whitespace_hack(template_class, expected_output):
+
+    template_instance = template_class({
+        'content': 'paragraph one\n\n&nbsp;\n\nparagraph two',
+        'subject': 'foo'
+    })
+    assert expected_output in str(template_instance)
 
 
 def test_letter_preview_uses_non_breaking_hyphens():
@@ -1927,44 +1927,44 @@ def test_letter_preview_uses_non_breaking_hyphens():
     ))
 
 
-# @freeze_time("2001-01-01 12:00:00.000000")
-# def test_nested_lists_in_lettr_markup():
-#
-#     template_content = str(LetterPreviewTemplate({
-#         'content': (
-#             'nested list:\n'
-#             '\n'
-#             '1. one\n'
-#             '2. two\n'
-#             '3. three\n'
-#             '  - three one\n'
-#             '  - three two\n'
-#             '  - three three\n'
-#         ),
-#         'subject': 'foo',
-#     }))
-#
-#     assert (
-#         '      <p>\n'
-#         '        1 January 2001\n'
-#         '      </p>\n'
-#         '      <h1>\n'
-#         '        foo\n'
-#         '      </h1>\n'
-#         '      <p>nested list:</p><ol>\n'
-#         '<li>one</li>\n'
-#         '<li>two</li>\n'
-#         '<li>three<ul>\n'
-#         '<li>three one</li>\n'
-#         '<li>three two</li>\n'
-#         '<li>three three</li>\n'
-#         '</ul></li>\n'
-#         '</ol>\n'
-#         '\n'
-#         '    </div>\n'
-#         '  </body>\n'
-#         '</html>'
-#     ) in template_content
+@freeze_time("2001-01-01 12:00:00.000000")
+def test_nested_lists_in_lettr_markup():
+
+    template_content = str(LetterPreviewTemplate({
+        'content': (
+            'nested list:\n'
+            '\n'
+            '1. one\n'
+            '2. two\n'
+            '3. three\n'
+            '  - three one\n'
+            '  - three two\n'
+            '  - three three\n'
+        ),
+        'subject': 'foo',
+    }))
+
+    assert (
+        '      <p>\n'
+        '        1 January 2001\n'
+        '      </p>\n'
+        '      <h1>\n'
+        '        foo\n'
+        '      </h1>\n'
+        '      <p>nested list:</p><ol>\n'
+        '<li>one</li>\n'
+        '<li>two</li>\n'
+        '<li>three<ul>\n'
+        '<li>three one</li>\n'
+        '<li>three two</li>\n'
+        '<li>three three</li>\n'
+        '</ul></li>\n'
+        '</ol>\n'
+        '\n'
+        '    </div>\n'
+        '  </body>\n'
+        '</html>'
+    ) in template_content
 
 
 def test_that_print_template_is_the_same_as_preview():
@@ -1973,74 +1973,74 @@ def test_that_print_template_is_the_same_as_preview():
     assert os.path.basename(LetterPrintTemplate.jinja_template.filename) == 'print.jinja2'
 
 
-# def test_plain_text_email_whitespace():
-#     email = PlainTextEmailTemplate({'subject': 'foo', 'content': (
-#         '# Heading\n'
-#         '\n'
-#         '1. one\n'
-#         '2. two\n'
-#         '3. three\n'
-#         '\n'
-#         '***\n'
-#         '\n'
-#         '# Heading\n'
-#         '\n'
-#         'Paragraph\n'
-#         '\n'
-#         'Paragraph\n'
-#         '\n'
-#         '^ callout\n'
-#         '\n'
-#         '1. one not four\n'
-#         '1. two not five'
-#     )})
-#     assert str(email) == (
-#         'Heading\n'
-#         '-----------------------------------------------------------------\n'
-#         '\n'
-#         '1. one\n'
-#         '2. two\n'
-#         '3. three\n'
-#         '\n'
-#         '=================================================================\n'
-#         '\n'
-#         '\n'
-#         'Heading\n'
-#         '-----------------------------------------------------------------\n'
-#         '\n'
-#         'Paragraph\n'
-#         '\n'
-#         'Paragraph\n'
-#         '\n'
-#         'callout\n'
-#         '\n'
-#         '1. one not four\n'
-#         '2. two not five\n'
-#     )
+def test_plain_text_email_whitespace():
+    email = PlainTextEmailTemplate({'subject': 'foo', 'content': (
+        '# Heading\n'
+        '\n'
+        '1. one\n'
+        '2. two\n'
+        '3. three\n'
+        '\n'
+        '***\n'
+        '\n'
+        '# Heading\n'
+        '\n'
+        'Paragraph\n'
+        '\n'
+        'Paragraph\n'
+        '\n'
+        '^ callout\n'
+        '\n'
+        '1. one not four\n'
+        '1. two not five'
+    )})
+    assert str(email) == (
+        'Heading\n'
+        '-----------------------------------------------------------------\n'
+        '\n'
+        '1. one\n'
+        '2. two\n'
+        '3. three\n'
+        '\n'
+        '=================================================================\n'
+        '\n'
+        '\n'
+        'Heading\n'
+        '-----------------------------------------------------------------\n'
+        '\n'
+        'Paragraph\n'
+        '\n'
+        'Paragraph\n'
+        '\n'
+        'callout\n'
+        '\n'
+        '1. one not four\n'
+        '2. two not five\n'
+    )
 
 
-# @pytest.mark.parametrize('renderer, expected_content', (
-#     (PlainTextEmailTemplate, (
-#         'Heading link: https://example.com\n'
-#         '-----------------------------------------------------------------\n'
-#     )),
-#     (HTMLEmailTemplate, (
-#         '<h1 style="Margin: 0 0 20px 0; padding: 0; font-size: 32px; '
-#         'line-height: 35px; font-weight: bold; color: #323A45;">'
-#         'Heading <a style="word-wrap: break-word; color: #004795;" href="https://example.com" target="_blank">link</a>'
-#         '</h1>'
-#     )),
-#     (LetterPreviewTemplate, (
-#         '<h2>Heading link: <strong>example.com</strong></h2>'
-#     )),
-#     (LetterPrintTemplate, (
-#         '<h2>Heading link: <strong>example.com</strong></h2>'
-#     )),
-# ))
-# def test_heading_only_template_renders(renderer, expected_content):
-#     assert expected_content in str(renderer({'subject': 'foo', 'content': (
-#         '# Heading [link](https://example.com)'
-#     )}))
+@pytest.mark.parametrize('renderer, expected_content', (
+    (PlainTextEmailTemplate, (
+        'Heading link: https://example.com\n'
+        '-----------------------------------------------------------------\n'
+    )),
+    (HTMLEmailTemplate, (
+        '<h1 style="Margin: 0 0 20px 0; padding: 0; font-size: 32px; '
+        'line-height: 35px; font-weight: bold; color: #323A45;">'
+        'Heading <a style="word-wrap: break-word; color: #004795;" href="https://example.com" target="_blank">link</a>'
+        '</h1>'
+    )),
+    (LetterPreviewTemplate, (
+        '<h2>Heading link: <strong>example.com</strong></h2>'
+    )),
+    (LetterPrintTemplate, (
+        '<h2>Heading link: <strong>example.com</strong></h2>'
+    )),
+))
+def test_heading_only_template_renders(renderer, expected_content):
+    assert expected_content in str(renderer({'subject': 'foo', 'content': (
+        '# Heading [link](https://example.com)'
+    )}))
 
 
 @pytest.mark.parametrize("template_class", [

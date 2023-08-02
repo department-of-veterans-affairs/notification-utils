@@ -4,7 +4,7 @@ from os import path
 from datetime import datetime
 
 from jinja2 import Environment, FileSystemLoader
-from flask import Markup
+from markupsafe import Markup
 from html import unescape
 
 from notifications_utils import SMS_CHAR_COUNT_LIMIT

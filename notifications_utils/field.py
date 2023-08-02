@@ -1,7 +1,7 @@
 import re
 
 from orderedset import OrderedSet
-from flask import Markup
+from markupsafe import Markup
 
 from notifications_utils.columns import Columns
 from notifications_utils.formatters import (

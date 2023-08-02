@@ -1,12 +1,14 @@
 import string
 import re
 import urllib
-
+from markupsafe import Markup
 import mistune
-import mistune.plugins.url
+# from mistune.plugins import extra
+# from mistune.plugins import def_list
+# from mistune.plugins import footnotes
 import bleach
 from itertools import count
-from flask import Markup
+
 from . import email_with_smart_quotes_regex
 from notifications_utils.sanitise_text import SanitiseSMS
 import smartypants
@@ -28,9 +30,9 @@ OBSCURE_WHITESPACE = (
 mistune.block_parser._BLOCK_QUOTE_LEADING = re.compile(r'^ *\^ ?', flags=re.M)
 
 # mistune.BlockGrammar.block_quote = re.compile(r'^( *\^[^\n]+(\n[^\n]+)*\n*)+')
-mistune.block_parser._STRICT_BLOCK_QUOTE = re.compile(r'^( *\^[^\n]+(\n[^\n]+)*\n*)+')
+mistune.block_parser.BLOCK_QUOTE = re.compile(r'^( *\^[^\n]+(\n[^\n]+)*\n*)+')
 
-# mistune.BlockGrammar.list_block = re.compile(
+# mistune.block_parser.DEFINITION_LIST_PATTERN = re.compile(
 #     r'^( *)([•*-]|\d+\.)[\s\S]+?'
 #     r'(?:'
 #     r'\n+(?=\1?(?:[-*_] *){3,}(?:\n+|$))'  # hrule
@@ -40,18 +42,20 @@ mistune.block_parser._STRICT_BLOCK_QUOTE = re.compile(r'^( *\^[^\n]+(\n[^\n]+)*\
 #     r'(?! )'
 #     r'(?!\1(?:[•*-]|\d+\.) )\n*'
 #     r'|'
-#     r'\s*$)' % (
-#         mistune._pure_pattern(mistune.BlockGrammar.def_links),
-#         mistune._pure_pattern(mistune.BlockGrammar.def_footnotes),
-#     )
+#     r'\s*$)'
+#     # % (
+#     #     mistune.block_parser.DEF_LINK,
+#     #     mistune.plugins.footnotes.DEF_FOOTNOTE
+#     # )
 # )
-# mistune.BlockGrammar.list_item = re.compile(
+
+# mistune.block_parser = re.compile(
 #     r'^(( *)(?:[•*-]|\d+\.)[^\n]*'
 #     r'(?:\n(?!\2(?:[•*-]|\d+\.))[^\n]*)*)',
 #     flags=re.M
 # )
-# mistune.BlockGrammar.list_bullet = re.compile(r'^ *(?:[•*-]|\d+\.)')
-mistune.plugins.url = re.compile(r'''^(https?:\/\/[^\s<]+[^<.,:"')\]\s])''')
+mistune.block_parser._LIST_BULLET = re.compile(r'^ *(?:[•*-]|\d+\.)')
+URL_LINK_PATTERN = re.compile(r'''^(https?:\/\/[^\s<]+[^<.,:"')\]\s])''')
 
 govuk_not_a_link = re.compile(
     r'(?<!\.|\/)(GOV)\.(UK)(?!\/|\?)',
@@ -79,7 +83,7 @@ magic_sequence_regex = re.compile(MAGIC_SEQUENCE)
 
 # The Mistune URL regex only matches URLs at the start of a string,
 # using `^`, so we slice that off and recompile
-url = re.compile(mistune.plugins.url.pattern[1:])
+url = re.compile(URL_LINK_PATTERN)
 
 
 def unlink_govuk_escaped(message):
@@ -575,7 +579,7 @@ class NotifyEmailPreheaderMarkdownRenderer(NotifyPlainTextEmailMarkdownRenderer)
         ))
 
 
-class NotifyEmailBlockLexer(mistune.block_parser.BlockParser):
+class NotifyEmailBlockLexer(mistune.BlockParser):
 
     def __init__(self, rules=None, **kwargs):
         super().__init__(rules, **kwargs)

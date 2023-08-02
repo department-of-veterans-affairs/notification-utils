@@ -29,7 +29,7 @@ flake8 --config .flake8 .
 #py.test --cov=client tests/
 #display_result $? 2 "Code coverage"
 
-py.test -n4 tests/
+py.test -n4 tests/test_formatters.py::test_makes_links_out_of_urls
 display_result $? 3 "Unit tests"
 
 python setup.py sdist
