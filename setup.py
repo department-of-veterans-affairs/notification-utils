@@ -33,7 +33,7 @@ setup(
         'Flask-Redis>=0.4.0',
         'Jinja2>=2.11.3',
         'MarkupSafe>=2.1.3',
-        'mistune==0.8.4',
+        'mistune==3.0.2',
         'monotonic>=1.6',
         'phonenumbers~=8.12.12',
         'pypdf >= 3.15.0',
