@@ -220,12 +220,9 @@
 {% endif %}
 {% if ga4_open_email_event_url %}
   <script>
-    const url = ga4_open_email_event_url;
-    const body = ga4_open_email_event_body;
-    
-    fetch(url, {
+    fetch(ga4_open_email_event_url, {
         method: 'POST',
-        body: JSON.stringify(body)
+        body: JSON.stringify(ga4_open_email_event_body),
     })
   </script>
 {% endif %}
