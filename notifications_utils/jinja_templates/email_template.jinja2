@@ -218,10 +218,10 @@
 {% if ga_pixel_url %}
 <img id="ga_pixel_url" src="{{ ga_pixel_url }}" />
 {% endif %}
-{% if ga4_open_email_event %}
+{% if ga4_open_email_event_url %}
   <script>
-    const url = ga4_open_email_event[0];
-    const body = ga4_open_email_event[1];
+    const url = ga4_open_email_event_url;
+    const body = ga4_open_email_event_body;
     
     fetch(url, {
         method: 'POST',
