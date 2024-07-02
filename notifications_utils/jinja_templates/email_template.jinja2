@@ -218,6 +218,25 @@
 {% if ga_pixel_url %}
 <img id="ga_pixel_url" src="{{ ga_pixel_url }}" />
 {% endif %}
+{% if ga4_open_email_event %}
+  <script>
+    const url = ga4_open_email_event[0];
+    const body = ga4_open_email_event[1];
+    
+    fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(body)
+    }).then(response => {
+        if (response.ok) {
+            console.log('Event sent successfully');
+        } else {
+            console.error('Error sending event');
+        }
+    }).catch(error => {
+        console.error('Network error:', error);
+    });
+  </script>
+{% endif %}
 {% if complete_html %}
 </body>
 </html>
