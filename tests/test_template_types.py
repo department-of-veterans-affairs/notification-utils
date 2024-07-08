@@ -53,6 +53,21 @@ def test_html_email_inserts_gapixel_img_when_ga_pixel_url_is_present(content, ga
 
 
 @pytest.mark.parametrize(
+    "content, ga4_open_email_event_url, params", [
+        ('some text', 'pix-url', None),
+        ('some text containing ((param1))', 'pix-url', {'param1': 'value1'})
+    ]
+)
+def test_html_email_inserts_img_when_ga4_open_email_event_url_is_present(content, ga4_open_email_event_url, params):
+    email_body = HTMLEmailTemplate(
+        {'content': content, 'subject': ''},
+        values=params,
+        ga4_open_email_event_url=ga4_open_email_event_url
+    )
+    assert '<img id="ga4_open_email_event_url" src="{}'.format(ga4_open_email_event_url) in str(email_body)
+
+
+@pytest.mark.parametrize(
     "content, params", [
         ('some text', None),
         ('some text containing ((param1))', {'param1': 'value1'})

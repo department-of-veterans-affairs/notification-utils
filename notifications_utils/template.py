@@ -346,6 +346,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         brand_name=None,
         jinja_path=None,
         ga_pixel_url=None,
+        ga4_open_email_event_url=None,
         preview_mode=False
     ):
         super().__init__(template, values, jinja_path=jinja_path)
@@ -357,6 +358,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         self.brand_banner = brand_banner
         self.brand_name = brand_name
         self.ga_pixel_url = ga_pixel_url
+        self.ga4_open_email_event_url = ga4_open_email_event_url
         self.preview_mode = preview_mode
         # set this again to make sure the correct either utils / downstream local jinja is used
         # however, don't set if we are in a test environment (to preserve the above mock)
@@ -397,6 +399,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
             'brand_banner': self.brand_banner,
             'brand_name': self.brand_name,
             'ga_pixel_url': self.ga_pixel_url,
+            'ga4_open_email_event_url': self.ga4_open_email_event_url,
             'preview_mode': self.preview_mode,
             'path_to_js_script': path.join(
                 path.dirname(path.abspath(__file__)), 'static/iframeResizer.contentWindow.min.js'
