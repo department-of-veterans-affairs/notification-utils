@@ -20,7 +20,7 @@ The `./scripts/run_tests.sh` script runs all unit tests using [py.test](http://p
 
 With the virtual environment active, run `python setup.py --version` to see the current version **on the current branch**.  Use `git tag` to add release tags to commits, and push the tags.
 
-You can reference these release tags in requirements files in other repositories.  See [notification-api](https://github.com/department-of-veterans-affairs/notification-api/blob/master/requirements-app.txt) for an example.
+You can reference these release tags in requirements files in other repositories.  See [notification-api](https://github.com/department-of-veterans-affairs/notification-api/blob/master/requirements-app.txt) for an example.  This isn't strictly necessary anymore because notification-api uses Poetry to manage dependencies.
 
 ## E-mail Template Documentation
 

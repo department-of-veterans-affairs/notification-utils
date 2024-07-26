@@ -374,6 +374,15 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
             ).format(
                 text
             )
+        elif level == 3:
+            return (
+                '<h3 style="Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #323A45;'
+                'font-size: 20.8px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;">'
+                '{}'
+                '</h3>'
+            ).format(
+                text
+            )
         return self.paragraph(text)
 
     def hrule(self):
@@ -485,7 +494,7 @@ class NotifyPlainTextEmailMarkdownRenderer(NotifyEmailMarkdownRenderer):
                 self.linebreak(),
                 '-' * self.COLUMN_WIDTH,
             ))
-        elif level == 2:
+        elif level in (2, 3):
             return ''.join((
                 self.linebreak() * 2,
                 text,
