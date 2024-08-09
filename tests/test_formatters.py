@@ -20,7 +20,8 @@ from notifications_utils.formatters import (
     strip_and_remove_obscure_whitespace,
     remove_smart_quotes_from_email_addresses,
     strip_unsupported_characters,
-    normalise_whitespace
+    normalise_whitespace,
+    LINK_STYLE
 )
 from notifications_utils.template import (
     HTMLEmailTemplate,
@@ -667,6 +668,7 @@ def test_pluses_dont_render_as_lists(markdown_function, expected):
     ],
 ))
 def test_paragraphs(markdown_function, expected):
+    print(markdown_function)
     assert markdown_function(
         'line one\n'
         'line two\n'
@@ -875,6 +877,38 @@ def test_image(markdown_function):
 def test_link(markdown_function, expected):
     assert markdown_function(
         '[Example](http://example.com)'
+    ) == expected
+
+@pytest.mark.parametrize('action_link, expected',(
+    [
+        '>>[Example](http://example.com)',
+        (
+            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
+            '<img src="vanotify-action-link.png" alt="action img">'
+            f'<a style="{LINK_STYLE}" href="http://example.com" title="" target="_blank">Example</a>'
+            '</p>'
+        )
+    ],
+    [
+        '&gt;&gt;[Example](http://example.com)',
+        (
+            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
+            '<img src="vanotify-action-link.png" alt="action img">'
+            f'<a style="{LINK_STYLE}" href="http://example.com" title="" target="_blank">Example</a>'
+            '</p>'
+        )
+    ]
+))
+def test_action_link(action_link, expected):
+    expected = (
+        '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
+        '<img src="vanotify-action-link.png" alt="action img">'
+        f'<a style="{LINK_STYLE}" href="http://example.com" title="" target="_blank">Example</a>'
+        '</p>'
+    )
+
+    assert notify_email_markdown(
+        '>>[Example](http://example.com)'
     ) == expected
 
 

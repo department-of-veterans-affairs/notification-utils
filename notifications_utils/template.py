@@ -722,3 +722,19 @@ def do_nice_typography(value):
     ).then(
         replace_hyphens_with_en_dashes
     )
+
+
+if __name__ == '__main__':
+    content = (
+        '\n# foo\n'
+        '\n## Bar\n'
+        '\nThe quick ((color)) fox'
+        '\n>>[action_link](https://google.com)'
+    )
+    values = {'color': 'brown'}
+    html = get_html_email_body(content, values)
+    print(html)
+    print()
+
+    html = notify_email_markdown('>>[action_link](https://google.com)')
+    print(html)

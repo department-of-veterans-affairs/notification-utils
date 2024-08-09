@@ -453,7 +453,15 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
             text
         )
 
+    def action_link(self, content, link, title=None):
+        print(f'here - action_link {content=} | {link=}')
+        return (
+            f'<img src="vanotify-action-link.png" alt="action img">'
+            f'<a style="{LINK_STYLE}" href="{link}" title="{title if title else ""}" target="_blank">{content}</a>'
+        )
+
     def link(self, link, title, content):
+        print(f'here - link {content=} | {link=} | {title=}')
         return (
             '<a style="{}"{}{} target="_blank">{}</a>'
         ).format(
@@ -464,6 +472,7 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
         )
 
     def autolink(self, link, is_email=False):
+        print('here - autolink')
         if is_email:
             return link
         return '<a style="{}" href="{}">{}</a>'.format(
@@ -613,22 +622,57 @@ class NotifyEmailMarkdown(mistune.Markdown):
         return self.renderer.paragraph(self.tok_text(), self._is_inside_list)
 
 
+class ActionLinkInlineLexer(mistune.InlineLexer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # if isinstance(self.renderer, NotifyEmailMarkdownRenderer):
+        self.enable_action_link()
+
+    def enable_action_link(self):
+        print('here - enable_action_link')
+        # match all unicode characters from space to tilde ~ within markdown link format when
+        # preceeded by '>>' or '&gt;&gt;'
+        # https://en.wikipedia.org/wiki/Basic_Latin_(Unicode_block)
+        self.rules.action_link = re.compile(r'(>|(&gt;)){2}\[[\u0020-\u007E]+\]\([\u0020-\u007E]+\)')
+        # TODO: the '1' is arbitrary. Rules are applied in order so this value matters, but difficult to figure out
+        # which value to use.
+        self.default_rules.insert(1, 'action_link')
+
+    def output_action_link(self, m: re.Match):
+        text: str = m.group(0)
+        print(f'here - output_action_link {text=}')
+        content, link = text.lstrip('>>[').lstrip('&gt;&gt;[').rstrip(')').split('](')
+
+        return self.renderer.action_link(content, link)
+
+
+email_renderer = NotifyEmailMarkdownRenderer()
+action_lexer = ActionLinkInlineLexer(email_renderer)
+# action_lexer.enable_action_link()
+
 notify_email_markdown = NotifyEmailMarkdown(
-    renderer=NotifyEmailMarkdownRenderer(),
+    renderer=email_renderer,
     block=NotifyEmailBlockLexer,
+    inline=action_lexer,
     hard_wrap=True,
     use_xhtml=False,
 )
 notify_plain_text_email_markdown = mistune.Markdown(
     renderer=NotifyPlainTextEmailMarkdownRenderer(),
     hard_wrap=True,
+    block=NotifyEmailBlockLexer,
+    inline=ActionLinkInlineLexer,
 )
 notify_email_preheader_markdown = mistune.Markdown(
     renderer=NotifyEmailPreheaderMarkdownRenderer(),
     hard_wrap=True,
+    block=NotifyEmailBlockLexer,
+    inline=ActionLinkInlineLexer,
 )
 notify_letter_preview_markdown = mistune.Markdown(
     renderer=NotifyLetterMarkdownPreviewRenderer(),
     hard_wrap=True,
     use_xhtml=False,
+    block=NotifyEmailBlockLexer,
+    inline=ActionLinkInlineLexer,
 )
