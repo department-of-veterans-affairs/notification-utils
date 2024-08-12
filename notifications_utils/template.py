@@ -729,12 +729,17 @@ if __name__ == '__main__':
         '\n# foo\n'
         '\n## Bar\n'
         '\nThe quick ((color)) fox'
-        '\n>>[action_link](https://google.com)'
+        ' &gt;&gt;[action_link](https://google.com)'
     )
     values = {'color': 'brown'}
     html = get_html_email_body(content, values)
     print(html)
     print()
 
-    html = notify_email_markdown('>>[action_link](https://google.com)')
+    # value right before calling notify_email_markdown
+    # '\n# foo\n\n## Bar\n\nThe quick brown fox &gt;&gt;[action_link](https://google.com)\n'
+    #
+    # it seems to work with just the expected string
+    # '&gt;&gt;[action_link](https://google.com)'
+    html = notify_email_markdown('&gt;&gt;[action_link](https://google.com)')
     print(html)

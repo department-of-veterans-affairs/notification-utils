@@ -629,14 +629,14 @@ class ActionLinkInlineLexer(mistune.InlineLexer):
         self.enable_action_link()
 
     def enable_action_link(self):
-        print('here - enable_action_link')
+        print('here - enable_action_link - inline')
         # match all unicode characters from space to tilde ~ within markdown link format when
         # preceeded by '>>' or '&gt;&gt;'
         # https://en.wikipedia.org/wiki/Basic_Latin_(Unicode_block)
         self.rules.action_link = re.compile(r'(>|(&gt;)){2}\[[\u0020-\u007E]+\]\([\u0020-\u007E]+\)')
         # TODO: the '1' is arbitrary. Rules are applied in order so this value matters, but difficult to figure out
         # which value to use.
-        self.default_rules.insert(1, 'action_link')
+        self.default_rules.insert(0, 'action_link')
 
     def output_action_link(self, m: re.Match):
         text: str = m.group(0)
