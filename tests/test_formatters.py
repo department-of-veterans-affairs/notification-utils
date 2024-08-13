@@ -879,36 +879,44 @@ def test_link(markdown_function, expected):
         '[Example](http://example.com)'
     ) == expected
 
-@pytest.mark.parametrize('action_link, expected',(
+
+@pytest.mark.parametrize('action_link, expected', (
     [
         '>>[Example](http://example.com)',
         (
             '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
-            '<img src="vanotify-action-link.png" alt="action img">'
-            f'<a style="{LINK_STYLE}" href="http://example.com" title="" target="_blank">Example</a>'
+            f'<a style="{LINK_STYLE}" href="http://example.com" title="" target="_blank">'
+            '<img src="vanotify-action-link.png" alt="action img"> Example</a>'
             '</p>'
         )
     ],
     [
-        '&gt;&gt;[Example](http://example.com)',
+        'text before link &gt;&gt;[Example](http://example.com) text after link',
         (
             '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
-            '<img src="vanotify-action-link.png" alt="action img">'
-            f'<a style="{LINK_STYLE}" href="http://example.com" title="" target="_blank">Example</a>'
+            'text before link '
+            f'<a style="{LINK_STYLE}" href="http://example.com" title="" target="_blank">'
+            '<img src="vanotify-action-link.png" alt="action img"> Example</a>'
+            ' text after link</p>'
+        )
+    ],
+    [
+        'action link: &gt;&gt;[Example](http://example.com)\nanother link: [test](https://example2.com)',
+        (
+            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">action link: '
+            f'<a style="{LINK_STYLE}" href="http://example.com" title="" target="_blank">'
+            '<img src="vanotify-action-link.png" alt="action img"> Example</a>'
+            f'\nanother link: <a style="{LINK_STYLE}" href="https://example2.com" target="_blank">test</a>'
             '</p>'
         )
-    ]
-))
+    ],
+),
+    ids=['raw action link', 'text around action link', 'action and regular link']
+)
 def test_action_link(action_link, expected):
-    expected = (
-        '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
-        '<img src="vanotify-action-link.png" alt="action img">'
-        f'<a style="{LINK_STYLE}" href="http://example.com" title="" target="_blank">Example</a>'
-        '</p>'
-    )
 
     assert notify_email_markdown(
-        '>>[Example](http://example.com)'
+        action_link
     ) == expected
 
 

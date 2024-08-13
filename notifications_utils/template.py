@@ -11,6 +11,7 @@ from notifications_utils import SMS_CHAR_COUNT_LIMIT
 from notifications_utils.columns import Columns
 from notifications_utils.field import Field
 from notifications_utils.formatters import (
+    insert_action_link,
     unlink_govuk_escaped,
     nl2br,
     nl2li,
@@ -708,6 +709,9 @@ def get_html_email_body(
     ).then(
         do_nice_typography
     )
+    # .then(
+    #     insert_action_link
+    # )
 
 
 def do_nice_typography(value):
