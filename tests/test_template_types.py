@@ -7,7 +7,7 @@ from unittest import mock
 from markupsafe import Markup
 from freezegun import freeze_time
 
-from notifications_utils.formatters import unlink_govuk_escaped
+from notifications_utils.formatters import LINK_STYLE, unlink_govuk_escaped
 from notifications_utils.template import (
     Template,
     HTMLEmailTemplate,
@@ -19,6 +19,7 @@ from notifications_utils.template import (
     WithSubjectTemplate,
     EmailPreviewTemplate,
     LetterPrintTemplate,
+    get_html_email_body,
 )
 
 
@@ -29,6 +30,135 @@ def test_pass_through_renderer():
         fox
     '''
     assert str(Template({'content': message})) == message
+
+
+@pytest.mark.parametrize(
+    'content, values, expected',
+    [
+        (
+            'line one\nline two with ((name))\n\nnew paragraph',
+            {'name': 'bob'},
+            (
+                '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">line one<br />'
+                'line two with bob</p>'
+                '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">new paragraph</p>'
+            ),
+        ),
+        (
+            '>>[action](https://example.com)',
+            {},
+            (
+                '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
+                f'<a style="{LINK_STYLE}" href="https://example.com" target="_blank">'
+                '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'alt="action img"> action</a></p>'
+            )
+        ),
+        (
+            (
+                '\n# foo\n'
+                '\n## Bar\n'
+                '\nThe quick ((color)) fox '
+                '\n>>[the action_link-of doom](https://example.com)'
+            ),
+            {'color': 'brown'},
+            (
+                '<h1 style="Margin: 0 0 20px 0; padding: 0; font-size: 32px; line-height: 35px; font-weight: bold; '
+                'color: #323A45;">foo</h1><h2 style="Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #323A45;'
+                'font-size: 24px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;">Bar</h2>'
+                '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">The quick brown fox'
+                f'<br /><a style="{LINK_STYLE}" href="https://example.com" target="_blank">'
+                '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'alt="action img"> the action_link-of doom</a></p>'
+            ),
+        ),
+        (
+            'text before link\n\n>>[great link](http://example.com)\n\ntext after link',
+            {},
+            (
+                '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">text before link'
+                '</p>'
+                '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
+                f'<a style="{LINK_STYLE}" href="http://example.com" target="_blank">'
+                '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'alt="action img"> great link</a></p>'
+                '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">text after link'
+                '</p>'
+            )
+        ),
+        (
+            'action link: &gt;&gt;[Example](http://example.com)\nanother link: [test](https://example2.com)',
+            {},
+            (
+                '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">action link: '
+                f'<a style="{LINK_STYLE}" href="http://example.com" target="_blank">'
+                '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'alt="action img"> Example</a><br />'
+                f'another link: <a style="{LINK_STYLE}" href="https://example2.com" target="_blank">test</a></p>'
+            )
+        ),
+        (
+            'action link: &gt;&gt;[grin](http://example.com) another action link: >>[test](https://example2.com)',
+            {},
+            (
+                '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">action link: '
+                f'<a style="{LINK_STYLE}" href="http://example.com" target="_blank">'
+                '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'alt="action img"> grin</a>'
+                f' another action link: <a style="{LINK_STYLE}" href="https://example2.com" target="_blank">'
+                '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'alt="action img"> test</a>'
+                '</p>'
+            )
+        ),
+        (
+            'text before && link &gt;&gt;[Example](http://example.com) text after & link',
+            {},
+            (
+                '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
+                'text before &amp;&amp; link '
+                f'<a style="{LINK_STYLE}" href="http://example.com" target="_blank">'
+                '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'alt="action img"> Example</a> text after &amp; link</p>'
+            )
+        ),
+        (
+            'text before >> link &gt;&gt;[great Example](http://example.com) text after >>link',
+            {},
+            (
+                '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
+                'text before &gt;&gt; link '
+                f'<a style="{LINK_STYLE}" href="http://example.com" target="_blank">'
+                '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'alt="action img"> great Example</a> text after &gt;&gt;link</p>'
+            )
+        ),
+        (
+            'text >> then [item] and (things) then >>[action](link)',
+            {},
+            (
+                '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">text &gt;&gt; then'
+                ' [item] and (things) then '
+                f'<a style="{LINK_STYLE}" href="link" target="_blank">'
+                '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'alt="action img"> action</a></p>'
+            )
+        ),
+    ],
+    ids=[
+        'no link, newline in text',
+        'action link',
+        'action link with text',
+        'action link on newline',
+        'action and regular link',
+        'action links x2',
+        'action link and text with "&&"',
+        'action link and text with ">>"',
+        'action link after parts',
+    ]
+)
+def test_get_html_email_body(content, values, expected):
+    assert get_html_email_body(content, values) == expected
 
 
 def test_html_email_inserts_body():

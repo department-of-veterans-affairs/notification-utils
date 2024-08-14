@@ -1,4 +1,5 @@
 import copy
+import os
 import string
 import re
 import urllib
@@ -289,13 +290,20 @@ def normalise_whitespace(value):
 
 
 def insert_action_link(value: str) -> str:
-    print('\nhere - insert_action_link')
+    # print('\nhere - insert_action_link')
     action_link_regex = re.compile(
-        r'(>|(&gt;)){2}(<a style="[\w\s:;#-]+" href="[\u0020-\u007E]+" (title="[\u0020-\u007E]+")? target="_blank">)'
+        r'(>|(&gt;)){2}(<a style=".+?" href=".+?"( title=".+?")? target="_blank">)'
     )
 
-    # action_link_match = re.match(action_link_regex, value)
-    # print(f'{action_link_match=}')
+    # set image link to proper environment
+    link_env = 'dev'
+    if os.environ.get('NOTIFY_ENVIRONMENT') == 'production':
+        link_env = 'prod'
+    elif os.environ.get('NOTIFY_ENVIRONMENT') in ['staging', 'performance']:
+        link_env = 'staging'
+
+    img_link = f'https://{link_env}-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png'
+
     action_link_list = re.findall(action_link_regex, value)
     print(f'{action_link_list=}')
 
@@ -303,9 +311,9 @@ def insert_action_link(value: str) -> str:
         for item in action_link_list:
             # item values 0 and 1 will be '&gt;'
             # item 2 is the <a ...> tag info
-            action_link = f'{item[2]}<img src="vanotify-action-link.png" alt="action img"> '
+            action_link = f'{item[2]}<img src="{img_link}" alt="action img"> '
             value = value.replace(''.join(item), action_link)
-            print(f'match found: {item=}')
+            # print(f'match found: {item=}')
 
     return value
 
@@ -476,15 +484,23 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
             text
         )
 
-    def action_link(self, content, link, title=None):
-        print(f'here - action_link {content=} | {link=}')
+    def action_link(self, content: str, link: str, title: str = None) -> str:
+        # print(f'action_link {content=} | {link=}')
+        # set image link to proper environment
+        link_env = 'dev'
+        if os.environ.get('NOTIFY_ENVIRONMENT') == 'production':
+            link_env = 'prod'
+        elif os.environ.get('NOTIFY_ENVIRONMENT') in ['staging', 'performance']:
+            link_env = 'staging'
+
+        img_link = f'https://{link_env}-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png'
+
         return (
             f'<a style="{LINK_STYLE}" href="{link}" title="{title if title else ""}" target="_blank">'
-            f'<img src="vanotify-action-link.png" alt="action img"> {content}</a>'
+            f'<img src="{img_link}" alt="action img"> {content}</a>'
         )
 
     def link(self, link, title, content):
-        print(f'here - link {content=} | {link=} | {title=}')
         return (
             '<a style="{}"{}{} target="_blank">{}</a>'
         ).format(
@@ -495,7 +511,6 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
         )
 
     def autolink(self, link, is_email=False):
-        print('here - autolink')
         if is_email:
             return link
         return '<a style="{}" href="{}">{}</a>'.format(
@@ -646,30 +661,28 @@ class NotifyEmailMarkdown(mistune.Markdown):
 
 
 class ActionInlineGrammar(mistune.InlineGrammar):
-    action_link = re.compile(r'^(>|(&gt;)){2}\[[\u0020-\u007E]+\]\([\u0020-\u007E]+\)')
-    text = re.compile(r'^[\s\S]+?(?=[\\<!\[_*`~&]|https?://| {2,}\n|$)')
+    # adding the action link regex rule
+    action_link = re.compile(r'(>|(&gt;)){2}\[.+?\]\(.+?\)')
+    # adding "&" to the text rule so action links can be recognized
+    text = re.compile(r'^[\s\S]+?(?=[\\<!\[_*`~&]|https?:\/\/| {2,}\n|$)')
 
 
 class ActionLinkInlineLexer(mistune.InlineLexer):
     default_rules = copy.copy(mistune.InlineLexer.default_rules)
     default_rules.insert(1, 'action_link')
-    default_rules.append('text')
 
     def __init__(self, *args, **kwargs):
         rules = ActionInlineGrammar()
         super().__init__(*args, rules=rules, **kwargs)
-        print(f'{self.default_rules=}')
-
-    def enable_action_link(self):
-        print('here - enable_action_link')
-        # match all unicode characters within markdown link format when preceeded by '>>' or '&gt;&gt;'
-        self.rules.action_link = re.compile(r'(>|(&gt;)){2}\[.*?\]\(.*?\)')
-        self.default_rules.insert(0, 'action_link')
 
     def output_action_link(self, m: re.Match):
         text: str = m.group(0)
-        print(f'here - output_action_link {text=}')
-        content, link = text.lstrip('>>[').lstrip('&gt;&gt;[').rstrip(')').split('](')
+
+        # need to remove "&gt;" symbols first, lstrip has side effects, so using split
+        if '&gt;' in text:
+            text = text.split('&gt;&gt;[')[1]
+
+        content, link = text.lstrip('>[').rstrip(')').split('](')
 
         return self.renderer.action_link(content, link)
 
@@ -679,9 +692,10 @@ action_lexer = ActionLinkInlineLexer(email_renderer)
 # action_lexer.enable_action_link()
 
 notify_email_markdown = NotifyEmailMarkdown(
-    renderer=email_renderer,
+    renderer=NotifyEmailMarkdownRenderer(),
+    # renderer=email_renderer,
     block=NotifyEmailBlockLexer,
-    inline=action_lexer,
+    # inline=action_lexer,
     hard_wrap=True,
     use_xhtml=False,
 )
