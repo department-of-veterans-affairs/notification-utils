@@ -1,4 +1,3 @@
-import copy
 import os
 import string
 import re
@@ -305,7 +304,6 @@ def insert_action_link(value: str) -> str:
     img_link = f'https://{link_env}-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png'
 
     action_link_list = re.findall(action_link_regex, value)
-    print(f'{action_link_list=}')
 
     if action_link_list:
         for item in action_link_list:
@@ -313,7 +311,6 @@ def insert_action_link(value: str) -> str:
             # item 2 is the <a ...> tag info
             action_link = f'{item[2]}<img src="{img_link}" alt="action img"> '
             value = value.replace(''.join(item), action_link)
-            # print(f'match found: {item=}')
 
     return value
 
@@ -484,22 +481,6 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
             text
         )
 
-    def action_link(self, content: str, link: str, title: str = None) -> str:
-        # print(f'action_link {content=} | {link=}')
-        # set image link to proper environment
-        link_env = 'dev'
-        if os.environ.get('NOTIFY_ENVIRONMENT') == 'production':
-            link_env = 'prod'
-        elif os.environ.get('NOTIFY_ENVIRONMENT') in ['staging', 'performance']:
-            link_env = 'staging'
-
-        img_link = f'https://{link_env}-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png'
-
-        return (
-            f'<a style="{LINK_STYLE}" href="{link}" title="{title if title else ""}" target="_blank">'
-            f'<img src="{img_link}" alt="action img"> {content}</a>'
-        )
-
     def link(self, link, title, content):
         return (
             '<a style="{}"{}{} target="_blank">{}</a>'
@@ -660,42 +641,9 @@ class NotifyEmailMarkdown(mistune.Markdown):
         return self.renderer.paragraph(self.tok_text(), self._is_inside_list)
 
 
-class ActionInlineGrammar(mistune.InlineGrammar):
-    # adding the action link regex rule
-    action_link = re.compile(r'(>|(&gt;)){2}\[.+?\]\(.+?\)')
-    # adding "&" to the text rule so action links can be recognized
-    text = re.compile(r'^[\s\S]+?(?=[\\<!\[_*`~&]|https?:\/\/| {2,}\n|$)')
-
-
-class ActionLinkInlineLexer(mistune.InlineLexer):
-    default_rules = copy.copy(mistune.InlineLexer.default_rules)
-    default_rules.insert(1, 'action_link')
-
-    def __init__(self, *args, **kwargs):
-        rules = ActionInlineGrammar()
-        super().__init__(*args, rules=rules, **kwargs)
-
-    def output_action_link(self, m: re.Match):
-        text: str = m.group(0)
-
-        # need to remove "&gt;" symbols first, lstrip has side effects, so using split
-        if '&gt;' in text:
-            text = text.split('&gt;&gt;[')[1]
-
-        content, link = text.lstrip('>[').rstrip(')').split('](')
-
-        return self.renderer.action_link(content, link)
-
-
-email_renderer = NotifyEmailMarkdownRenderer()
-action_lexer = ActionLinkInlineLexer(email_renderer)
-# action_lexer.enable_action_link()
-
 notify_email_markdown = NotifyEmailMarkdown(
     renderer=NotifyEmailMarkdownRenderer(),
-    # renderer=email_renderer,
     block=NotifyEmailBlockLexer,
-    # inline=action_lexer,
     hard_wrap=True,
     use_xhtml=False,
 )

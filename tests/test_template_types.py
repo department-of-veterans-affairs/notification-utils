@@ -45,11 +45,11 @@ def test_pass_through_renderer():
             ),
         ),
         (
-            '>>[action](https://example.com)',
+            '>>[action](https://example.com/foo?a=b)',
             {},
             (
                 '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
-                f'<a style="{LINK_STYLE}" href="https://example.com" target="_blank">'
+                f'<a style="{LINK_STYLE}" href="https://example.com/foo?a=b" target="_blank">'
                 '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
                 'alt="action img"> action</a></p>'
             )

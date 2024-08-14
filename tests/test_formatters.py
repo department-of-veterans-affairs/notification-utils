@@ -21,7 +21,6 @@ from notifications_utils.formatters import (
     remove_smart_quotes_from_email_addresses,
     strip_unsupported_characters,
     normalise_whitespace,
-    LINK_STYLE
 )
 from notifications_utils.template import (
     HTMLEmailTemplate,
@@ -878,101 +877,6 @@ def test_image(markdown_function):
 def test_link(markdown_function, expected):
     assert markdown_function(
         '[Example](http://example.com)'
-    ) == expected
-
-
-@pytest.mark.parametrize('action_link, expected', (
-    [
-        '>>[test Example](http://example.com)',
-        (
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
-            f'<a style="{LINK_STYLE}" href="http://example.com" title="" target="_blank">'
-            '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-            'alt="action img"> test Example</a>'
-            '</p>'
-        )
-    ],
-    [
-        'text before link &gt;&gt;[Example](http://example.com) text after link',
-        (
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
-            'text before link '
-            f'<a style="{LINK_STYLE}" href="http://example.com" title="" target="_blank">'
-            '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-            'alt="action img"> Example</a>'
-            ' text after link</p>'
-        )
-    ],
-    [
-        'text before link\n\n&gt;&gt;[Example](http://example.com)\n\ntext after link',
-        (
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">text before link</p>'
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
-            f'<a style="{LINK_STYLE}" href="http://example.com" title="" target="_blank">'
-            '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-            'alt="action img"> Example</a></p>'
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">text after link'
-            '</p>'
-        )
-    ],
-    [
-        'action link: &gt;&gt;[Example](http://example.com)\nanother link: [test](https://example2.com)',
-        (
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">action link: '
-            f'<a style="{LINK_STYLE}" href="http://example.com" title="" target="_blank">'
-            '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-            'alt="action img"> Example</a>'
-            f'\nanother link: <a style="{LINK_STYLE}" href="https://example2.com" target="_blank">test</a>'
-            '</p>'
-        )
-    ],
-    [
-        'action link: &gt;&gt;[green](http://example.com) another action link: &gt;&gt;[test](https://example2.com)',
-        (
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">action link: '
-            f'<a style="{LINK_STYLE}" href="http://example.com" title="" target="_blank">'
-            '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-            'alt="action img"> green</a>'
-            f' another action link: <a style="{LINK_STYLE}" href="https://example2.com" title="" target="_blank">'
-            '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-            'alt="action img"> test</a>'
-            '</p>'
-        )
-    ],
-    [
-        'text before & link &gt;&gt;[Example](http://example.com) text after & link',
-        (
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
-            'text before &amp; link '
-            f'<a style="{LINK_STYLE}" href="http://example.com" title="" target="_blank">'
-            '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-            'alt="action img"> Example</a> text after &amp; link</p>'
-        )
-    ],
-    [
-        'text before >> link &gt;&gt;[great Example](http://example.com) text after >>link',
-        (
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
-            'text before &gt;&gt; link '
-            f'<a style="{LINK_STYLE}" href="http://example.com" title="" target="_blank">'
-            '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-            'alt="action img"> great Example</a> text after &gt;&gt;link</p>'
-        )
-    ],
-),
-    ids=[
-        'raw action link',
-        'text around action link',
-        'action link on a new line',
-        'action and regular link',
-        'two action links',
-        'link and text with "&"',
-        'link and text with ">>"']
-)
-def test_action_link(action_link, expected):
-
-    assert notify_email_markdown(
-        action_link
     ) == expected
 
 
