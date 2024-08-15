@@ -39,7 +39,7 @@ setup(
         'pypdf >= 3.15.0',
         'python-json-logger~=2.0.7',
         'pytz>=2021.3',
-        'pyyaml==6.0.1',
+        'pyyaml==6.0.2',
         'requests>=2.26.0',
         'smartypants>=2.0.1',
         'statsd>=3.3.0'
