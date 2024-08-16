@@ -1,3 +1,6 @@
 fileignoreconfig:
+- filename: .github/pull_request_template.md
+  checksum: c20998c896b9d321343bc4f45b5b9f04ec37ddbee7d823101e052972a5b6be00
 - filename: notifications_utils/sanitise_text.py
   checksum: 96cf794e49031d454616ae36522a62082e68e3019ba4533084cebf6a6ce0ec0d
+version: "1.0"

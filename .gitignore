@@ -65,3 +65,6 @@ target/
 
 # Linux and Mac Dev Environment
 .DS_Store
+
+# pyenv
+.python-version
