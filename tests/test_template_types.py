@@ -140,6 +140,29 @@ def test_pass_through_renderer():
                 'alt="call to action img" style="vertical-align: middle;"> <b>action</b></a></p>'
             )
         ),
+        (
+            (
+                '>>[action link](#)'
+                '\n\ntesting the new >>[action link](#) thingy...'
+                '\n\n>>[click me](#)! Text with a [regular link](#)'
+            ),
+            {},
+            (
+                f'<p style="{PARAGRAPH_STYLE}"><a style="{LINK_STYLE}" href="#" target="_blank">'
+                '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'alt="call to action img" style="vertical-align: middle;"> <b>action link</b></a></p>'
+                f'<p style="{PARAGRAPH_STYLE}">testing the new </p>'
+                f'<p style="{PARAGRAPH_STYLE}"><a style="{LINK_STYLE}" href="#" target="_blank">'
+                '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'alt="call to action img" style="vertical-align: middle;"> <b>action link</b></a></p>'
+                f'<p style="{PARAGRAPH_STYLE}"> thingy...</p>'
+                f'<p style="{PARAGRAPH_STYLE}"><a style="{LINK_STYLE}" href="#" target="_blank">'
+                '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'alt="call to action img" style="vertical-align: middle;"> <b>click me</b></a></p>'
+                f'<p style="{PARAGRAPH_STYLE}">! Text with a '
+                '<a style="word-wrap: break-word; color: #004795;" href="#" target="_blank">regular link</a></p>'
+            )
+        )
     ],
     ids=[
         'no link, newline in text',
@@ -151,6 +174,7 @@ def test_pass_through_renderer():
         'action link and text with "&&"',
         'action link and text with ">>"',
         'action link after parts',
+        'two of the same action link',
     ]
 )
 def test_get_html_email_body(content, values, expected):

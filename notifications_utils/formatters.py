@@ -337,7 +337,8 @@ def insert_action_link(value: str) -> str:
         action_link_p_tags = f'{p_start}{action_link}{p_end}'
 
         # get the text around the action link if there is any
-        before_link, after_link = value.split("".join(item))
+        # ensure there are only two items in list with maxsplit
+        before_link, after_link = value.split("".join(item), maxsplit=1)
 
         # value is the converted action link if there's nothing around it, otherwise <p> tags will need to be
         # closed / open around the action link
