@@ -725,24 +725,3 @@ def do_nice_typography(value):
     ).then(
         replace_hyphens_with_en_dashes
     )
-
-
-# if __name__ == '__main__':
-#     content = (
-#         '\n# foo\n'
-#         '\n## Bar\n'
-#         '\nThe quick ((color)) fox'
-#         ' &gt;&gt;[action_link](https://google.com)'
-#     )
-#     values = {'color': 'brown'}
-#     html = get_html_email_body(content, values)
-#     print(html)
-#     print()
-
-#     # value right before calling notify_email_markdown
-#     # '\n# foo\n\n## Bar\n\nThe quick brown fox &gt;&gt;[action_link](https://google.com)\n'
-#     #
-#     # it seems to work with just the expected string
-#     # '&gt;&gt;[action_link](https://google.com)'
-#     html = notify_email_markdown('&gt;&gt;[action_link](https://google.com)')
-#     print(html)
