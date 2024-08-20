@@ -311,7 +311,7 @@ def get_img_link() -> str:
     return f'https://{img_env}-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png'
 
 
-def insert_action_link(value: str) -> str:
+def insert_action_link(html: str) -> str:
     """
     Finds an action link and replaces it with the desired format. The action link is placed on it's own line, the link
     image is inserted into the link, and the styling is updated appropriately.
@@ -320,7 +320,7 @@ def insert_action_link(value: str) -> str:
     p_start = f'<p style="{PARAGRAPH_STYLE}">'
     p_end = '</p>'
 
-    action_link_list = get_action_links(value)
+    action_link_list = get_action_links(html)
 
     img_link = get_img_link()
 
@@ -338,31 +338,31 @@ def insert_action_link(value: str) -> str:
 
         # get the text around the action link if there is any
         # ensure there are only two items in list with maxsplit
-        before_link, after_link = value.split("".join(item), maxsplit=1)
+        before_link, after_link = html.split("".join(item), maxsplit=1)
 
         # value is the converted action link if there's nothing around it, otherwise <p> tags will need to be
         # closed / open around the action link
         if before_link == p_start and after_link == p_end:
             # action link exists on its own, unlikely to happen
-            value = action_link_p_tags
+            html = action_link_p_tags
         elif before_link.endswith(p_start) and after_link.startswith(p_end):
             # an action link on it's own line, as it should be
-            value = f'{before_link}{action_link}{after_link}'
+            html = f'{before_link}{action_link}{after_link}'
         elif before_link.endswith(p_start):
             # action link is on a newline, but has something after it on that line
-            value = f'{before_link}{action_link}{p_end}{p_start}{after_link}'
+            html = f'{before_link}{action_link}{p_end}{p_start}{after_link}'
         elif after_link == p_end:
             # paragraph ends with action link
-            value = f'{before_link}{"</p>" if "<p" in before_link else ""}{action_link_p_tags}'
+            html = f'{before_link}{"</p>" if "<p" in before_link else ""}{action_link_p_tags}'
         else:
             # there's text before and after the action link within the paragraph
-            value = (
+            html = (
                 f'{before_link}{"</p>" if "<p" in before_link else ""}'
                 f'{action_link_p_tags}'
                 f'{p_start}{after_link}'
             )
 
-    return value
+    return html
 
 
 class NotifyLetterMarkdownPreviewRenderer(mistune.Renderer):
