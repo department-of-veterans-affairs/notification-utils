@@ -301,14 +301,14 @@ def get_action_links(html: str) -> list[str]:
 
 def get_img_link() -> str:
     """Get action link image url for the current environment. (insert_action_link helper)"""
-    img_link = 'https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png'
-
-    if os.environ.get('NOTIFY_ENVIRONMENT') == 'production':
-        img_link = 'https://prod-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png'
-    elif os.environ.get('NOTIFY_ENVIRONMENT') in ['staging', 'performance']:
-        img_link = 'https://staging-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png'
-
-    return img_link
+    env_map = {
+        'production': 'prod',
+        'staging': 'staging',
+        'performance': 'staging',
+    }
+    # default to dev if NOTIFY_ENVIRONMENT isn't provided
+    img_env = env_map.get(os.environ.get('NOTIFY_ENVIRONMENT'), 'dev')
+    return f'https://{img_env}-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png'
 
 
 def insert_action_link(value: str) -> str:
