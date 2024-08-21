@@ -58,6 +58,7 @@ class Field:
     placeholder_pattern = re.compile(
         # this is simply the below regex on one line for easier analysis
         # r'\({2}([\w \-]+(?:\?{2}.*?(?!\({2}[\w \-]+\){2}.*?))?)\){2}'
+        # r'(\[.*?\]\(.*?)'  # capture group for [...](...
         r'\({2}'        # opening ((
         r'('            # start capture group
         r'[\w \-]+'     # placeholder name that allows only alpha numberic characters, space and dash
@@ -71,6 +72,7 @@ class Field:
     conditional_placeholder_pattern = re.compile(
         r'(\{\})'  # look for just '{}' inside conditional block
     )
+    markdown_link_pattern = r'\[.*?\]\(.*?(\({2}.*?\){2}).*?\)'  # capture group for markdown link with placeholder
     placeholder_tag = "<span class='placeholder'>(({}))</span>"
     placeholder_tag_with_highlight = "<span class='placeholder'><mark>(({}))</mark></span>"
     conditional_placeholder_tag = "<span class='placeholder-conditional'>(({}??</span>{}))"
@@ -97,6 +99,8 @@ class Field:
             self.placeholder_tag = self.placeholder_tag_no_brackets
         if preview_mode:
             self.placeholder_tag = self.placeholder_tag_with_highlight
+            # making a list out of the iterator so it can be reused
+            self.links_with_placeholders = list(re.finditer(self.markdown_link_pattern, self.content))
         self.sanitizer = {
             'strip': strip_html,
             'escape': escape_html,
@@ -115,29 +119,50 @@ class Field:
 
     @property
     def values(self):
+        print('here values property')
         return self._values
 
     @values.setter
     def values(self, value):
+        print('here values setter')
         self._values = Columns(value) if value else {}
 
-    def format_match(self, match):
+    def format_match(self, match: re.Match):
+        print(f'here format_match - {match=}')
         placeholder = Placeholder.from_match(match)
 
-        if self.redact_missing_personalisation:
-            return self.placeholder_tag_redacted
+        formatted_match = self.sanitizer(placeholder.name)
 
-        if placeholder.is_conditional():
-            return self.conditional_placeholder_tag.format(
+        if self.preview_mode:
+            match_start, match_end = match.span()
+            # print(f'here iterate over links - {self.links_with_placeholders=}')
+            for m in self.links_with_placeholders:
+                m_start, m_end = m.span()
+                print(f'--- {match=}\n--- {m=}')
+                # find if the placeholder is in the 
+                if match_start >= m_start and match_end <= m_end:
+                    print('placeholder in link')
+                    formatted_match = self.sanitizer(placeholder.name)
+                    break
+
+        if self.redact_missing_personalisation:
+            formatted_match = self.placeholder_tag_redacted
+
+        elif placeholder.is_conditional():
+            formatted_match = self.conditional_placeholder_tag.format(
                 self.sanitizer(placeholder.name),
-                self.sanitizer(placeholder.conditional_text)
+                self.sanitizer(placeholder.conditional_text),
             )
 
-        return self.placeholder_tag.format(
-            self.sanitizer(placeholder.name)
-        )
+        else:
+            formatted_match = self.placeholder_tag.format(
+                self.sanitizer(placeholder.name)
+            )
+
+        return formatted_match
 
     def replace_match(self, match):
+        print('here replace_match')
         placeholder = Placeholder.from_match(match)
         replacement = self.values.get(placeholder.name)
 
@@ -159,9 +184,11 @@ class Field:
         return self.format_match(match)
 
     def is_okay_to_have_null_values(self, placeholder) -> bool:
+        print('here is_okay_to_have_null_values')
         return self.redact_missing_personalisation or placeholder.is_conditional() or self.is_letter_template
 
     def get_replacement(self, placeholder):
+        print('here get_replacement')
         replacement = self.values.get(placeholder.name)
         if replacement is None:
             return None
@@ -175,6 +202,7 @@ class Field:
         return self.sanitizer(str(replacement))
 
     def get_replacement_as_list(self, replacement):
+        print('here get_replacement_as_list')
         if self.markdown_lists:
             return '\n\n' + '\n'.join(
                 '* {}'.format(item) for item in replacement
@@ -183,16 +211,19 @@ class Field:
 
     @property
     def _raw_formatted(self):
+        print('here _raw_formatted')
         return re.sub(
             self.placeholder_pattern, self.format_match, self.sanitizer(self.content)
         )
 
     @property
     def formatted(self):
+        print('here formatted')
         return Markup(self._raw_formatted)
 
     @property
     def placeholders(self):
+        print('here placeholders')
         return set(
             Placeholder(body) for body in re.findall(
                 self.placeholder_pattern, self.content
@@ -201,10 +232,12 @@ class Field:
 
     @property
     def placeholder_names(self):
+        print('here placeholder_names')
         return set(placeholder.name for placeholder in self.placeholders)
 
     @property
     def replaced(self):
+        print('here replaced')
         return re.sub(
             self.placeholder_pattern, self.replace_match, self.sanitizer(self.content)
         )
