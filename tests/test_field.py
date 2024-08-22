@@ -277,6 +277,53 @@ def test_that_field_renders_fine_if_in_preview_mode_and_null_values_for_placehol
     assert str(Field(template_content, data, preview_mode=True)) == expected_value
 
 
+@pytest.mark.parametrize(
+    'content, expected',
+    [
+        (
+            'normal placeholder formatting: ((foo))',
+            "normal placeholder formatting: <span class='placeholder'><mark>((foo))</mark></span>"
+        ),
+        (
+            'regular markdown link: [link text](#)',
+            'regular markdown link: [link text](#)'
+        ),
+        (
+            'placeholder in link text, without placeholder in link: [link ((foo))](https://test.com/)',
+            "placeholder in link text, without placeholder in link: [link <span class='placeholder'><mark>((foo))"
+            "</mark></span>](https://test.com/)"
+        ),
+        (
+            'no format within link, placeholder at end: [link text](https://test.com/((foo)))',
+            'no format within link, placeholder at end: [link text](https://test.com/foo)'
+        ),
+        (
+            'no format within link, placeholder in middle: [link text](https://test.com/((foo))?xyz=123)',
+            'no format within link, placeholder in middle: [link text](https://test.com/foo?xyz=123)'
+        ),
+        (
+            'no format in link, with only placeholder: [link text](((foo)))',
+            'no format in link, with only placeholder: [link text](foo)'
+        ),
+        (
+            'no format within link, multiple placeholders: [link text](https://test.com/((foo))?xyz=((bar)))',
+            'no format within link, multiple placeholders: [link text](https://test.com/foo?xyz=bar)'
+        ),
+    ],
+    ids=[
+        'formatting with placeholder',
+        'no formatting with only markdown link',
+        'formatting with placeholder in markdown link text',
+        'formatting with placeholder in markdown link url',
+        'formatting with placeholder in markdown link url and text around placeholder',
+        'formatting when placeholder is markdown link url',
+        'formatting with multiple placeholders in markdown link'
+    ]
+)
+def test_field_renders_properly_in_preview_mode(content, expected):
+    assert str(Field(content, values=None, preview_mode=True)) == expected
+
+
 def test_that_field_renders_fine_if_not_in_preview_mode_and_null_values_for_conditional_placeholders():
     template_content = "this is ((some_non_conditional_field??)) to test"
     data = {"some_non_conditional_field": None}

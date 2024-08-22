@@ -57,7 +57,16 @@ from notifications_utils.field import Field
         'string &amp; entity',
         'string & entity',
     ),
-])
+],
+    ids=[
+        'string with html',
+        'string with html inside placeholder',
+        'string with placeholder',
+        'string with html inside conditional placeholder',
+        'string with conditional placeholder with html after condition',
+        'string with special character &',
+]
+)
 def test_field_handles_html(content, values, expected_stripped, expected_escaped, expected_passthrough):
     assert str(Field(content, values)) == expected_stripped
     assert str(Field(content, values, html='strip')) == expected_stripped

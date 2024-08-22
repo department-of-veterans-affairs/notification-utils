@@ -18,9 +18,11 @@ The `./scripts/run_tests.sh` script runs all unit tests using [py.test](http://p
 
 ## Versioning
 
-With the virtual environment active, run `python setup.py --version` to see the current version **on the current branch**.  Use `git tag` to add release tags to commits, if desired, and push the tags.
+With the virtual environment active, run `python setup.py --version` to see the current version **on the current branch**.  
 
-After merging changes in this repository, you must update notification-api to use the changes.  Run `poetry update notification-utils` in an api branch, and then push the PR for approval/merge. The PR only should contain changes made to the lock file.
+Before merging, update the version in the `notifications_utils/version.py` file. Once merged, use `git tag` to add release tags to commits, and push the tags.
+
+After merging changes in this repository, you must update notification-api to use the changes. Run `poetry update notification-utils` in an api branch, and then push the PR for approval/merge. The PR only should contain changes made to the lock file.
 
 ## E-mail Template Documentation
 
