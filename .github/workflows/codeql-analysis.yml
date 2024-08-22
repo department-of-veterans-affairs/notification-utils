@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - main
+
   pull_request:
     branches:
       - main
+
   schedule:
       # Run the scan on Monday and Thursday mornings.
     - cron: 27 2 * * 1,4
