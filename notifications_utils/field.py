@@ -131,29 +131,26 @@ class Field:
         placeholder = Placeholder.from_match(match)
 
         formatted_return = f'{self.sanitizer(placeholder.name)}'
-        formatting_applied_flag = False
 
-        if self.preview_mode:
-            match_start, match_end = match.span()
-            for m in self.links_with_placeholders:
-                m_start, m_end = m.span()
-                # find if the placeholder is in a markdown link
-                if match_start >= m_start and match_end - 1 <= m_end:
-                    formatting_applied_flag = True
-                    break
+        # if self.preview_mode:
+        #     match_start, match_end = match.span()
+        #     for m in self.links_with_placeholders:
+        #         m_start, m_end = m.span()
+        #         # find if the placeholder is in a markdown link
+        #         if match_start >= m_start and match_end - 1 <= m_end:
+        #             formatting_applied_flag = True
+        #             break
 
-        elif self.redact_missing_personalisation:
-            formatting_applied_flag = True
+        if self.redact_missing_personalisation:
             formatted_return = self.placeholder_tag_redacted
 
         elif placeholder.is_conditional():
-            formatting_applied_flag = True
             formatted_return = self.conditional_placeholder_tag.format(
                 self.sanitizer(placeholder.name),
                 self.sanitizer(placeholder.conditional_text),
             )
 
-        if not formatting_applied_flag:
+        else:
             formatted_return = self.placeholder_tag.format(
                 self.sanitizer(placeholder.name)
             )

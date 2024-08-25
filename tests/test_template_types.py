@@ -177,8 +177,76 @@ def test_pass_through_renderer():
         'two of the same action link',
     ]
 )
-def test_get_html_email_body(content, values, expected):
+def test_get_html_email_body_with_action_links(content, values, expected):
     assert get_html_email_body(content, values) == expected
+
+
+@pytest.mark.parametrize(
+    'content, expected',
+    [
+        (
+            'normal placeholder formatting: ((foo))',
+            (
+                f'<p style="{PARAGRAPH_STYLE}">normal placeholder formatting: <span class=\'placeholder\'><mark>((foo))'
+                '</mark></span></p>'
+            ),
+        ),
+        (
+            'regular markdown link: [link text](#)',
+            (
+                f'<p style="{PARAGRAPH_STYLE}">regular markdown link: '
+                f'<a style="{LINK_STYLE}" href="#" target="_blank">link text</a></p>'
+            ),
+        ),
+        (
+            'placeholder in link text, without placeholder in link: [link ((foo))](https://test.com/)',
+            (
+                f'<p style="{PARAGRAPH_STYLE}">placeholder in link text, without placeholder in link: '
+                f'<a style="{LINK_STYLE}" href="https://test.com/" target="_blank">link '
+                '<span class=\'placeholder\'><mark>((foo))</mark></span></a></p>'
+            ),
+        ),
+        (
+            'no format within link, placeholder at end: [link text](https://test.com/((foo)))',
+            (
+                f'<p style="{PARAGRAPH_STYLE}">no format within link, placeholder at end: '
+                f'<a style="{LINK_STYLE}" href="https://test.com/((foo))" target="_blank">link text</a></p>'
+            )
+        ),
+        (
+            'no format within link, placeholder in middle: [link text](https://test.com/((foo))?xyz=123)',
+            (
+                f'<p style="{PARAGRAPH_STYLE}">no format within link, placeholder in middle: '
+                f'<a style="{LINK_STYLE}" href="https://test.com/((foo))?xyz=123" target="_blank">link text</a></p>'
+            )
+        ),
+        (
+            'no format in link, with only placeholder: [link text](((foo)))',
+            (
+                f'<p style="{PARAGRAPH_STYLE}">no format in link, with only placeholder: '
+                f'<a style="{LINK_STYLE}" href="((foo))" target="_blank">link text</a></p>'
+            )
+        ),
+        (
+            'no format within link, multiple placeholders: [link text](https://test.com/((foo))?xyz=((bar)))',
+            (
+                f'<p style="{PARAGRAPH_STYLE}">no format within link, multiple placeholders: '
+                f'<a style="{LINK_STYLE}" href="https://test.com/((foo))?xyz=((bar))" target="_blank">link text</a></p>'
+            )
+        ),
+    ],
+    ids=[
+        'formatting with placeholder',
+        'no formatting with only markdown link',
+        'formatting with placeholder in markdown link text',
+        'formatting with placeholder in markdown link url',
+        'formatting with placeholder in markdown link url and text around placeholder',
+        'formatting when placeholder is markdown link url',
+        'formatting with multiple placeholders in markdown link'
+    ]
+)
+def test_get_html_email_body_preview_with_placeholder_in_markdown_link(content, expected):
+    assert get_html_email_body(content, template_values={}, preview_mode=True) == expected
 
 
 def test_html_email_inserts_body():

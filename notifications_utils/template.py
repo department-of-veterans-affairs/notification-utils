@@ -1,47 +1,44 @@
 import math
+import re
 import sys
-from os import path
 from datetime import datetime
+from html import unescape
+from os import path
 
 from jinja2 import Environment, FileSystemLoader
 from markupsafe import Markup
-from html import unescape
 
 from notifications_utils import SMS_CHAR_COUNT_LIMIT
 from notifications_utils.columns import Columns
 from notifications_utils.field import Field
 from notifications_utils.formatters import (
+    add_prefix,
+    add_trailing_newline,
+    autolink_sms, escape_html,
     insert_action_link,
-    unlink_govuk_escaped,
+    make_quotes_smart,
     nl2br,
     nl2li,
-    add_prefix,
-    autolink_sms,
-    notify_email_markdown,
-    notify_email_preheader_markdown,
-    notify_plain_text_email_markdown,
-    notify_letter_preview_markdown,
-    remove_empty_lines,
-    sms_encode,
-    escape_html,
-    strip_dvla_markup,
-    strip_pipes,
-    remove_whitespace_before_punctuation,
-    make_quotes_smart,
-    replace_hyphens_with_en_dashes,
-    replace_hyphens_with_non_breaking_hyphens,
-    tweak_dvla_list_markup,
-    strip_leading_whitespace,
-    add_trailing_newline,
     normalise_newlines,
     normalise_whitespace,
+    notify_email_markdown,
+    notify_email_preheader_markdown,
+    notify_letter_preview_markdown,
+    notify_plain_text_email_markdown,
+    remove_empty_lines,
     remove_smart_quotes_from_email_addresses,
+    remove_whitespace_before_punctuation,
+    replace_hyphens_with_en_dashes,
+    replace_hyphens_with_non_breaking_hyphens,
+    sms_encode, strip_dvla_markup,
+    strip_leading_whitespace,
+    strip_pipes,
     strip_unsupported_characters,
-)
+    tweak_dvla_list_markup,
+    unlink_govuk_escaped)
+from notifications_utils.sanitise_text import SanitiseSMS
 from notifications_utils.take import Take
 from notifications_utils.template_change import TemplateChange
-from notifications_utils.sanitise_text import SanitiseSMS
-
 
 template_env = Environment(loader=FileSystemLoader(
     path.join(
@@ -705,7 +702,13 @@ def get_html_email_body(
     ).then(
         add_trailing_newline
     ).then(
+        strip_placeholder_parens_from_links_in_preview
+    ).then(
+        # before converting to markdown, strip out the "(())" for placeholders (only exists in preview mode)
         notify_email_markdown
+        # after converting to link, replace <span ...><mark>foo</mark></span> with ((foo))
+    ).then(
+        replace_tags_with_placeholder_parens
     ).then(
         do_nice_typography
     ).then(
@@ -725,3 +728,33 @@ def do_nice_typography(value):
     ).then(
         replace_hyphens_with_en_dashes
     )
+
+
+def strip_placeholder_parens_from_links_in_preview(value: str) -> str:
+    """Captures markdown links with placeholders in them and removes the parentheses from the placeholders"""
+    markdown_link_pattern = re.compile(r'\]\((.*?\({2}.*?\){2}.*?)+?\)')
+
+    for item in re.finditer(markdown_link_pattern, value):
+        link: str = item.group(0)
+        modified_link = re.sub(r'<mark>\(\(', '<mark>', link)
+        modified_link = re.sub(r'\)\)<\/mark>', '</mark>', modified_link)
+
+        value = value.replace(link, modified_link)
+
+    return value
+
+
+def replace_tags_with_placeholder_parens(value: str) -> str:
+    """Replaces the html tags on placeholders with parentheses"""
+    placeholder_in_link_pattern = re.compile(r'(<?span class=[\'\"]placeholder[\'\"]><mark>[^()]+?<\/mark><\/span>?)')
+    pattern_front_tags = re.compile(r'(<?span class=[\'\"]placeholder[\'\"]><mark>)')
+    pattern_back_tags = re.compile(r'(<\/mark><\/span>?)')
+
+    for item in re.finditer(placeholder_in_link_pattern, value):
+        placeholder = item.group(0)
+        mod_placeholder = re.sub(pattern_front_tags, '((', placeholder)
+        mod_placeholder = re.sub(pattern_back_tags, '))', mod_placeholder)
+
+        value = value.replace(placeholder, mod_placeholder)
+
+    return value
