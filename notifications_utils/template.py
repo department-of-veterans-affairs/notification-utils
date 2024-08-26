@@ -748,8 +748,8 @@ def strip_placeholder_parens_from_links_in_preview(value: str) -> str:
     # find all markdown links with placeholders in them and replace the parentheses and html tags with !! and ##
     for item in re.finditer(markdown_link_pattern, value):
         link = item.group(0)
-        modified_link = re.sub(r'(<span class=[\'\"]placeholder[\'\"]><mark>\(\()', '!!', link)
-        modified_link = re.sub(r'(\)\)<\/mark><\/span>)', '##', modified_link)
+        modified_link = re.sub(r'((<span class=[\'\"]placeholder[\'\"]><mark>)?\(\()', '!!', link)
+        modified_link = re.sub(r'(\)\)(<\/mark><\/span>)?)', '##', modified_link)
 
         value = value.replace(link, modified_link)
 
