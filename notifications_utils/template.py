@@ -766,19 +766,14 @@ def replace_symbols_with_placeholder_parens(value: str) -> str:
     Returns:
         str: The processed string with tags replaced by placeholder parentheses.
     """
-    # print(f'\nvalue start replace\n--- {value}')
     placeholder_in_link_pattern = re.compile(r'(!![^()]+?##)')
-    # placeholder_in_link_pattern = re.compile(r'(<?span class=[\'\"]placeholder[\'\"]><mark>[^()]+?<\/mark><\/span>?)')
-    # pattern_front_tags = re.compile(r'(<?span class=[\'\"]placeholder[\'\"]><mark>)')
-    # pattern_back_tags = re.compile(r'(<\/mark><\/span>?)')
 
+    # find all instances of !! and ## and replace them with (( and ))
     for item in re.finditer(placeholder_in_link_pattern, value):
         placeholder = item.group(0)
-        # print(f'{placeholder=}')
-        mod_placeholder = placeholder.replace('!!', '((')  # re.sub(pattern_front_tags, '((', placeholder)
-        mod_placeholder = mod_placeholder.replace('##', '))')  # re.sub(pattern_back_tags, '))', mod_placeholder)
+        mod_placeholder = placeholder.replace('!!', '((')
+        mod_placeholder = mod_placeholder.replace('##', '))')
 
         value = value.replace(placeholder, mod_placeholder)
 
-    # print(f'\nvalue end replace\n--- {value}')
     return value

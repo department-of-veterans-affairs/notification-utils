@@ -71,7 +71,6 @@ class Field:
     conditional_placeholder_pattern = re.compile(
         r'(\{\})'  # look for just '{}' inside conditional block
     )
-    markdown_link_pattern = r'\]\((.*?\({2}.*?\){2}.*?)+?\)'  # capture group for markdown link with placeholder(s)
     placeholder_tag = "<span class='placeholder'>(({}))</span>"
     placeholder_tag_with_highlight = "<span class='placeholder'><mark>(({}))</mark></span>"
     conditional_placeholder_tag = "<span class='placeholder-conditional'>(({}??</span>{}))"
@@ -99,8 +98,6 @@ class Field:
 
         if preview_mode:
             self.placeholder_tag = self.placeholder_tag_with_highlight
-            # making a list out of the iterator so it can be reused
-            # self.links_with_placeholders = list(re.finditer(self.markdown_link_pattern, self.content))
 
         self.sanitizer = {
             'strip': strip_html,
@@ -129,24 +126,11 @@ class Field:
 
     def format_match(self, match: re.Match) -> str:
         placeholder = Placeholder.from_match(match)
-        # formatting_applied_flag = False
         formatted_return = self.sanitizer(placeholder.name)
 
-        # if self.preview_mode:
-        #     match_start, match_end = match.span()
-        #     for m in self.links_with_placeholders:
-        #         m_start, m_end = m.span()
-        #         # find if the placeholder is in a markdown link
-        #         if match_start >= m_start and match_end - 1 <= m_end:
-        #             formatting_applied_flag = True
-        #             formatted_return = f'!!{self.sanitizer(placeholder.name)}##'
-        #             break
-
         if self.redact_missing_personalisation:
-            # formatting_applied_flag = True
             formatted_return = self.placeholder_tag_redacted
         elif placeholder.is_conditional():
-            # formatting_applied_flag = True
             formatted_return = self.conditional_placeholder_tag.format(
                 self.sanitizer(placeholder.name),
                 self.sanitizer(placeholder.conditional_text),
