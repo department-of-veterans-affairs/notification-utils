@@ -22,8 +22,8 @@ function display_result {
   fi
 }
 
-# flake8 --config .flake8 .
-# display_result $? 1 "Code style check"
+flake8 --config .flake8 .
+display_result $? 1 "Code style check"
 
 ## Code coverage
 #py.test --cov=client tests/
