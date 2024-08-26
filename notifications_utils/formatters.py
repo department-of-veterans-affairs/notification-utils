@@ -299,7 +299,7 @@ def get_action_links(html: str) -> list[str]:
     return re.findall(action_link_regex, html)
 
 
-def get_img_link() -> str:
+def get_action_link_image_url() -> str:
     """Get action link image url for the current environment. (insert_action_link helper)"""
     env_map = {
         'production': 'prod',
@@ -322,7 +322,7 @@ def insert_action_link(html: str) -> str:
 
     action_link_list = get_action_links(html)
 
-    img_link = get_img_link()
+    img_link = get_action_link_image_url()
 
     for item in action_link_list:
         # Puts the action link in a new <p> tag with appropriate styling.
@@ -363,6 +363,61 @@ def insert_action_link(html: str) -> str:
             )
 
     return html
+
+
+def strip_parentheses_in_link_placeholders(value: str) -> str:
+    """
+    Captures markdown links with placeholders in them and replaces the parentheses around the placeholders with
+    !! at the start and ## at the end. This makes them easy to put back after the convertion to html.
+
+    Example Conversion:
+    `[link text](http://example.com/((placeholder))) -> [link text](http://example.com/!!placeholder##)`
+
+    Args:
+        value (str): The email body to be processed
+
+    Returns:
+        str: The email body with the placeholders in markdown links with parentheses replaced with !! and ##
+    """
+    markdown_link_pattern = re.compile(r'\]\((.*?\({2}.*?\){2}.*?)+?\)')
+
+    # find all markdown links with placeholders in them and replace the parentheses and html tags with !! and ##
+    for item in re.finditer(markdown_link_pattern, value):
+        link = item.group(0)
+        # replace the opening parentheses with !!, include the opening span and mark tags if they exist
+        modified_link = re.sub(r'((<span class=[\'\"]placeholder[\'\"]><mark>)?\(\((?![\(]))', '!!', link)
+        # replace the closing parentheses with ##, include the closing span and mark tags if they exist
+        modified_link = re.sub(r'(\)\)(<\/mark><\/span>)?)', '##', modified_link)
+
+        value = value.replace(link, modified_link)
+
+    return value
+
+
+def replace_symbols_with_placeholder_parens(value: str) -> str:
+    """
+    Replaces the `!!` and `##` symbols with placeholder parentheses in the given string.
+
+    Example Output: `!!placeholder## -> ((placeholder))`
+
+    Args:
+        value (str): The email body that has been converted from markdown to html
+
+    Returns:
+        str: The processed string with tags replaced by placeholder parentheses.
+    """
+    # pattern to find the placeholders surrounded by !! and ##
+    placeholder_in_link_pattern = re.compile(r'(!![^()]+?##)')
+
+    # find all instances of !! and ## and replace them with (( and ))
+    for item in re.finditer(placeholder_in_link_pattern, value):
+        placeholder = item.group(0)
+        mod_placeholder = placeholder.replace('!!', '((')
+        mod_placeholder = mod_placeholder.replace('##', '))')
+
+        value = value.replace(placeholder, mod_placeholder)
+
+    return value
 
 
 class NotifyLetterMarkdownPreviewRenderer(mistune.Renderer):

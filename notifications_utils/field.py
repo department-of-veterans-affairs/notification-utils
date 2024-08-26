@@ -95,17 +95,14 @@ class Field:
         self.is_letter_template = is_letter_template
         if not with_brackets:
             self.placeholder_tag = self.placeholder_tag_no_brackets
-
         if preview_mode:
             self.placeholder_tag = self.placeholder_tag_with_highlight
-
         self.sanitizer = {
             'strip': strip_html,
             'escape': escape_html,
             'passthrough': str,
             'strip_dvla_markup': strip_dvla_markup,
         }[html]
-
         self.redact_missing_personalisation = redact_missing_personalisation
 
     def __str__(self):
@@ -124,23 +121,21 @@ class Field:
     def values(self, value):
         self._values = Columns(value) if value else {}
 
-    def format_match(self, match: re.Match) -> str:
+    def format_match(self, match):
         placeholder = Placeholder.from_match(match)
-        formatted_return = self.sanitizer(placeholder.name)
 
         if self.redact_missing_personalisation:
-            formatted_return = self.placeholder_tag_redacted
-        elif placeholder.is_conditional():
-            formatted_return = self.conditional_placeholder_tag.format(
+            return self.placeholder_tag_redacted
+
+        if placeholder.is_conditional():
+            return self.conditional_placeholder_tag.format(
                 self.sanitizer(placeholder.name),
-                self.sanitizer(placeholder.conditional_text),
-            )
-        else:
-            formatted_return = self.placeholder_tag.format(
-                self.sanitizer(placeholder.name)
+                self.sanitizer(placeholder.conditional_text)
             )
 
-        return formatted_return
+        return self.placeholder_tag.format(
+            self.sanitizer(placeholder.name)
+        )
 
     def replace_match(self, match):
         placeholder = Placeholder.from_match(match)
@@ -160,8 +155,7 @@ class Field:
             elif replaced_value is not None:
                 return self.get_replacement(placeholder)
 
-        # TODO: investigate why this fallback is necessary and potentially remove to
-        # enable truly conditional placeholders
+# TODO: investigate why this fallback is necessary and potentially remove to enable truly conditional placeholders
         return self.format_match(match)
 
     def is_okay_to_have_null_values(self, placeholder) -> bool:
