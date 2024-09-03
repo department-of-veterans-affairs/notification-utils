@@ -154,8 +154,8 @@ class AppNameFilter(logging.Filter):
 class RequestIdFilter(logging.Filter):
     @property
     def request_id(self):
-        if has_request_context() and hasattr(request, 'request_id'):
-            return request.request_id
+        if has_request_context() and hasattr(g, 'request_id'):
+            return g.request_id
 
         return 'no-request-id'
 
