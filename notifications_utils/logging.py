@@ -16,8 +16,14 @@ from pythonjsonlogger.jsonlogger import JsonFormatter
 LOG_FORMAT = '%(asctime)s %(application)s %(name)s %(levelname)s ' \
              '%(requestId)s "%(message)s" [in %(pathname)s:%(lineno)d]'
 TIME_FORMAT = '%Y-%m-%dT%H:%M:%S'
+CELERY_APP = None
 
 logger = logging.getLogger(__name__)
+
+
+def set_celery_app(app):
+    global CELERY_APP
+    CELERY_APP = app
 
 
 def build_log_line(extra_fields):
@@ -154,10 +160,12 @@ class AppNameFilter(logging.Filter):
 class RequestIdFilter(logging.Filter):
     @property
     def request_id(self):
+        request_id = 'no-request-id'
         if has_request_context() and hasattr(g, 'request_id'):
-            return g.request_id
-
-        return 'no-request-id'
+            request_id = g.request_id
+        elif CELERY_APP.current_worker_task:
+            request_id = CELERY_APP.current_worker_task
+        return request_id
 
     def filter(self, record):
         record.requestId = self.request_id
