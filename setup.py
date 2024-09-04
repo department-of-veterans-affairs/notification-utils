@@ -29,6 +29,7 @@ setup(
         'bleach>=4.1.0',
         'boto3>=1.24.61',
         'botocore>=1.27.61',
+        'celery>=5.4.0',
         'Flask>=1.1.1',
         'Flask-Redis>=0.4.0',
         'Jinja2>=2.11.3',
