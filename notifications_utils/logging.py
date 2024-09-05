@@ -163,7 +163,7 @@ class RequestIdFilter(logging.Filter):
         request_id = 'no-request-id'
         if has_request_context() and hasattr(g, 'request_id'):
             request_id = g.request_id
-        elif CELERY_APP.current_worker_task:
+        elif CELERY_APP and CELERY_APP.current_worker_task:
             request_id = CELERY_APP.current_worker_task
         return request_id
 
