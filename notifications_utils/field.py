@@ -56,7 +56,7 @@ class Placeholder:
 
 class Field:
     placeholder_pattern = re.compile(
-        # this is simply the below regex on one line for easier analysis
+        # This is the below regex on one line for easier analysis:
         # r'\({2}([\w \-]+(?:\?{2}.*?(?!\({2}[\w \-]+\){2}.*?))?)\){2}'
         r'\({2}'        # opening ((
         r'('            # start capture group
@@ -155,7 +155,8 @@ class Field:
             elif replaced_value is not None:
                 return self.get_replacement(placeholder)
 
-# TODO: investigate why this fallback is necessary and potentially remove to enable truly conditional placeholders
+        # TODO - Investigate why this fallback is necessary, and potentially remove it to enable
+        # conditional placeholders.
         return self.format_match(match)
 
     def is_okay_to_have_null_values(self, placeholder) -> bool:
