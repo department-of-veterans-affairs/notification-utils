@@ -1,37 +1,15 @@
 import math
 import sys
-from html import unescape
 from os import path
 
+import mistune
 from jinja2 import Environment, FileSystemLoader
 from markupsafe import Markup
 
 from notifications_utils import SMS_CHAR_COUNT_LIMIT
 from notifications_utils.columns import Columns
 from notifications_utils.field import Field
-from notifications_utils.formatters import (
-    add_prefix,
-    add_trailing_newline,
-    autolink_sms, escape_html,
-    insert_action_link,
-    make_quotes_smart,
-    nl2br,
-    normalise_newlines,
-    normalise_whitespace,
-    notify_email_markdown,
-    notify_email_preheader_markdown,
-    notify_plain_text_email_markdown,
-    remove_smart_quotes_from_email_addresses,
-    remove_whitespace_before_punctuation,
-    replace_hyphens_with_en_dashes,
-    replace_symbols_with_placeholder_parens,
-    sms_encode,
-    strip_leading_whitespace,
-    strip_parentheses_in_link_placeholders,
-    strip_unsupported_characters,
-    unlink_govuk_escaped)
 from notifications_utils.sanitise_text import SanitiseSMS
-from notifications_utils.take import Take
 from notifications_utils.template_change import TemplateChange
 
 template_env = Environment(loader=FileSystemLoader(
@@ -80,7 +58,7 @@ class Template():
             ))
 
     def __repr__(self):
-        return "{}(\"{}\", {})".format(self.__class__.__name__, self.content, self.values)
+        return f'{self.__class__.__name__}("{self.content}", {self.values})'
 
     def __str__(self):
         return Markup(Field(
@@ -134,6 +112,12 @@ class Template():
         return False
 
 
+def add_prefix(body, prefix=None):
+    if prefix:
+        return f"{prefix.strip()}: {body}"
+    return body
+
+
 class SMSMessageTemplate(Template):
 
     def __init__(
@@ -151,19 +135,7 @@ class SMSMessageTemplate(Template):
         super().__init__(template, values, jinja_path=jinja_path)
 
     def __str__(self):
-        return Take(Field(
-            self.content, self.values, html='passthrough'
-        )).then(
-            add_prefix, self.prefix
-        ).then(
-            sms_encode
-        ).then(
-            remove_whitespace_before_punctuation
-        ).then(
-            normalise_newlines
-        ).then(
-            str.strip
-        )
+        return Field(self.content, self.values, html='passthrough')
 
     @property
     def prefix(self):
@@ -179,7 +151,7 @@ class SMSMessageTemplate(Template):
             # we always want to call SMSMessageTemplate.__str__ regardless of subclass, to avoid any html formatting
             SMSMessageTemplate.__str__(self)
             if self._values
-            else sms_encode(add_prefix(self.content.strip(), self.prefix))
+            else SanitiseSMS.encode(add_prefix(self.content.strip(), self.prefix))
         ).encode(self.encoding))
 
     @property
@@ -220,21 +192,11 @@ class SMSPreviewTemplate(SMSMessageTemplate):
             'show_sender': self.show_sender,
             'recipient': Field('((phone number))', self.values, with_brackets=False, html='escape'),
             'show_recipient': self.show_recipient,
-            'body': Take(Field(
+            'body': Field(
                 self.content,
                 self.values,
                 html='escape',
                 redact_missing_personalisation=self.redact_missing_personalisation,
-            )).then(
-                add_prefix, (escape_html(self.prefix) or None) if self.show_prefix else None
-            ).then(
-                sms_encode if self.downgrade_non_sms_characters else str
-            ).then(
-                remove_whitespace_before_punctuation
-            ).then(
-                nl2br
-            ).then(
-                autolink_sms
             )
         }))
 
@@ -265,15 +227,11 @@ class WithSubjectTemplate(Template):
 
     @property
     def subject(self):
-        return Markup(Take(Field(
+        return Markup(Field(
             self._subject,
             self.values,
             html='escape',
             redact_missing_personalisation=self.redact_missing_personalisation,
-        )).then(
-            do_nice_typography
-        ).then(
-            normalise_whitespace
         ))
 
     @property
@@ -284,37 +242,17 @@ class WithSubjectTemplate(Template):
 class PlainTextEmailTemplate(WithSubjectTemplate):
 
     def __str__(self):
-        return Take(Field(
+        return Field(
             self.content, self.values, html='passthrough', markdown_lists=True
-        )).then(
-            unlink_govuk_escaped
-        ).then(
-            strip_unsupported_characters
-        ).then(
-            add_trailing_newline
-        ).then(
-            notify_plain_text_email_markdown
-        ).then(
-            do_nice_typography
-        ).then(
-            unescape
-        ).then(
-            strip_leading_whitespace
-        ).then(
-            add_trailing_newline
         )
 
     @property
     def subject(self):
-        return Markup(Take(Field(
+        return Markup(Field(
             self._subject,
             self.values,
             html='passthrough',
             redact_missing_personalisation=self.redact_missing_personalisation
-        )).then(
-            do_nice_typography
-        ).then(
-            normalise_whitespace
         ))
 
 
@@ -359,22 +297,12 @@ class HTMLEmailTemplate(WithSubjectTemplate):
 
     @property
     def preheader(self):
-        return " ".join(Take(Field(
+        return " ".join(Field(
             self.content,
             self.values,
             html='escape',
             markdown_lists=True
-        )).then(
-            unlink_govuk_escaped
-        ).then(
-            strip_unsupported_characters
-        ).then(
-            add_trailing_newline
-        ).then(
-            notify_email_preheader_markdown
-        ).then(
-            do_nice_typography
-        ).split())[:self.PREHEADER_LENGTH_IN_CHARACTERS].strip()
+        )).split()[:self.PREHEADER_LENGTH_IN_CHARACTERS].strip()
 
     def __str__(self):
 
@@ -428,7 +356,7 @@ class EmailPreviewTemplate(WithSubjectTemplate):
                 self.content, self.values, redact_missing_personalisation=self.redact_missing_personalisation
             ),
             'subject': self.subject,
-            'from_name': escape_html(self.from_name),
+            'from_name': mistune.escape(self.from_name),
             'from_address': self.from_address,
             'reply_to': self.reply_to,
             'recipient': Field("((email address))", self.values, with_brackets=False),
@@ -437,15 +365,11 @@ class EmailPreviewTemplate(WithSubjectTemplate):
 
     @property
     def subject(self):
-        return Take(Field(
+        return Field(
             self._subject,
             self.values,
             html='escape',
             redact_missing_personalisation=self.redact_missing_personalisation
-        )).then(
-            do_nice_typography
-        ).then(
-            normalise_whitespace
         )
 
 
@@ -471,46 +395,19 @@ def is_unicode(content):
 
 
 def get_html_email_body(
-        template_content, template_values, redact_missing_personalisation=False, preview_mode=False
-):
+    template_content: dict, template_values: dict, redact_missing_personalisation=False, preview_mode=False
+) -> str:
+    """
+    Substitute the personalized values into the template markdown, and convert the result to HTML.
+    """
 
-    return Take(Field(
+    personalized_content = Field(
         template_content,
         template_values,
         html='escape',
         markdown_lists=True,
         redact_missing_personalisation=redact_missing_personalisation,
         preview_mode=preview_mode
-    )).then(
-        unlink_govuk_escaped
-    ).then(
-        strip_unsupported_characters
-    ).then(
-        add_trailing_newline
-    ).then(
-        # before converting to markdown, strip out the "(())" for placeholders (preview mode or test emails)
-        strip_parentheses_in_link_placeholders
-    ).then(
-        notify_email_markdown
-    ).then(
-        # after converting to html link, replace !!foo## with ((foo))
-        replace_symbols_with_placeholder_parens
-    ).then(
-        do_nice_typography
-    ).then(
-        insert_action_link
     )
 
-
-def do_nice_typography(value):
-    return Take(
-        value
-    ).then(
-        remove_whitespace_before_punctuation
-    ).then(
-        make_quotes_smart
-    ).then(
-        remove_smart_quotes_from_email_addresses
-    ).then(
-        replace_hyphens_with_en_dashes
-    )
+    return mistune.html(Markup(personalized_content))
