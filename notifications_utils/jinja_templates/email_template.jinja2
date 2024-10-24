@@ -224,7 +224,8 @@
 <noscript>&nbsp;</noscript>
 <p>tracking image 2</p>
 <img id="ga4_open_email_event_url" style="visibility:hidden" src="{{ ga4_open_email_event_url }}" alt="" />
-
+<p>div with background url</p>
+<div style="background-url: {{ ga4_open_email_event_url }}; width: 1px; height: 1px; display: none;"></div>
 {% endif %}
 {% if complete_html %}
 </body>
