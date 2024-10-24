@@ -282,7 +282,14 @@ def test_html_email_inserts_img_when_ga4_open_email_event_url_is_present(content
         values=params,
         ga4_open_email_event_url=ga4_open_email_event_url
     )
-    assert '<img id="ga4_open_email_event_url" src="{}'.format(ga4_open_email_event_url) in str(email_body)
+
+    assert (
+        '<img id="ga4_open_email_event_url" '
+        'style="display: none; border-width:0; border-style:hidden" '
+        'src="{}"'
+    ).format(
+        ga4_open_email_event_url
+    ) in str(email_body)
 
 
 @pytest.mark.parametrize(
@@ -297,7 +304,11 @@ def test_html_email_no_gapixel_img_when_ga_pixel_url_is_not_present(content, par
         values=params,
         ga_pixel_url=None
     )
-    assert '<img id="ga_pixel_url" src=' not in str(email_body)
+    assert (
+        '<img id="ga_pixel_url" '
+        'style="display: none; border-width:0; border-style:hidden" '
+        'src='
+    ) not in str(email_body)
 
 
 @pytest.mark.parametrize(
