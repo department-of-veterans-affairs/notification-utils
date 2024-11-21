@@ -49,7 +49,6 @@ class StatsdClient():
             self.statsd_client.gauge(self.format_stat_name(stat), count)
 
     def histogram(self, stat, value, rate=1):
-        """Increment a stat by `histogram`."""
         if self.active:
             self.statsd_client._send_stat(stat, '%s|h' % value, rate)
 
