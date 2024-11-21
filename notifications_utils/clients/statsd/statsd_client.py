@@ -49,6 +49,11 @@ class StatsdClient():
             self.statsd_client.gauge(self.format_stat_name(stat), count)
 
     def histogram(self, stat, value, rate=1):
+        """This is a DataDog specific method, which sends a histogram value to statsd. A statsd packet is a packet with this
+        format - <metric_name>:<value>|<type>|@<sample_rate>. For a histogram, the type is 'h'.
+
+        reference: https://github.com/DataDog/datadogpy/blob/master/datadog/dogstatsd/base.py#L950
+        """
         if self.active:
             self.statsd_client._send_stat(stat, '%s|h' % value, rate)
 
