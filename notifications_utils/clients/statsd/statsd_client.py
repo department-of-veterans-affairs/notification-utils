@@ -55,7 +55,7 @@ class StatsdClient():
         reference: https://github.com/DataDog/datadogpy/blob/master/datadog/dogstatsd/base.py#L950
         """
         if self.active:
-            self.statsd_client._send_stat(stat, '%s|h' % value, rate)
+            self.statsd_client._send_stat(self.format_stat_name(stat), '%s|h' % value, rate)
 
     def timing(self, stat, delta, rate=1):
         if self.active:
