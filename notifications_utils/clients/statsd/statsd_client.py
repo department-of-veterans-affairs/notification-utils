@@ -49,7 +49,7 @@ class StatsdClient():
             self.statsd_client.gauge(self.format_stat_name(stat), count)
 
     def histogram(self, stat, value, rate=1):
-        """Histogram is a DataDog specific metric type, which we've added to our statsd client. StatsD packets
+        """Histogram is a DataDog specific metric type, which we've added here to our statsd client. StatsD packets
         are strings with this format - <metric_name>:<value>|<type>|@<sample_rate>.
         For a histogram, the metric type is 'h'.
 
