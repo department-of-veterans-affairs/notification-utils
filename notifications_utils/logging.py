@@ -4,6 +4,7 @@ import sys
 from itertools import product
 from pathlib import Path
 from time import monotonic
+from uuid import uuid4
 
 from flask import request, g
 from flask.ctx import has_request_context
@@ -152,13 +153,16 @@ class AppNameFilter(logging.Filter):
 
 
 class RequestIdFilter(logging.Filter):
-    @property
-    def request_id(self):
-        if has_request_context() and hasattr(request, 'request_id'):
-            return request.request_id
-
-        return 'no-request-id'
-
     def filter(self, record):
-        record.requestId = self.request_id
+        # The else is for celery
+        record.requestId = RequestIdFilter._get_req_id() if has_request_context() else ''
         return record
+
+    @classmethod
+    def _get_req_id(self):
+        # Guard for this request:
+        if getattr(g, 'request_id', ''):
+            return g.request_id
+        
+        g.request_id = str(uuid4()).replace('-', '')
+        return g.request_id
