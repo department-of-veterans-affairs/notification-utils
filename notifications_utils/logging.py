@@ -155,7 +155,7 @@ class AppNameFilter(logging.Filter):
 class RequestIdFilter(logging.Filter):
     def filter(self, record):
         # The else is for celery
-        if not record.requestId:
+        if not getattr(record, 'requestId', ''):
             record.requestId = RequestIdFilter._get_api_id() if has_request_context() else 'no-request-id'
         return record
 
