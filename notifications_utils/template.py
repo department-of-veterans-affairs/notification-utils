@@ -21,7 +21,6 @@ from notifications_utils.formatters import (
     normalise_newlines,
     normalise_whitespace,
     notify_email_markdown,
-    notify_email_preheader_markdown,
     remove_empty_lines,
     remove_smart_quotes_from_email_addresses,
     remove_whitespace_before_punctuation,
@@ -375,10 +374,9 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         ).then(
             add_trailing_newline
         ).then(
-            notify_email_preheader_markdown
-        ).then(
             do_nice_typography
         ).split())[:self.PREHEADER_LENGTH_IN_CHARACTERS].strip()
+        # TODO - I deleted the call to notify_email_preheader_markdown
 
     def __str__(self):
 
