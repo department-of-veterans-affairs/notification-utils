@@ -760,8 +760,3 @@ notify_email_preheader_markdown = mistune.Markdown(
     renderer=NotifyEmailPreheaderMarkdownRenderer(),
     hard_wrap=True,
 )
-notify_letter_preview_markdown = mistune.Markdown(
-    renderer=NotifyLetterMarkdownPreviewRenderer(),
-    hard_wrap=True,
-    use_xhtml=False,
-)

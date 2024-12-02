@@ -22,7 +22,6 @@ from notifications_utils.formatters import (
     normalise_whitespace,
     notify_email_markdown,
     notify_email_preheader_markdown,
-    notify_letter_preview_markdown,
     notify_plain_text_email_markdown,
     remove_empty_lines,
     remove_smart_quotes_from_email_addresses,
@@ -596,8 +595,6 @@ class LetterPreviewTemplate(WithSubjectTemplate):
             strip_pipes
         ).then(
             add_trailing_newline
-        ).then(
-            notify_letter_preview_markdown
         ).then(
             do_nice_typography
         ).then(
