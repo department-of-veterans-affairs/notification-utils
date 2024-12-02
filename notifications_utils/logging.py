@@ -165,5 +165,5 @@ class RequestIdFilter(logging.Filter):
         if getattr(g, 'request_id', ''):
             return g.request_id
 
-        g.request_id = str(uuid4()).replace('-', '')
+        g.request_id = str(uuid4())
         return g.request_id
