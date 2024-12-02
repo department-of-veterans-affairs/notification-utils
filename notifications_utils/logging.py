@@ -161,4 +161,4 @@ class RequestIdFilter(logging.Filter):
 
     @classmethod
     def _get_api_id(self):
-        return request.request_id if getattr(request, 'request_id', '') else str(uuid4()).replace('-', '')
+        return g.request_id if getattr(g, 'request_id', '') else str(uuid4()).replace('-', '')
