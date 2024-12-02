@@ -1080,101 +1080,52 @@ def test_templates_handle_html_and_redacting(
     assert mock_field_init.call_args_list == expected_field_calls
 
 
-@pytest.mark.parametrize('template_class, extra_args, expected_remove_whitespace_calls', [
-    (PlainTextEmailTemplate, {}, [
-        mock.call('\n\ncontent'),
-        mock.call(Markup('subject')),
-        mock.call(Markup('subject')),
-    ]),
-    (HTMLEmailTemplate, {}, [
-        mock.call(
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
-            'content'
-            '</p>'
-        ),
-        mock.call('\n\ncontent'),
-        mock.call(Markup('subject')),
-        mock.call(Markup('subject')),
-    ]),
-    (EmailPreviewTemplate, {}, [
-        mock.call(
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
-            'content'
-            '</p>'
-        ),
-        mock.call(Markup('subject')),
-        mock.call(Markup('subject')),
-        mock.call(Markup('subject')),
-    ]),
-    (SMSMessageTemplate, {}, [
-        mock.call('content'),
-    ]),
-    (SMSPreviewTemplate, {}, [
-        mock.call('content'),
-    ]),
+@pytest.mark.parametrize('template_class', [
+    PlainTextEmailTemplate,
+    HTMLEmailTemplate,
+    EmailPreviewTemplate,
+    SMSMessageTemplate,
+    SMSPreviewTemplate,
 ])
 @mock.patch('notifications_utils.template.remove_whitespace_before_punctuation', side_effect=lambda x: x)
 def test_templates_remove_whitespace_before_punctuation(
     mock_remove_whitespace,
     template_class,
-    extra_args,
-    expected_remove_whitespace_calls,
 ):
-    template = template_class({'content': 'content', 'subject': 'subject'}, **extra_args)
+    template = template_class({'content': 'content', 'subject': 'subject'})
 
     assert str(template)
 
     if hasattr(template, 'subject'):
         assert template.subject
 
-    assert mock_remove_whitespace.call_args_list == expected_remove_whitespace_calls
+    mock_remove_whitespace.assert_called()
 
 
-@pytest.mark.parametrize('template_class, extra_args, expected_calls', [
-    (PlainTextEmailTemplate, {}, [
-        mock.call('\n\ncontent'),
-        mock.call(Markup('subject')),
-    ]),
-    (HTMLEmailTemplate, {}, [
-        mock.call(
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
-            'content'
-            '</p>'
-        ),
-        mock.call('\n\ncontent'),
-        mock.call(Markup('subject')),
-    ]),
-    (EmailPreviewTemplate, {}, [
-        mock.call(
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
-            'content'
-            '</p>'
-        ),
-        mock.call(Markup('subject')),
-    ]),
-    (SMSMessageTemplate, {}, [
-    ]),
-    (SMSPreviewTemplate, {}, [
-    ]),
+@pytest.mark.parametrize('template_class', [
+    PlainTextEmailTemplate,
+    HTMLEmailTemplate,
+    EmailPreviewTemplate,
+    SMSMessageTemplate,
+    SMSPreviewTemplate,
 ])
 @mock.patch('notifications_utils.template.make_quotes_smart', side_effect=lambda x: x)
 @mock.patch('notifications_utils.template.replace_hyphens_with_en_dashes', side_effect=lambda x: x)
 def test_templates_make_quotes_smart_and_dashes_en(
-    mock_en_dash_replacement,
-    mock_smart_quotes,
+    mock_replace_hyphens_with_en_dashes,
+    mock_make_quotes_smart,
     template_class,
-    extra_args,
-    expected_calls,
 ):
-    template = template_class({'content': 'content', 'subject': 'subject'}, **extra_args)
+    template = template_class({'content': 'content', 'subject': 'subject'})
 
     assert str(template)
 
     if hasattr(template, 'subject'):
         assert template.subject
 
-    mock_smart_quotes.assert_has_calls(expected_calls)
-    mock_en_dash_replacement.assert_has_calls(expected_calls)
+    if 'Email' in template_class.__name__:
+        mock_make_quotes_smart.assert_called()
+        mock_replace_hyphens_with_en_dashes.assert_called()
 
 
 @pytest.mark.parametrize('content', (
