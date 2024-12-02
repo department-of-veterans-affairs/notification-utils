@@ -160,5 +160,9 @@ class RequestIdFilter(logging.Filter):
         return record
 
     @classmethod
-    def _get_api_id(self):
-        return g.request_id if getattr(g, 'request_id', '') else str(uuid4()).replace('-', '')
+    def _get_api_id(self) -> str:
+        """Generate a request_id.
+
+        g is a global for this request. It is attached to the Flask and is only persisted for that request.
+        """
+        return g.request_id if getattr(g, 'request_id', '') else str(uuid4())
