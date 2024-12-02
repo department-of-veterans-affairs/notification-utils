@@ -744,11 +744,3 @@ class NotifyEmailMarkdown(mistune.Markdown):
 
     def output_text(self):
         return self.renderer.paragraph(self.tok_text(), self._is_inside_list)
-
-
-notify_email_markdown = NotifyEmailMarkdown(
-    renderer=NotifyEmailMarkdownRenderer(),
-    block=NotifyEmailBlockLexer,
-    hard_wrap=True,
-    use_xhtml=False,
-)

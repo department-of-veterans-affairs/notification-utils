@@ -20,7 +20,6 @@ from notifications_utils.formatters import (
     nl2li,
     normalise_newlines,
     normalise_whitespace,
-    notify_email_markdown,
     remove_empty_lines,
     remove_smart_quotes_from_email_addresses,
     remove_whitespace_before_punctuation,
@@ -699,8 +698,6 @@ def get_html_email_body(
         # before converting to markdown, strip out the "(())" for placeholders (preview mode or test emails)
         strip_parentheses_in_link_placeholders
     ).then(
-        notify_email_markdown
-    ).then(
         # after converting to html link, replace !!foo## with ((foo))
         replace_symbols_with_placeholder_parens
     ).then(
@@ -708,6 +705,7 @@ def get_html_email_body(
     ).then(
         insert_action_link
     )
+    # TODO - I deleted the call to notify_email_markdown
 
 
 def do_nice_typography(value):
