@@ -752,10 +752,6 @@ notify_email_markdown = NotifyEmailMarkdown(
     hard_wrap=True,
     use_xhtml=False,
 )
-notify_plain_text_email_markdown = mistune.Markdown(
-    renderer=NotifyPlainTextEmailMarkdownRenderer(),
-    hard_wrap=True,
-)
 notify_email_preheader_markdown = mistune.Markdown(
     renderer=NotifyEmailPreheaderMarkdownRenderer(),
     hard_wrap=True,

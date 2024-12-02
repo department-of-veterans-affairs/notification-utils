@@ -22,7 +22,6 @@ from notifications_utils.formatters import (
     normalise_whitespace,
     notify_email_markdown,
     notify_email_preheader_markdown,
-    notify_plain_text_email_markdown,
     remove_empty_lines,
     remove_smart_quotes_from_email_addresses,
     remove_whitespace_before_punctuation,
@@ -299,8 +298,6 @@ class PlainTextEmailTemplate(WithSubjectTemplate):
         ).then(
             add_trailing_newline
         ).then(
-            notify_plain_text_email_markdown
-        ).then(
             do_nice_typography
         ).then(
             unescape
@@ -309,6 +306,7 @@ class PlainTextEmailTemplate(WithSubjectTemplate):
         ).then(
             add_trailing_newline
         )
+        # TODO - I deleted the call to notify_plain_text_email_markdown
 
     @property
     def subject(self):
