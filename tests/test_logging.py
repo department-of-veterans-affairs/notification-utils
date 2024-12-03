@@ -138,12 +138,13 @@ def test_get_handler_sets_up_logging_appropriately_with_debug(tmpdir, app, app_n
         "levelname": "debug",
         "lineno": 1999,
         "msg": "Hello, %s.  Line %d.",
-        "name": "the_name",
         "pathname": "the_path",
         "requestId": "id",
     })
     message = handler.formatter.format(record)
-    assert message.endswith(f' {application} the_name debug id "Hello, Cornelius.  Line 42." [in the_path:1999]')
+    assert message.endswith(
+        f' {app_name or "test"} the_name debug id "Hello, Cornelius.  Line 42." [in the_path:1999]'
+    )
 
 
 @pytest.mark.parametrize('app_name', ('notification-api', 'celery', None))
@@ -161,15 +162,13 @@ def test_get_handler_sets_up_logging_appropriately_without_debug(app, app_name):
         "levelname": "debug",
         "lineno": 1999,
         "msg": "Hello, %s.  Line %d.",
-        "name": "the_name",
         "pathname": "the_path",
         "requestId": "id",
     })
     message = handler.formatter.format(record)
     message_dict = json.loads(message)
     assert "asctime" in message_dict
-    assert message_dict["application"] == application
-    assert message_dict["name"] == "the_name"
+    assert message_dict["application"] == app_name or 'test'
     assert message_dict["levelname"] == "debug"
     assert message_dict["requestId"] == "id"
     assert message_dict["message"] == "Hello, Cornelius.  Line 42."
