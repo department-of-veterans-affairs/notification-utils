@@ -131,7 +131,6 @@ def test_get_handler_sets_up_logging_appropriately_with_debug(tmpdir, app, app_n
     assert type(handler.formatter) is JsonFormatter
     assert not (tmpdir / 'foo').exists()
 
-    # application = app.config["NOTIFY_APP_NAME"]
     record = builtin_logging.makeLogRecord({
         "application": app.name,
         "args": ("Cornelius", 42),
