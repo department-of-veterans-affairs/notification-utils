@@ -7,6 +7,7 @@ import mistune
 import bleach
 from itertools import count
 from markupsafe import Markup
+from mistune.renderers.markdown import MarkdownRenderer
 from . import email_with_smart_quotes_regex
 from notifications_utils.sanitise_text import SanitiseSMS
 import smartypants
@@ -25,29 +26,29 @@ OBSCURE_WHITESPACE = (
 
 
 mistune._block_quote_leading_pattern = re.compile(r'^ *\^ ?', flags=re.M)
-mistune.BlockGrammar.block_quote = re.compile(r'^( *\^[^\n]+(\n[^\n]+)*\n*)+')
-mistune.BlockGrammar.list_block = re.compile(
-    r'^( *)([•*-]|\d+\.)[\s\S]+?'
-    r'(?:'
-    r'\n+(?=\1?(?:[-*_] *){3,}(?:\n+|$))'  # hrule
-    r'|\n+(?=%s)'  # def links
-    r'|\n+(?=%s)'  # def footnotes
-    r'|\n{2,}'
-    r'(?! )'
-    r'(?!\1(?:[•*-]|\d+\.) )\n*'
-    r'|'
-    r'\s*$)' % (
-        mistune._pure_pattern(mistune.BlockGrammar.def_links),
-        mistune._pure_pattern(mistune.BlockGrammar.def_footnotes),
-    )
-)
-mistune.BlockGrammar.list_item = re.compile(
-    r'^(( *)(?:[•*-]|\d+\.)[^\n]*'
-    r'(?:\n(?!\2(?:[•*-]|\d+\.))[^\n]*)*)',
-    flags=re.M
-)
-mistune.BlockGrammar.list_bullet = re.compile(r'^ *(?:[•*-]|\d+\.)')
-mistune.InlineGrammar.url = re.compile(r'''^(https?:\/\/[^\s<]+[^<.,:"')\]\s])''')
+# mistune.BlockGrammar.block_quote = re.compile(r'^( *\^[^\n]+(\n[^\n]+)*\n*)+')
+# mistune.BlockGrammar.list_block = re.compile(
+#     r'^( *)([•*-]|\d+\.)[\s\S]+?'
+#     r'(?:'
+#     r'\n+(?=\1?(?:[-*_] *){3,}(?:\n+|$))'  # hrule
+#     r'|\n+(?=%s)'  # def links
+#     r'|\n+(?=%s)'  # def footnotes
+#     r'|\n{2,}'
+#     r'(?! )'
+#     r'(?!\1(?:[•*-]|\d+\.) )\n*'
+#     r'|'
+#     r'\s*$)' % (
+#         mistune._pure_pattern(mistune.BlockGrammar.def_links),
+#         mistune._pure_pattern(mistune.BlockGrammar.def_footnotes),
+#     )
+# )
+# mistune.BlockGrammar.list_item = re.compile(
+#     r'^(( *)(?:[•*-]|\d+\.)[^\n]*'
+#     r'(?:\n(?!\2(?:[•*-]|\d+\.))[^\n]*)*)',
+#     flags=re.M
+# )
+# mistune.BlockGrammar.list_bullet = re.compile(r'^ *(?:[•*-]|\d+\.)')
+# mistune.InlineGrammar.url = re.compile(r'''^(https?:\/\/[^\s<]+[^<.,:"')\]\s])''')
 
 govuk_not_a_link = re.compile(
     r'(?<!\.|\/)(GOV)\.(UK)(?!\/|\?)',
@@ -75,7 +76,8 @@ magic_sequence_regex = re.compile(MAGIC_SEQUENCE)
 
 # The Mistune URL regex only matches URLs at the start of a string,
 # using `^`, so we slice that off and recompile
-url = re.compile(mistune.InlineGrammar.url.pattern[1:])
+# url = re.compile(mistune.InlineGrammar.url.pattern[1:])
+url = re.compile(r'''(https?:\/\/[^\s<]+[^<.,:"')\]\s])''')
 
 
 def unlink_govuk_escaped(message):
@@ -420,7 +422,7 @@ def replace_symbols_with_placeholder_parens(value: str) -> str:
     return value
 
 
-class NotifyLetterMarkdownPreviewRenderer(mistune.Renderer):
+class NotifyLetterMarkdownPreviewRenderer(MarkdownRenderer):
 
     def block_code(self, code, language=None):
         return code
@@ -711,7 +713,7 @@ class NotifyEmailPreheaderMarkdownRenderer(NotifyPlainTextEmailMarkdownRenderer)
         ))
 
 
-class NotifyEmailBlockLexer(mistune.BlockLexer):
+class NotifyEmailBlockParser(mistune.BlockParser):
 
     def __init__(self, rules=None, **kwargs):
         super().__init__(rules, **kwargs)
@@ -747,21 +749,20 @@ class NotifyEmailMarkdown(mistune.Markdown):
 
 
 notify_email_markdown = NotifyEmailMarkdown(
+    # TODO - hard_wrap=True and use_xhtml=False
     renderer=NotifyEmailMarkdownRenderer(),
-    block=NotifyEmailBlockLexer,
-    hard_wrap=True,
-    use_xhtml=False,
+    block=NotifyEmailBlockParser,
 )
-notify_plain_text_email_markdown = mistune.Markdown(
+notify_plain_text_email_markdown = mistune.create_markdown(
     renderer=NotifyPlainTextEmailMarkdownRenderer(),
     hard_wrap=True,
 )
-notify_email_preheader_markdown = mistune.Markdown(
+notify_email_preheader_markdown = mistune.create_markdown(
     renderer=NotifyEmailPreheaderMarkdownRenderer(),
     hard_wrap=True,
 )
-notify_letter_preview_markdown = mistune.Markdown(
+notify_letter_preview_markdown = mistune.create_markdown(
     renderer=NotifyLetterMarkdownPreviewRenderer(),
     hard_wrap=True,
-    use_xhtml=False,
+    # use_xhtml=False,
 )
