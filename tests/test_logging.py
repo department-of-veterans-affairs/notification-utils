@@ -141,7 +141,7 @@ def test_get_handler_sets_up_logging_appropriately_with_debug(tmpdir, app, app_n
         "pathname": "the_path",
         "requestId": "id",
     })
-    message = handler.formatter.format(record)
+    message = json.loads(handler.formatter.format(record))
     assert message['application'] == app_name
     assert message['levelname'] == 'debug'
     assert message['requestId'] == 'id'
