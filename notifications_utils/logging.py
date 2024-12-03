@@ -170,7 +170,7 @@ class RequestIdFilter(logging.Filter):
         return record
 
     @classmethod
-    def _get_api_id(self) -> str:
+    def _get_api_id(cls) -> str:
         """Generate a request_id.
 
         g is a global for this request. It is attached to the Flask and is only persisted for that request.
