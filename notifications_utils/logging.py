@@ -169,8 +169,8 @@ class RequestIdFilter(logging.Filter):
             record.requestId = RequestIdFilter._get_api_id() if has_request_context() else 'no-request-id'
         return record
 
-    @classmethod
-    def _get_api_id(cls) -> str:
+    @staticmethod
+    def _get_api_id() -> str:
         """Generate a request_id.
 
         g is a global for this request. It is attached to the Flask and is only persisted for that request.
