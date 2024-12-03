@@ -128,7 +128,7 @@ def test_get_handler_sets_up_logging_appropriately_with_debug(tmpdir, app, app_n
     handler = logging.get_handler(app)
 
     assert type(handler) is builtin_logging.StreamHandler
-    assert type(handler.formatter) is builtin_logging.Formatter
+    assert type(handler.formatter) is JsonFormatter
     assert not (tmpdir / 'foo').exists()
 
     application = app.config["NOTIFY_APP_NAME"]
