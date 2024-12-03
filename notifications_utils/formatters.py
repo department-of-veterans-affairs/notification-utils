@@ -438,10 +438,9 @@ class NotifyLetterMarkdownPreviewRenderer(MarkdownRenderer):
     def hrule(self):
         return '<div class="page-break">&nbsp;</div>'
 
-    def paragraph(self, text):
-        if text.strip():
-            return '<p>{}</p>'.format(text)
-        return ''
+    def paragraph(self, token, state):
+        raw_text = token['children'][0]['raw']
+        return f'<p>{raw_text}</p>' if raw_text.strip() else ''
 
     def table(self, header, body):
         return ""
