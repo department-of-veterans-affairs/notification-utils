@@ -4,8 +4,9 @@ import os
 import uuid
 
 import pytest
-from notifications_utils import logging
 from pythonjsonlogger.jsonlogger import JsonFormatter
+
+from notifications_utils import logging
 
 
 class App:
@@ -121,9 +122,9 @@ def test_should_build_statsd_line_without_service_id_or_time_taken():
 
 @pytest.mark.parametrize('app_name', ('notification-api', 'celery', None))
 def test_get_handler_sets_up_logging_appropriately_with_debug(tmpdir, app, app_name):
+    logging.init_app(app)
     del app.config['NOTIFY_LOG_PATH']
 
-    app.name = app_name
     app.debug = True
     handler = logging.get_handler(app)
 
@@ -131,9 +132,9 @@ def test_get_handler_sets_up_logging_appropriately_with_debug(tmpdir, app, app_n
     assert type(handler.formatter) is JsonFormatter
     assert not (tmpdir / 'foo').exists()
 
-    application = app.config["NOTIFY_APP_NAME"]
+    # application = app.config["NOTIFY_APP_NAME"]
     record = builtin_logging.makeLogRecord({
-        "application": application,
+        "application": app.application,
         "args": ("Cornelius", 42),
         "levelname": "debug",
         "lineno": 1999,
@@ -142,9 +143,12 @@ def test_get_handler_sets_up_logging_appropriately_with_debug(tmpdir, app, app_n
         "requestId": "id",
     })
     message = handler.formatter.format(record)
-    assert message.endswith(
-        f' {app_name or "test"} the_name debug id "Hello, Cornelius.  Line 42." [in the_path:1999]'
-    )
+    assert message['application'] == app_name
+    assert message['levelname'] == 'debug'
+    assert message['requestId'] == 'id'
+    assert message['message'] == 'Hello, Cornelius.  Line 42.'
+    assert message['pathname'] == 'the_path'
+    assert message['lineno'] == 1999
 
 
 @pytest.mark.parametrize('app_name', ('notification-api', 'celery', None))
