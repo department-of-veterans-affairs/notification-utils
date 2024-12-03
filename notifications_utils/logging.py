@@ -14,7 +14,7 @@ from pythonjsonlogger.jsonlogger import JsonFormatter
 # The "application" and "requestId" fields are non-standard LogRecord attributes added below in the
 # "get_handler" function via filters.  If this causes errors, logging is misconfigured.
 #     https://docs.python.org/3.8/library/logging.html#logrecord-attributes
-LOG_FORMAT = '%(asctime)s %(application)s %(name)s %(levelname)s ' \
+LOG_FORMAT = '%(asctime)s %(application)s %(levelname)s ' \
              '%(requestId)s "%(message)s" [in %(pathname)s:%(lineno)d]'
 TIME_FORMAT = '%Y-%m-%dT%H:%M:%S'
 
@@ -142,11 +142,16 @@ def get_handler(app):
 
 
 class AppNameFilter(logging.Filter):
+    service_map = {
+        'app': 'notification-api',
+        'delivery': 'celery',
+    }
+
     def __init__(self, app_name):
-        self.app_name = app_name
+        self.service = AppNameFilter.service_map[app_name]
 
     def filter(self, record):
-        record.application = self.app_name
+        record.application = self.service
         return record
 
 
