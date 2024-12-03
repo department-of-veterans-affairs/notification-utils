@@ -173,6 +173,6 @@ class RequestIdFilter(logging.Filter):
     def _get_api_id() -> str:
         """Generate a request_id.
 
-        g is a global for this request. It is attached to the Flask and is only persisted for that request.
+        g is a Flask global for this request. It's attached to the Flask instance and is only persisted for that request
         """
         return g.request_id if getattr(g, 'request_id', '') else str(uuid4())
