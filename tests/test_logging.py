@@ -122,9 +122,8 @@ def test_should_build_statsd_line_without_service_id_or_time_taken():
 
 @pytest.mark.parametrize('app_name', ('notification-api', 'celery', None))
 def test_get_handler_sets_up_logging_appropriately_with_debug(tmpdir, app, app_name):
-    logging.init_app(app)
     del app.config['NOTIFY_LOG_PATH']
-
+    app.name = app_name
     app.debug = True
     handler = logging.get_handler(app)
 
@@ -134,7 +133,7 @@ def test_get_handler_sets_up_logging_appropriately_with_debug(tmpdir, app, app_n
 
     # application = app.config["NOTIFY_APP_NAME"]
     record = builtin_logging.makeLogRecord({
-        "application": app.application,
+        "application": app.name,
         "args": ("Cornelius", 42),
         "levelname": "debug",
         "lineno": 1999,
@@ -159,9 +158,8 @@ def test_get_handler_sets_up_logging_appropriately_without_debug(app, app_name):
     assert type(handler) is builtin_logging.StreamHandler
     assert type(handler.formatter) is JsonFormatter
 
-    application = app.config["NOTIFY_APP_NAME"]
     record = builtin_logging.makeLogRecord({
-        "application": application,
+        "application": app.name,
         "args": ("Cornelius", 42),
         "levelname": "debug",
         "lineno": 1999,
