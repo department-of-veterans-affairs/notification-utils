@@ -155,7 +155,7 @@ def get_handler(app):
 
 class AppNameFilter(logging.Filter):
     def __init__(self, app_name):
-        self.service = AppNameFilter.service_map.get(app_name, 'test')
+        self.service = _service_map.get(app_name, 'test')
 
     def filter(self, record):
         record.application = self.service
