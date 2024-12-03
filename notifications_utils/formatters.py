@@ -3,9 +3,8 @@ import re
 import string
 
 import bleach
-import mistune
-from markupsafe import Markup
 import smartypants
+from markupsafe import Markup
 
 from . import email_with_smart_quotes_regex
 from notifications_utils.sanitise_text import SanitiseSMS
@@ -22,31 +21,6 @@ OBSCURE_WHITESPACE = (
     '\uFEFF'  # zero width non-breaking space
 )
 
-
-mistune._block_quote_leading_pattern = re.compile(r'^ *\^ ?', flags=re.M)
-mistune.BlockGrammar.block_quote = re.compile(r'^( *\^[^\n]+(\n[^\n]+)*\n*)+')
-mistune.BlockGrammar.list_block = re.compile(
-    r'^( *)([•*-]|\d+\.)[\s\S]+?'
-    r'(?:'
-    r'\n+(?=\1?(?:[-*_] *){3,}(?:\n+|$))'  # hrule
-    r'|\n+(?=%s)'  # def links
-    r'|\n+(?=%s)'  # def footnotes
-    r'|\n{2,}'
-    r'(?! )'
-    r'(?!\1(?:[•*-]|\d+\.) )\n*'
-    r'|'
-    r'\s*$)' % (
-        mistune._pure_pattern(mistune.BlockGrammar.def_links),
-        mistune._pure_pattern(mistune.BlockGrammar.def_footnotes),
-    )
-)
-mistune.BlockGrammar.list_item = re.compile(
-    r'^(( *)(?:[•*-]|\d+\.)[^\n]*'
-    r'(?:\n(?!\2(?:[•*-]|\d+\.))[^\n]*)*)',
-    flags=re.M
-)
-mistune.BlockGrammar.list_bullet = re.compile(r'^ *(?:[•*-]|\d+\.)')
-mistune.InlineGrammar.url = re.compile(r'''^(https?:\/\/[^\s<]+[^<.,:"')\]\s])''')
 
 govuk_not_a_link = re.compile(
     r'(?<!\.|\/)(GOV)\.(UK)(?!\/|\?)',
@@ -71,10 +45,6 @@ multiple_newlines = re.compile(r'((\n)\2{2,})')
 MAGIC_SEQUENCE = "🇬🇧🐦✉️"
 
 magic_sequence_regex = re.compile(MAGIC_SEQUENCE)
-
-# The Mistune URL regex only matches URLs at the start of a string,
-# using `^`, so we slice that off and recompile
-url = re.compile(mistune.InlineGrammar.url.pattern[1:])
 
 
 def unlink_govuk_escaped(message):
@@ -102,6 +72,7 @@ def add_prefix(body, prefix=None):
 
 
 def autolink_sms(body):
+    url = re.compile(r'''(https?:\/\/[^\s<]+[^<.,:"')\]\s])''')
     return url.sub(
         lambda match: '<a style="{}" href="{}">{}</a>'.format(
             LINK_STYLE,
@@ -417,38 +388,3 @@ def replace_symbols_with_placeholder_parens(value: str) -> str:
         value = value.replace(placeholder, mod_placeholder)
 
     return value
-
-
-class NotifyEmailBlockLexer(mistune.BlockLexer):
-
-    def __init__(self, rules=None, **kwargs):
-        super().__init__(rules, **kwargs)
-
-    def parse_newline(self, m):
-        if self._list_depth == 0:
-            super().parse_newline(m)
-
-
-class NotifyEmailMarkdown(mistune.Markdown):
-
-    def __init__(self, renderer=None, inline=None, block=None, **kwargs):
-        super().__init__(renderer, inline, block, **kwargs)
-        self._is_inside_list = False
-
-    def output_loose_item(self):
-        body = self.renderer.placeholder()
-        self._is_inside_list = True
-        while self.pop()['type'] != 'list_item_end':
-            body += self.tok()
-
-        self._is_inside_list = False
-        return self.renderer.list_item(body)
-
-    def tok_text(self):
-        if self._is_inside_list:
-            return self.inline(self.token['text'])
-        else:
-            return super().tok_text()
-
-    def output_text(self):
-        return self.renderer.paragraph(self.tok_text(), self._is_inside_list)
