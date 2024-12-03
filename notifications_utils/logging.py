@@ -14,9 +14,16 @@ from pythonjsonlogger.jsonlogger import JsonFormatter
 # The "application" and "requestId" fields are non-standard LogRecord attributes added below in the
 # "get_handler" function via filters.  If this causes errors, logging is misconfigured.
 #     https://docs.python.org/3.8/library/logging.html#logrecord-attributes
-LOG_FORMAT = '%(asctime)s %(application)s %(levelname)s ' \
-             '%(requestId)s "%(message)s" [in %(pathname)s:%(lineno)d]'
+API_LOG_FORMAT = '%(asctime)s %(application)s %(levelname)s ' \
+                 '%(requestId)s "%(message)s" [in %(pathname)s:%(lineno)d]'
+CELERY_LOG_FORMAT = '%(asctime)s %(application)s %(processName)s %(levelname)s ' \
+                    '%(requestId)s "%(message)s" [in %(pathname)s:%(lineno)d]'
 TIME_FORMAT = '%Y-%m-%dT%H:%M:%S'
+
+_service_map = {
+    'app': 'notification-api',
+    'delivery': 'celery',
+}
 
 logger = logging.getLogger(__name__)
 
@@ -135,20 +142,20 @@ def get_handler(app):
     if app.debug:
         # Human readable stdout logs that omit static route 200 responses
         logging.getLogger('werkzeug').addFilter(is_200_static_log)
-    # Machine readable json to stdout
-    stream_handler.setFormatter(JsonFormatter(LOG_FORMAT, TIME_FORMAT))
+
+    stream_handler.setFormatter(
+        JsonFormatter(
+            CELERY_LOG_FORMAT if _service_map.get(app.name, API_LOG_FORMAT) == 'celery' else API_LOG_FORMAT,
+            TIME_FORMAT,
+        )
+    )
 
     return stream_handler
 
 
 class AppNameFilter(logging.Filter):
-    service_map = {
-        'app': 'notification-api',
-        'delivery': 'celery',
-    }
-
     def __init__(self, app_name):
-        self.service = AppNameFilter.service_map[app_name]
+        self.service = AppNameFilter.service_map.get(app_name, 'test')
 
     def filter(self, record):
         record.application = self.service
