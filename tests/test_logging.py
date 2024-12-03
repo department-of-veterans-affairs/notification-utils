@@ -119,14 +119,16 @@ def test_should_build_statsd_line_without_service_id_or_time_taken():
     assert logging.build_statsd_line(extra_fields) == "method.endpoint.200"
 
 
-def test_get_handler_sets_up_logging_appropriately_with_debug(tmpdir, app):
+@pytest.mark.parametrize('app_name', ('notification-api', 'celery', None))
+def test_get_handler_sets_up_logging_appropriately_with_debug(tmpdir, app, app_name):
     del app.config['NOTIFY_LOG_PATH']
 
+    app.name = app_name
     app.debug = True
     handler = logging.get_handler(app)
 
-    assert type(handler) == builtin_logging.StreamHandler
-    assert type(handler.formatter) == builtin_logging.Formatter
+    assert type(handler) is builtin_logging.StreamHandler
+    assert type(handler.formatter) is builtin_logging.Formatter
     assert not (tmpdir / 'foo').exists()
 
     application = app.config["NOTIFY_APP_NAME"]
@@ -144,11 +146,13 @@ def test_get_handler_sets_up_logging_appropriately_with_debug(tmpdir, app):
     assert message.endswith(f' {application} the_name debug id "Hello, Cornelius.  Line 42." [in the_path:1999]')
 
 
-def test_get_handler_sets_up_logging_appropriately_without_debug(app):
+@pytest.mark.parametrize('app_name', ('notification-api', 'celery', None))
+def test_get_handler_sets_up_logging_appropriately_without_debug(app, app_name):
+    app.name = app_name
     app.debug = False
     handler = logging.get_handler(app)
-    assert type(handler) == builtin_logging.StreamHandler
-    assert type(handler.formatter) == JsonFormatter
+    assert type(handler) is builtin_logging.StreamHandler
+    assert type(handler.formatter) is JsonFormatter
 
     application = app.config["NOTIFY_APP_NAME"]
     record = builtin_logging.makeLogRecord({
