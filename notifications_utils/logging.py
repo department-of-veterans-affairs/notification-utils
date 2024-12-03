@@ -135,10 +135,8 @@ def get_handler(app):
     if app.debug:
         # Human readable stdout logs that omit static route 200 responses
         logging.getLogger('werkzeug').addFilter(is_200_static_log)
-        stream_handler.setFormatter(logging.Formatter(LOG_FORMAT, TIME_FORMAT))
-    else:
-        # Machine readable json to stdout
-        stream_handler.setFormatter(JsonFormatter(LOG_FORMAT, TIME_FORMAT))
+    # Machine readable json to stdout
+    stream_handler.setFormatter(JsonFormatter(LOG_FORMAT, TIME_FORMAT))
 
     return stream_handler
 
