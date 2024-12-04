@@ -486,8 +486,8 @@ class LetterPreviewTemplate(WithSubjectTemplate):
         self.logo_file_name = logo_file_name
         self.date = date or datetime.utcnow()
 
-    def __str__(self):
-        return Markup(self.jinja_template.render({
+    def __str__(self) -> str:
+        return str(Markup(self.jinja_template.render({
             'admin_base_url': self.admin_base_url,
             'logo_file_name': self.logo_file_name,
             # logo_class should only ever be None, svg or png
@@ -497,7 +497,7 @@ class LetterPreviewTemplate(WithSubjectTemplate):
             'address': self._address_block,
             'contact_block': self._contact_block,
             'date': self._date,
-        }))
+        })))
 
     @property
     def subject(self):

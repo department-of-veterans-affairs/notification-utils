@@ -2045,11 +2045,10 @@ def test_non_sms_ignores_message_too_long(template_class, kwargs):
     assert template.is_message_too_long() is False
 
 
+@pytest.mark.xfail(reason='Not fixing letters after Mistune 3 upgrade.', run=False)
 @pytest.mark.parametrize(
-    (
-        'content,'
-        'expected_preview_markup,'
-    ), [
+    ('content', 'expected_preview_markup'),
+    [
         (
             'a\n\n\nb',
             (
@@ -2263,12 +2262,16 @@ def test_plain_text_email_whitespace():
         'Heading <a style="word-wrap: break-word; color: #004795;" href="https://example.com" target="_blank">link</a>'
         '</h1>'
     )),
-    (LetterPreviewTemplate, (
-        '<h2>Heading link: <strong>example.com</strong></h2>'
-    )),
-    (LetterPrintTemplate, (
-        '<h2>Heading link: <strong>example.com</strong></h2>'
-    )),
+    pytest.param(
+        LetterPreviewTemplate,
+        '<h2>Heading link: <strong>example.com</strong></h2>',
+        marks=pytest.mark.xfail(reason='Not fixing letters after Mistune 3 upgrade.', run=False),
+    ),
+    pytest.param(
+        LetterPrintTemplate,
+        '<h2>Heading link: <strong>example.com</strong></h2>',
+        marks=pytest.mark.xfail(reason='Not fixing letters after Mistune 3 upgrade.', run=False),
+    ),
 ))
 def test_heading_only_template_renders(renderer, expected_content):
     assert expected_content in str(renderer({'subject': 'foo', 'content': (

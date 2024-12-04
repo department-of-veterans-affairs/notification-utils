@@ -25,7 +25,7 @@ OBSCURE_WHITESPACE = (
 )
 
 
-mistune._block_quote_leading_pattern = re.compile(r'^ *\^ ?', flags=re.M)
+# mistune._block_quote_leading_pattern = re.compile(r'^ *\^ ?', flags=re.M)
 # mistune.BlockGrammar.block_quote = re.compile(r'^( *\^[^\n]+(\n[^\n]+)*\n*)+')
 # mistune.BlockGrammar.list_block = re.compile(
 #     r'^( *)([•*-]|\d+\.)[\s\S]+?'
@@ -424,16 +424,17 @@ def replace_symbols_with_placeholder_parens(value: str) -> str:
 
 class NotifyLetterMarkdownPreviewRenderer(MarkdownRenderer):
 
-    def block_code(self, code, language=None):
-        return code
+    def block_code(self, token, state):
+        return token
 
-    def block_quote(self, text):
-        return text
+    def block_quote(self, token, state):
+        return token
 
-    def header(self, text, level, raw=None):
-        if level == 1:
-            return super().header(text, 2)
-        return self.paragraph(text)
+    def heading(self, token, state):
+        if token['attrs']['level'] == 1:
+            token['attrs']['level'] = 2
+            return super().heading(token, state)
+        return self.paragraph(token, state)
 
     def hrule(self):
         return '<div class="page-break">&nbsp;</div>'
@@ -450,19 +451,19 @@ class NotifyLetterMarkdownPreviewRenderer(MarkdownRenderer):
             link.replace('http://', '').replace('https://', '')
         )
 
-    def codespan(self, text):
-        return text
+    def codespan(self, token, state):
+        return token
 
     def double_emphasis(self, text):
         return text
 
-    def emphasis(self, text):
-        return text
+    def emphasis(self, token, state):
+        return token
 
-    def image(self, src, title, alt_text):
+    def image(self, token, state):
         return ""
 
-    def linebreak(self):
+    def linebreak(self, token, state):
         return "<br>"
 
     def newline(self):
@@ -471,8 +472,9 @@ class NotifyLetterMarkdownPreviewRenderer(MarkdownRenderer):
     def list_item(self, text):
         return '<li>{}</li>\n'.format(text.strip())
 
-    def link(self, link, title, content):
-        return '{}: {}'.format(content, self.autolink(link))
+    def link(self, token, state):
+        url = token['children'][0]['raw']
+        return f'{url}: {self.autolink(url)}'
 
     def strikethrough(self, text):
         return text
@@ -489,35 +491,31 @@ class NotifyLetterMarkdownPreviewRenderer(MarkdownRenderer):
 
 class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
 
-    def header(self, text, level, raw=None):
+    def heading(self, token, state):
+        level = token['attrs']['level']
+
+        if level > 3:
+            # Treat the element as a paragraph.
+            token['type'] = 'paragraph'
+            return self.paragraph(token, state)
+
         if level == 1:
-            return (
-                '<h1 style="Margin: 0 0 20px 0; padding: 0; '
-                'font-size: 32px; line-height: 35px; font-weight: bold; color: #323A45;">'
-                '{}'
-                '</h1>'
-            ).format(
-                text
-            )
+            text = '<h1 style="Margin: 0 0 20px 0; padding: 0; ' \
+                   'font-size: 32px; line-height: 35px; font-weight: bold; color: #323A45;">'
         elif level == 2:
-            return (
-                '<h2 style="Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #323A45;'
-                'font-size: 24px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;">'
-                '{}'
-                '</h2>'
-            ).format(
-                text
-            )
+            text = '<h2 style="Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #323A45;' \
+                   'font-size: 24px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;">'
         elif level == 3:
-            return (
-                '<h3 style="Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #323A45;'
-                'font-size: 20.8px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;">'
-                '{}'
-                '</h3>'
-            ).format(
-                text
-            )
-        return self.paragraph(text)
+            text = '<h3 style="Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #323A45;' \
+                   'font-size: 20.8px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;">'
+
+        for child in token['children']:
+            if child['type'] == 'text':
+                text += child['raw']
+            else:
+                text += getattr(self, child['type'])(child, state)
+
+        return text + f'</h{level}>'
 
     def hrule(self):
         return (
@@ -564,11 +562,12 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
             text.strip()
         )
 
-    def paragraph(self, text, is_inside_list=False):
+    def paragraph(self, token, state, is_inside_list=False):
         margin = 'Margin: 5px 0 5px 0' if is_inside_list else 'Margin: 0 0 20px 0'
+        text = token['children'][0]['raw']
         if text.strip():
             return f'<p style="{margin}; font-size: 16px; line-height: 25px; color: #323A45;">{text}</p>'
-        return ""
+        return ''
 
     def block_quote(self, text):
         return (
@@ -587,15 +586,23 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
             text
         )
 
-    def link(self, link, title, content):
-        return (
-            '<a style="{}"{}{} target="_blank">{}</a>'
-        ).format(
-            LINK_STYLE,
-            ' href="{}"'.format(link),
-            ' title="{}"'.format(title) if title else "",
-            content,
-        )
+    def link(self, token, state):
+        url = token['attrs']['url']
+        text = f'<a style="{LINK_STYLE}" href="{url}" '
+
+        if 'title' in token['attrs']:
+            title = token['attrs']['title']
+            text += f'title="{title}" '
+
+        text += 'target="_blank">'
+
+        for child in token['children']:
+            if child['type'] == 'text':
+                text += child['raw']
+            else:
+                text += getattr(self, child['type'])(child, state)
+
+        return text + '</a>'
 
     def autolink(self, link, is_email=False):
         if is_email:
@@ -620,22 +627,23 @@ class NotifyPlainTextEmailMarkdownRenderer(NotifyEmailMarkdownRenderer):
 
     COLUMN_WIDTH = 65
 
-    def header(self, text, level, raw=None):
-        if level == 1:
-            return ''.join((
-                self.linebreak() * 3,
-                text,
-                self.linebreak(),
-                '-' * self.COLUMN_WIDTH,
-            ))
-        elif level in (2, 3):
-            return ''.join((
-                self.linebreak() * 2,
-                text,
-                self.linebreak(),
-                '-' * self.COLUMN_WIDTH
-            ))
-        return self.paragraph(text)
+    def heading(self, token, state):
+        level = token['attrs']['level']
+
+        if level > 3:
+            # Treat the element as a paragraph.
+            token['type'] = 'paragraph'
+            return self.paragraph(token, state)
+
+        text = (self.linebreak() * (3 if (level == 1) else 2))
+
+        for child in token['children']:
+            if child['type'] == 'text':
+                text += child['raw']
+            else:
+                text += getattr(self, child['type'])(child, state)
+
+        return text + self.linebreak() + ('-' * self.COLUMN_WIDTH)
 
     def hrule(self):
         return self.paragraph(
@@ -668,24 +676,22 @@ class NotifyPlainTextEmailMarkdownRenderer(NotifyEmailMarkdownRenderer):
             text.strip(),
         ))
 
-    def paragraph(self, text, is_inside_list=False):
+    def paragraph(self, token, state):
+        text = token['children'][0]['raw']
         if text.strip():
             return ''.join((
                 self.linebreak() * 2,
                 text,
             ))
-        return ""
+        return ''
 
     def block_quote(self, text):
         return text
 
-    def link(self, link, title, content):
-        return ''.join((
-            content,
-            ' ({})'.format(title) if title else '',
-            ': ',
-            link,
-        ))
+    def link(self, token, state):
+        url = token['attrs']['url']
+        url_text = token['children'][0]['raw']
+        return f'{url_text}: {url}'
 
     def autolink(self, link, is_email=False):
         return link
@@ -699,23 +705,19 @@ class NotifyPlainTextEmailMarkdownRenderer(NotifyEmailMarkdownRenderer):
 
 class NotifyEmailPreheaderMarkdownRenderer(NotifyPlainTextEmailMarkdownRenderer):
 
-    def header(self, text, level, raw=None):
-        return self.paragraph(text)
+    # def heading(self, token, state):
+    #     return self.paragraph(token, state)
 
     def hrule(self):
         return ''
 
-    def link(self, link, title, content):
-        return ''.join((
-            content,
-            ' ({})'.format(title) if title else '',
-        ))
+    def link(self, token, state):
+        url = token['attrs']['url']
+        url_text = token['children'][0]['raw']
+        return f'{url_text}({url})'
 
 
 class NotifyEmailBlockParser(mistune.BlockParser):
-
-    def __init__(self, rules=None, **kwargs):
-        super().__init__(rules, **kwargs)
 
     def parse_newline(self, m):
         if self._list_depth == 0:
@@ -724,8 +726,8 @@ class NotifyEmailBlockParser(mistune.BlockParser):
 
 class NotifyEmailMarkdown(mistune.Markdown):
 
-    def __init__(self, renderer=None, inline=None, block=None, **kwargs):
-        super().__init__(renderer, inline, block, **kwargs)
+    def __init__(self, renderer=None, block=None, inline=None, plugins=None):
+        super().__init__(renderer, block, inline, plugins)
         self._is_inside_list = False
 
     def output_loose_item(self):
@@ -750,7 +752,7 @@ class NotifyEmailMarkdown(mistune.Markdown):
 notify_email_markdown = NotifyEmailMarkdown(
     # TODO - hard_wrap=True and use_xhtml=False
     renderer=NotifyEmailMarkdownRenderer(),
-    block=NotifyEmailBlockParser,
+    block=NotifyEmailBlockParser(),
 )
 notify_plain_text_email_markdown = mistune.create_markdown(
     renderer=NotifyPlainTextEmailMarkdownRenderer(),
