@@ -1,16 +1,16 @@
 import os
-import string
 import re
+import string
 import urllib
 
-import mistune
 import bleach
+import mistune
+import smartypants
 from itertools import count
 from markupsafe import Markup
 from mistune.renderers.markdown import MarkdownRenderer
 from . import email_with_smart_quotes_regex
 from notifications_utils.sanitise_text import SanitiseSMS
-import smartypants
 
 PARAGRAPH_STYLE = 'Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;'
 LINK_STYLE = 'word-wrap: break-word; color: #004795;'
@@ -467,7 +467,7 @@ class NotifyLetterMarkdownPreviewRenderer(MarkdownRenderer):
         return "<br>"
 
     def newline(self):
-        return self.linebreak()
+        return self.linebreak(token, state)
 
     def list_item(self, text):
         return '<li>{}</li>\n'.format(text.strip())
@@ -510,10 +510,7 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
                    'font-size: 20.8px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;">'
 
         for child in token['children']:
-            if child['type'] == 'text':
-                text += child['raw']
-            else:
-                text += getattr(self, child['type'])(child, state)
+            text += getattr(self, child['type'])(child, state)
 
         return text + f'</h{level}>'
 
@@ -522,7 +519,7 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
             '<hr style="border: 0; height: 1px; background: #BFC1C3; Margin: 30px 0 30px 0;">'
         )
 
-    def linebreak(self):
+    def linebreak(self, token, state):
         return "<br />"
 
     def list(self, body, ordered=True):
@@ -579,11 +576,9 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
             'style="Padding: 24px 24px 0.1px 24px; font-family: Helvetica, Arial, sans-serif; '
             'font-size: 16px; line-height: 25px;"'
             '>'
-            '{}'
+            f'{text}'
             '</td>'
             '</table>'
-        ).format(
-            text
         )
 
     def link(self, token, state):
@@ -597,10 +592,7 @@ class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
         text += 'target="_blank">'
 
         for child in token['children']:
-            if child['type'] == 'text':
-                text += child['raw']
-            else:
-                text += getattr(self, child['type'])(child, state)
+            text += getattr(self, child['type'])(child, state)
 
         return text + '</a>'
 
@@ -628,6 +620,7 @@ class NotifyPlainTextEmailMarkdownRenderer(NotifyEmailMarkdownRenderer):
     COLUMN_WIDTH = 65
 
     def heading(self, token, state):
+        print("MADE IT HERE HEADING", token)  # TODO - delete
         level = token['attrs']['level']
 
         if level > 3:
@@ -635,60 +628,70 @@ class NotifyPlainTextEmailMarkdownRenderer(NotifyEmailMarkdownRenderer):
             token['type'] = 'paragraph'
             return self.paragraph(token, state)
 
-        text = (self.linebreak() * (3 if (level == 1) else 2))
+        text = '\n' * (3 if (level == 1) else 2)
 
         for child in token['children']:
-            if child['type'] == 'text':
-                text += child['raw']
-            else:
-                text += getattr(self, child['type'])(child, state)
+            text += getattr(self, child['type'])(child, state)
 
-        return text + self.linebreak() + ('-' * self.COLUMN_WIDTH)
+        return text + '\n' + ('-' * self.COLUMN_WIDTH) + '\n'
 
-    def hrule(self):
+    def hrule(self, token, state):
+        print("MADE IT HERE HRULE", token)  # TODO - delete
         return self.paragraph(
             '=' * self.COLUMN_WIDTH
         )
 
-    def linebreak(self):
+    def linebreak(self, token, state):
         return '\n'
 
-    def list(self, body, ordered=True):
+    def list(self, token, state):
+        print("MADE IT HERE LIST", token)  # TODO - delete
 
-        def _get_list_marker():
+        def _get_list_marker(is_ordered):
+            """
+            Return the next integer.  This is useful because markdown ordered lists don't require unique numbers.
+            """
             decimal = count(1)
-            return lambda _: '{}.'.format(next(decimal)) if ordered else '•'
+            return lambda: str(next(decimal)) if is_ordered else '•'
 
-        return ''.join((
-            self.linebreak(),
-            re.sub(
-                magic_sequence_regex,
-                _get_list_marker(),
-                body,
-            ),
-        ))
+        text = '\n'
+        bullet = _get_list_marker(token['attrs']['ordered'])
+        for child in token['children']:
+            assert child['type'] == 'list_item', 'Lists should only contain list items.'
+            child_text = self.list_item(child, state)
+            text += f'{bullet()}. {child_text}'
 
-    def list_item(self, text):
-        return ''.join((
-            self.linebreak(),
-            MAGIC_SEQUENCE,
-            ' ',
-            text.strip(),
-        ))
+        # TODO - Keep this?
+        # return self.linebreak(token, state) + re.sub(magic_sequence_regex, _get_list_marker(token['attrs']['ordered']), body)
+        return text
+
+    def list_item(self, token, state):
+        """
+        The Markdown renderer does not have a list_item method by default.  This method's signature is not the
+        same as the signature for HTMLRendered, which does have this method by default.
+        """
+
+        text = ''
+
+        for child in token['children']:
+            text += getattr(self, child['type'])(child, state)
+
+        return text
 
     def paragraph(self, token, state):
-        text = token['children'][0]['raw']
-        if text.strip():
-            return ''.join((
-                self.linebreak() * 2,
-                text,
-            ))
-        return ''
+        print("MADE IT HERE PARAGRAPH", token)  # TODO - delete
+        text = ''
+
+        for child in token['children']:
+            text += getattr(self, child['type'])(child, state)
+
+        return f'\n\n{text}\n' if text else ''
 
     def block_quote(self, text):
         return text
 
     def link(self, token, state):
+        # TODO - recursion
         url = token['attrs']['url']
         url_text = token['children'][0]['raw']
         return f'{url_text}: {url}'
@@ -705,9 +708,6 @@ class NotifyPlainTextEmailMarkdownRenderer(NotifyEmailMarkdownRenderer):
 
 class NotifyEmailPreheaderMarkdownRenderer(NotifyPlainTextEmailMarkdownRenderer):
 
-    # def heading(self, token, state):
-    #     return self.paragraph(token, state)
-
     def hrule(self):
         return ''
 
@@ -717,6 +717,7 @@ class NotifyEmailPreheaderMarkdownRenderer(NotifyPlainTextEmailMarkdownRenderer)
         return f'{url_text}({url})'
 
 
+# TODO - Can probably delete this.  parse_newline doesn't override anything in Mistune 3.
 class NotifyEmailBlockParser(mistune.BlockParser):
 
     def parse_newline(self, m):
@@ -749,14 +750,42 @@ class NotifyEmailMarkdown(mistune.Markdown):
         return self.renderer.paragraph(self.tok_text(), self._is_inside_list)
 
 
+def parse_hrule(block, m, state):
+    """
+    Parse a horizontal rule block.
+    """
+    print("TEST 2")  # TODO - delete
+    state.append_token({'type': 'hrule', 'raw': m.group('hrule_text')})
+    return m.end() + 1
+
+
+HRULE_PATTERN = r'''^(?P<hrule_text>[-*_]{3,})\s*$'''
+
+
+def hrule(md):
+    """
+    A Mistune plug-in to recognize a horizontal rule.
+        https://mistune.lepture.com/en/latest/advanced.html
+        https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#horizontal-rule
+    """
+
+    md.block.register('hrule', HRULE_PATTERN, parse_hrule)
+    if md.renderer and md.renderer.NAME == 'html':
+        # This Mistune docs recommend specifying default HTML renderers, but this is
+        # is only used with plain text e-mail right now.
+        pass
+    print("TEST 1")  # TODO - delete
+
 notify_email_markdown = NotifyEmailMarkdown(
     # TODO - hard_wrap=True and use_xhtml=False
     renderer=NotifyEmailMarkdownRenderer(),
-    block=NotifyEmailBlockParser(),
+    block=NotifyEmailBlockParser(),  # TODO - Delete?
+    # plugins=[hrule],
 )
 notify_plain_text_email_markdown = mistune.create_markdown(
     renderer=NotifyPlainTextEmailMarkdownRenderer(),
     hard_wrap=True,
+    plugins=['notifications_utils.formatters.hrule'],
 )
 notify_email_preheader_markdown = mistune.create_markdown(
     renderer=NotifyEmailPreheaderMarkdownRenderer(),
