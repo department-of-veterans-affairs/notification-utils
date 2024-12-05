@@ -1,13 +1,12 @@
 import os
 import re
 import string
-import urllib
 
 import bleach
 import mistune
 import smartypants
-from itertools import count
 from markupsafe import Markup
+from mistune.renderers.html import HTMLRenderer
 from mistune.renderers.markdown import MarkdownRenderer
 from . import email_with_smart_quotes_regex
 from notifications_utils.sanitise_text import SanitiseSMS
@@ -24,31 +23,6 @@ OBSCURE_WHITESPACE = (
     '\uFEFF'  # zero width non-breaking space
 )
 
-
-# mistune._block_quote_leading_pattern = re.compile(r'^ *\^ ?', flags=re.M)
-# mistune.BlockGrammar.block_quote = re.compile(r'^( *\^[^\n]+(\n[^\n]+)*\n*)+')
-# mistune.BlockGrammar.list_block = re.compile(
-#     r'^( *)([•*-]|\d+\.)[\s\S]+?'
-#     r'(?:'
-#     r'\n+(?=\1?(?:[-*_] *){3,}(?:\n+|$))'  # hrule
-#     r'|\n+(?=%s)'  # def links
-#     r'|\n+(?=%s)'  # def footnotes
-#     r'|\n{2,}'
-#     r'(?! )'
-#     r'(?!\1(?:[•*-]|\d+\.) )\n*'
-#     r'|'
-#     r'\s*$)' % (
-#         mistune._pure_pattern(mistune.BlockGrammar.def_links),
-#         mistune._pure_pattern(mistune.BlockGrammar.def_footnotes),
-#     )
-# )
-# mistune.BlockGrammar.list_item = re.compile(
-#     r'^(( *)(?:[•*-]|\d+\.)[^\n]*'
-#     r'(?:\n(?!\2(?:[•*-]|\d+\.))[^\n]*)*)',
-#     flags=re.M
-# )
-# mistune.BlockGrammar.list_bullet = re.compile(r'^ *(?:[•*-]|\d+\.)')
-# mistune.InlineGrammar.url = re.compile(r'''^(https?:\/\/[^\s<]+[^<.,:"')\]\s])''')
 
 govuk_not_a_link = re.compile(
     r'(?<!\.|\/)(GOV)\.(UK)(?!\/|\?)',
@@ -71,12 +45,10 @@ hyphens_surrounded_by_spaces = re.compile(r'\s+[-|–|—]{1,3}\s+')
 multiple_newlines = re.compile(r'((\n)\2{2,})')
 
 MAGIC_SEQUENCE = "🇬🇧🐦✉️"
-
 magic_sequence_regex = re.compile(MAGIC_SEQUENCE)
 
 # The Mistune URL regex only matches URLs at the start of a string,
 # using `^`, so we slice that off and recompile
-# url = re.compile(mistune.InlineGrammar.url.pattern[1:])
 url = re.compile(r'''(https?:\/\/[^\s<]+[^<.,:"')\]\s])''')
 
 
@@ -422,336 +394,6 @@ def replace_symbols_with_placeholder_parens(value: str) -> str:
     return value
 
 
-class NotifyLetterMarkdownPreviewRenderer(MarkdownRenderer):
-
-    def block_code(self, token, state):
-        return token
-
-    def block_quote(self, token, state):
-        return token
-
-    def heading(self, token, state):
-        if token['attrs']['level'] == 1:
-            token['attrs']['level'] = 2
-            return super().heading(token, state)
-        return self.paragraph(token, state)
-
-    def hrule(self):
-        return '<div class="page-break">&nbsp;</div>'
-
-    def paragraph(self, token, state):
-        raw_text = token['children'][0]['raw']
-        return f'<p>{raw_text}</p>' if raw_text.strip() else ''
-
-    def table(self, header, body):
-        return ""
-
-    def autolink(self, link, is_email=False):
-        return '<strong>{}</strong>'.format(
-            link.replace('http://', '').replace('https://', '')
-        )
-
-    def codespan(self, token, state):
-        return token
-
-    def double_emphasis(self, text):
-        return text
-
-    def emphasis(self, token, state):
-        return token
-
-    def image(self, token, state):
-        return ""
-
-    def linebreak(self, token, state):
-        return "<br>"
-
-    def newline(self, token, state):
-        return self.linebreak(token, state)
-
-    def list_item(self, text):
-        return '<li>{}</li>\n'.format(text.strip())
-
-    def link(self, token, state):
-        url = token['children'][0]['raw']
-        return f'{url}: {self.autolink(url)}'
-
-    def strikethrough(self, text):
-        return text
-
-    def footnote_ref(self, key, index):
-        return ""
-
-    def footnote_item(self, key, text):
-        return text
-
-    def footnotes(self, text):
-        return text
-
-
-class NotifyEmailMarkdownRenderer(NotifyLetterMarkdownPreviewRenderer):
-
-    def heading(self, token, state):
-        level = token['attrs']['level']
-
-        if level > 3:
-            # Treat the element as a paragraph.
-            token['type'] = 'paragraph'
-            return self.paragraph(token, state)
-
-        if level == 1:
-            text = '<h1 style="Margin: 0 0 20px 0; padding: 0; ' \
-                   'font-size: 32px; line-height: 35px; font-weight: bold; color: #323A45;">'
-        elif level == 2:
-            text = '<h2 style="Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #323A45;' \
-                   'font-size: 24px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;">'
-        elif level == 3:
-            text = '<h3 style="Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #323A45;' \
-                   'font-size: 20.8px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;">'
-
-        for child in token['children']:
-            text += getattr(self, child['type'])(child, state)
-
-        return text + f'</h{level}>'
-
-    def hrule(self):
-        return (
-            '<hr style="border: 0; height: 1px; background: #BFC1C3; Margin: 30px 0 30px 0;">'
-        )
-
-    def linebreak(self, token, state):
-        return "<br />"
-
-    def list(self, body, ordered=True):
-        return (
-            '<table role="presentation" style="padding: 0 0 20px 0;">'
-            '<tr>'
-            '<td style="font-family: Helvetica, Arial, sans-serif;">'
-            '<ol style="Margin: 0 0 0 20px; padding: 0; list-style-type: decimal;">'
-            '{}'
-            '</ol>'
-            '</td>'
-            '</tr>'
-            '</table>'
-        ).format(
-            body
-        ) if ordered else (
-            '<table role="presentation" style="padding: 0 0 20px 0;">'
-            '<tr>'
-            '<td style="font-family: Helvetica, Arial, sans-serif;">'
-            '<ul style="Margin: 0 0 0 20px; padding: 0; list-style-type: disc;">'
-            '{}'
-            '</ul>'
-            '</td>'
-            '</tr>'
-            '</table>'
-        ).format(
-            body
-        )
-
-    def list_item(self, text):
-        return (
-            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
-            'line-height: 25px; color: #323A45;">'
-            '{}'
-            '</li>'
-        ).format(
-            text.strip()
-        )
-
-    def paragraph(self, token, state, is_inside_list=False):
-        margin = 'Margin: 5px 0 5px 0' if is_inside_list else 'Margin: 0 0 20px 0'
-        text = token['children'][0]['raw']
-        if text.strip():
-            return f'<p style="{margin}; font-size: 16px; line-height: 25px; color: #323A45;">{text}</p>'
-        return ''
-
-    def block_quote(self, text):
-        return (
-            '<table '
-            'width="100%" '
-            'style="Margin: 0 0 20px 0; background: #F1F1F1;"'
-            '>'
-            '<td '
-            'style="Padding: 24px 24px 0.1px 24px; font-family: Helvetica, Arial, sans-serif; '
-            'font-size: 16px; line-height: 25px;"'
-            '>'
-            f'{text}'
-            '</td>'
-            '</table>'
-        )
-
-    def link(self, token, state):
-        url = token['attrs']['url']
-        text = f'<a style="{LINK_STYLE}" href="{url}" '
-
-        if 'title' in token['attrs']:
-            title = token['attrs']['title']
-            text += f'title="{title}" '
-
-        text += 'target="_blank">'
-
-        for child in token['children']:
-            text += getattr(self, child['type'])(child, state)
-
-        return text + '</a>'
-
-    def autolink(self, link, is_email=False):
-        if is_email:
-            return link
-        return '<a style="{}" href="{}">{}</a>'.format(
-            LINK_STYLE,
-            urllib.parse.quote(
-                urllib.parse.unquote(link),
-                safe=':/?#=&;'
-            ),
-            link
-        )
-
-    def double_emphasis(self, text):
-        return '<strong>{}</strong>'.format(text)
-
-    def emphasis(self, text):
-        return '<em>{}</em>'.format(text)
-
-
-class NotifyPlainTextEmailMarkdownRenderer(NotifyEmailMarkdownRenderer):
-
-    COLUMN_WIDTH = 65
-
-    def heading(self, token, state):
-        # print("MADE IT HERE HEADING", token)  # TODO - delete
-        level = token['attrs']['level']
-
-        if level > 3:
-            # Treat the element as a paragraph.
-            token['type'] = 'paragraph'
-            return self.paragraph(token, state)
-
-        text = '\n' * (3 if (level == 1) else 2)
-
-        for child in token['children']:
-            text += getattr(self, child['type'])(child, state)
-
-        return text + '\n' + ('-' * self.COLUMN_WIDTH) + '\n'
-
-    def hrule(self, token, state):
-        # print("MADE IT HERE HRULE", token)  # TODO - delete
-        return self.paragraph(
-            '=' * self.COLUMN_WIDTH
-        )
-
-    def linebreak(self, token, state):
-        return '\n'
-
-    def list(self, token, state):
-        # print("MADE IT HERE LIST", token)  # TODO - delete
-
-        def _get_list_marker(is_ordered):
-            """
-            Return the next integer.  This is useful because markdown ordered lists don't require unique numbers.
-            """
-            decimal = count(1)
-            return lambda: str(next(decimal)) if is_ordered else '•'
-
-        text = '\n'
-        bullet = _get_list_marker(token['attrs']['ordered'])
-        for child in token['children']:
-            assert child['type'] == 'list_item', 'Lists should only contain list items.'
-            child_text = self.list_item(child, state)
-            text += f'{bullet()}. {child_text}'
-
-        # TODO - Keep this?
-        # return self.linebreak(token, state) +
-        # re.sub(magic_sequence_regex, _get_list_marker(token['attrs']['ordered']), body)
-        return text
-
-    def list_item(self, token, state):
-        """
-        The Markdown renderer does not have a list_item method by default.  This method's signature is not the
-        same as the signature for HTMLRendered, which does have this method by default.
-        """
-
-        text = ''
-
-        for child in token['children']:
-            text += getattr(self, child['type'])(child, state)
-
-        return text
-
-    def paragraph(self, token, state):
-        # print("MADE IT HERE PARAGRAPH", token)  # TODO - delete
-        text = ''
-
-        for child in token['children']:
-            text += getattr(self, child['type'])(child, state)
-
-        return f'\n\n{text}\n' if text else ''
-
-    def block_quote(self, text):
-        return text
-
-    def link(self, token, state):
-        # TODO - recursion
-        url = token['attrs']['url']
-        url_text = token['children'][0]['raw']
-        return f'{url_text}: {url}'
-
-    def autolink(self, link, is_email=False):
-        return link
-
-    def double_emphasis(self, text):
-        return text
-
-    def emphasis(self, text):
-        return text
-
-
-class NotifyEmailPreheaderMarkdownRenderer(NotifyPlainTextEmailMarkdownRenderer):
-
-    def hrule(self):
-        return ''
-
-    def link(self, token, state):
-        print("HERE", token)  # TODO - delete
-        url = token['attrs']['url']
-        url_text = token['children'][0]['raw']
-        return f'{url_text}({url})'
-
-
-# TODO - Can probably delete this.  parse_newline doesn't override anything in Mistune 3.
-class NotifyEmailBlockParser(mistune.BlockParser):
-
-    def parse_newline(self, m):
-        if self._list_depth == 0:
-            super().parse_newline(m)
-
-
-class NotifyEmailMarkdown(mistune.Markdown):
-
-    def __init__(self, renderer=None, block=None, inline=None, plugins=None):
-        super().__init__(renderer, block, inline, plugins)
-        self._is_inside_list = False
-
-    def output_loose_item(self):
-        body = self.renderer.placeholder()
-        self._is_inside_list = True
-        while self.pop()['type'] != 'list_item_end':
-            body += self.tok()
-
-        self._is_inside_list = False
-        return self.renderer.list_item(body)
-
-    def tok_text(self):
-        if self._is_inside_list:
-            return self.inline(self.token['text'])
-        else:
-            return super().tok_text()
-
-    def output_text(self):
-        return self.renderer.paragraph(self.tok_text(), self._is_inside_list)
-
-
 def parse_hrule(block, m, state):
     """
     Parse a horizontal rule block.
@@ -779,26 +421,18 @@ def hrule(md):
     # print("TEST 1")  # TODO - delete
 
 
-notify_email_markdown = NotifyEmailMarkdown(
-    # TODO - hard_wrap=True and use_xhtml=False
-    renderer=NotifyEmailMarkdownRenderer(),
-    block=NotifyEmailBlockParser(),  # TODO - Delete?
-    # plugins=[hrule],
+class NotifyHTMLRenderer(HTMLRenderer):
+    pass
+
+
+class NotifyMarkdownRenderer(MarkdownRenderer):
+    pass
+
+
+notify_html_markdown = mistune.create_markdown(
+    renderer=NotifyHTMLRenderer(),
 )
 
-notify_plain_text_email_markdown = mistune.create_markdown(
-    renderer=NotifyPlainTextEmailMarkdownRenderer(),
-    hard_wrap=True,
-    plugins=['notifications_utils.formatters.hrule'],
-)
-
-notify_email_preheader_markdown = mistune.create_markdown(
-    renderer=NotifyEmailPreheaderMarkdownRenderer(),
-    hard_wrap=True,
-)
-
-notify_letter_preview_markdown = mistune.create_markdown(
-    renderer=NotifyLetterMarkdownPreviewRenderer(),
-    hard_wrap=True,
-    # use_xhtml=False,
+notify_markdown = mistune.create_markdown(
+    renderer=NotifyMarkdownRenderer(),
 )

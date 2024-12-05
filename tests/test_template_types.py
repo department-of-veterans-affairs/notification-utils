@@ -1,24 +1,18 @@
-import datetime
 from time import process_time
-import os
-import pytest
-from functools import partial
 from unittest import mock
+
+import pytest
 from markupsafe import Markup
-from freezegun import freeze_time
 
 from notifications_utils.formatters import LINK_STYLE, PARAGRAPH_STYLE, unlink_govuk_escaped
 from notifications_utils.template import (
     Template,
     HTMLEmailTemplate,
-    LetterPreviewTemplate,
-    LetterImageTemplate,
     PlainTextEmailTemplate,
     SMSMessageTemplate,
     SMSPreviewTemplate,
     WithSubjectTemplate,
     EmailPreviewTemplate,
-    LetterPrintTemplate,
     get_html_email_body,
 )
 
@@ -539,16 +533,6 @@ def test_content_of_preheader_in_html_emails(
         ),
         'notifications_utils.template.notify_email_markdown',
     ],
-    [
-        LetterPreviewTemplate,
-        {},
-        (
-            'the quick brown fox\n'
-            '\n'
-            'jumped over the lazy dog\n'
-        ),
-        'notifications_utils.template.notify_letter_preview_markdown'
-    ],
 ])
 def test_markdown_in_templates(
     template_class,
@@ -796,268 +780,6 @@ def test_sms_message_normalises_newlines(content):
     )
 
 
-@pytest.mark.skip(reason="not in use")
-@freeze_time("2012-12-12 12:12:12")
-@mock.patch('notifications_utils.template.LetterPreviewTemplate.jinja_template.render')
-@mock.patch('notifications_utils.template.remove_empty_lines', return_value='123 Street')
-@mock.patch('notifications_utils.template.unlink_govuk_escaped')
-@mock.patch('notifications_utils.template.notify_letter_preview_markdown', return_value='Bar')
-@mock.patch('notifications_utils.template.strip_pipes', side_effect=lambda x: x)
-@pytest.mark.parametrize('values, expected_address', [
-    ({}, Markup(
-        "<span class='placeholder-no-brackets'>address line 1</span>\n"
-        "<span class='placeholder-no-brackets'>address line 2</span>\n"
-        "<span class='placeholder-no-brackets'>address line 3</span>\n"
-        "<span class='placeholder-no-brackets'>address line 4</span>\n"
-        "<span class='placeholder-no-brackets'>address line 5</span>\n"
-        "<span class='placeholder-no-brackets'>address line 6</span>\n"
-        "<span class='placeholder-no-brackets'>postcode</span>"
-    )),
-    ({
-        'address line 1': '123 Fake Street',
-        'address line 6': 'United Kingdom',
-    }, Markup(
-        "123 Fake Street\n"
-        "<span class='placeholder-no-brackets'>address line 2</span>\n"
-        "<span class='placeholder-no-brackets'>address line 3</span>\n"
-        "<span class='placeholder-no-brackets'>address line 4</span>\n"
-        "<span class='placeholder-no-brackets'>address line 5</span>\n"
-        "United Kingdom\n"
-        "<span class='placeholder-no-brackets'>postcode</span>"
-    )),
-    ({
-        'address line 1': '123 Fake Street',
-        'address line 2': 'City of Town',
-        'postcode': 'SW1A 1AA',
-    }, Markup(
-        "123 Fake Street\n"
-        "City of Town\n"
-        "\n"
-        "\n"
-        "\n"
-        "\n"
-        "SW1A 1AA"
-    ))
-])
-@pytest.mark.parametrize('contact_block, expected_rendered_contact_block', [
-    (
-        None,
-        ''
-    ),
-    (
-        '',
-        ''
-    ),
-    (
-        """
-            The Pension Service
-            Mail Handling Site A
-            Wolverhampton  WV9 1LU
-
-            Telephone: 0845 300 0168
-            Email: fpc.customercare@dwp.gsi.gov.uk
-            Monday - Friday  8am - 6pm
-            www.gov.uk
-        """,
-        (
-            'The Pension Service<br>'
-            'Mail Handling Site A<br>'
-            'Wolverhampton  WV9 1LU<br>'
-            '<br>'
-            'Telephone: 0845 300 0168<br>'
-            'Email: fpc.customercare@dwp.gsi.gov.uk<br>'
-            'Monday - Friday  8am - 6pm<br>'
-            'www.gov.uk'
-        )
-    )
-])
-@pytest.mark.parametrize('extra_args, expected_logo_file_name, expected_logo_class', [
-    ({}, None, None),
-    ({'logo_file_name': 'example.foo'}, 'example.foo', 'foo'),
-])
-@pytest.mark.parametrize('additional_extra_args, expected_date', [
-    ({}, '12 December 2012'),
-    ({'date': None}, '12 December 2012'),
-    ({'date': datetime.date.fromtimestamp(0)}, '1 January 1970'),
-])
-def test_letter_preview_renderer(
-    strip_pipes,
-    letter_markdown,
-    unlink_govuk,
-    remove_empty_lines,
-    jinja_template,
-    values,
-    expected_address,
-    contact_block,
-    expected_rendered_contact_block,
-    extra_args,
-    expected_logo_file_name,
-    expected_logo_class,
-    additional_extra_args,
-    expected_date,
-):
-    extra_args.update(additional_extra_args)
-    str(LetterPreviewTemplate(
-        {'content': 'Foo', 'subject': 'Subject'},
-        values,
-        contact_block=contact_block,
-        **extra_args
-    ))
-    remove_empty_lines.assert_called_once_with(expected_address)
-    jinja_template.assert_called_once_with({
-        'address': '<ul><li>123 Street</li></ul>',
-        'subject': 'Subject',
-        'message': 'Bar',
-        'date': expected_date,
-        'contact_block': expected_rendered_contact_block,
-        'admin_base_url': 'http://localhost:6012',
-        'logo_file_name': expected_logo_file_name,
-        'logo_class': expected_logo_class,
-    })
-    letter_markdown.assert_called_once_with(Markup('Foo\n'))
-    unlink_govuk.assert_not_called()
-    assert strip_pipes.call_args_list == [
-        mock.call('Subject'),
-        mock.call('Foo'),
-        mock.call(expected_address),
-        mock.call(expected_rendered_contact_block),
-    ]
-
-
-@freeze_time("2001-01-01 12:00:00.000000")
-@mock.patch('notifications_utils.template.LetterPreviewTemplate.jinja_template.render')
-def test_letter_preview_renderer_without_mocks(jinja_template):
-
-    str(LetterPreviewTemplate(
-        {'content': 'Foo', 'subject': 'Subject'},
-        {'addressline1': 'name', 'addressline2': 'street', 'postcode': 'SW1 1AA'},
-        contact_block='',
-    ))
-
-    jinja_template_locals = jinja_template.call_args_list[0][0][0]
-
-    assert jinja_template_locals['address'] == (
-        '<ul>'
-        '<li>name</li>'
-        '<li>street</li>'
-        '<li>SW1 1AA</li>'
-        '</ul>'
-    )
-    assert jinja_template_locals['subject'] == 'Subject'
-    assert jinja_template_locals['message'] == "<p>Foo</p>"
-    assert jinja_template_locals['date'] == '1 January 2001'
-    assert jinja_template_locals['contact_block'] == ''
-    assert jinja_template_locals['admin_base_url'] == 'http://localhost:6012'
-    assert jinja_template_locals['logo_file_name'] is None
-
-
-@pytest.mark.xfail(reason='Not fixing letters after Mistune 3 upgrade.', run=False)
-@freeze_time("2012-12-12 12:12:12")
-@mock.patch('notifications_utils.template.LetterImageTemplate.jinja_template.render')
-@pytest.mark.parametrize('page_count, expected_oversized, expected_page_numbers', [
-    (
-        1, False,
-        [1],
-    ),
-    (
-        5, False,
-        [1, 2, 3, 4, 5],
-    ),
-    (
-        10, False,
-        [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-    ),
-    (
-        11, True,
-        [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-    ),
-    (
-        99, True,
-        [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-    ),
-])
-@pytest.mark.parametrize('postage_args, expected_postage', (
-    pytest.param({}, 'second'),
-    pytest.param({'postage': 'first'}, 'first'),
-    pytest.param({'postage': 'second'}, 'second'),
-    pytest.param({'postage': 'third'}, 'third', marks=pytest.mark.xfail(raises=TypeError)),
-))
-def test_letter_image_renderer(
-    jinja_template,
-    page_count,
-    expected_page_numbers,
-    expected_oversized,
-    postage_args,
-    expected_postage,
-):
-    str(LetterImageTemplate(
-        {'content': 'Content', 'subject': 'Subject'},
-        image_url='http://example.com/endpoint.png',
-        page_count=page_count,
-        contact_block='10 Downing Street',
-        **postage_args
-    ))
-    jinja_template.assert_called_once_with({
-        'image_url': 'http://example.com/endpoint.png',
-        'page_numbers': expected_page_numbers,
-        'too_many_pages': expected_oversized,
-        'address': (
-            "<ul>"
-            "<li><span class='placeholder-no-brackets'>address line 1</span></li>"
-            "<li><span class='placeholder-no-brackets'>address line 2</span></li>"
-            "<li><span class='placeholder-no-brackets'>address line 3</span></li>"
-            "<li><span class='placeholder-no-brackets'>address line 4</span></li>"
-            "<li><span class='placeholder-no-brackets'>address line 5</span></li>"
-            "<li><span class='placeholder-no-brackets'>address line 6</span></li>"
-            "<li><span class='placeholder-no-brackets'>postcode</span></li>"
-            "</ul>"
-        ),
-        'contact_block': '10 Downing Street',
-        'date': '12 December 2012',
-        'subject': 'Subject',
-        'message': '<p>Content</p>',
-        'postage': expected_postage,
-    })
-
-
-@pytest.mark.parametrize('page_image_url', [
-    pytest.param('http://example.com/endpoint.png?page=0', marks=pytest.mark.xfail),
-    'http://example.com/endpoint.png?page=1',
-    'http://example.com/endpoint.png?page=2',
-    'http://example.com/endpoint.png?page=3',
-    pytest.param('http://example.com/endpoint.png?page=4', marks=pytest.mark.xfail),
-])
-def test_letter_image_renderer_pagination(page_image_url):
-    assert page_image_url in str(LetterImageTemplate(
-        {'content': '', 'subject': ''},
-        image_url='http://example.com/endpoint.png',
-        page_count=3,
-    ))
-
-
-@pytest.mark.parametrize('partial_call, expected_exception', [
-    (
-        partial(LetterImageTemplate),
-        TypeError
-    ),
-    (
-        partial(LetterImageTemplate, page_count=1),
-        TypeError
-    ),
-    (
-        partial(LetterImageTemplate, image_url='foo'),
-        TypeError
-    ),
-    (
-        partial(LetterImageTemplate, image_url='foo', page_count='foo'),
-        ValueError
-    ),
-])
-def test_letter_image_renderer_requires_arguments(partial_call, expected_exception):
-    with pytest.raises(expected_exception):
-        partial_call({'content': '', 'subject': ''})
-
-
 def test_sets_subject():
     assert WithSubjectTemplate({"content": '', 'subject': 'Your tax is due'}).subject == 'Your tax is due'
 
@@ -1067,8 +789,6 @@ def test_subject_line_gets_applied_to_correct_template_types():
         EmailPreviewTemplate,
         HTMLEmailTemplate,
         PlainTextEmailTemplate,
-        LetterPreviewTemplate,
-        LetterImageTemplate,
     ]:
         assert issubclass(cls, WithSubjectTemplate)
     for cls in [
@@ -1113,36 +833,6 @@ def test_subject_line_gets_replaced():
         mock.call('((phone number))', {}, with_brackets=False, html='escape'),
         mock.call('content', {}, html='escape', redact_missing_personalisation=False),
     ]),
-    (LetterPreviewTemplate, {'contact_block': 'www.gov.uk'}, [
-        mock.call('subject', {}, html='escape', is_letter_template=True, redact_missing_personalisation=False),
-        mock.call('content', {}, html='escape', markdown_lists=True, redact_missing_personalisation=False),
-        mock.call((
-            '((address line 1))\n'
-            '((address line 2))\n'
-            '((address line 3))\n'
-            '((address line 4))\n'
-            '((address line 5))\n'
-            '((address line 6))\n'
-            '((postcode))'
-        ), {}, with_brackets=False, html='escape', is_letter_template=True),
-        mock.call('www.gov.uk', {}, html='escape', redact_missing_personalisation=False),
-    ]),
-    (LetterImageTemplate, {
-        'image_url': 'http://example.com', 'page_count': 1, 'contact_block': 'www.gov.uk'
-    }, [
-        mock.call((
-            '((address line 1))\n'
-            '((address line 2))\n'
-            '((address line 3))\n'
-            '((address line 4))\n'
-            '((address line 5))\n'
-            '((address line 6))\n'
-            '((postcode))'
-        ), {}, with_brackets=False, html='escape', is_letter_template=True),
-        mock.call('www.gov.uk', {}, html='escape', redact_missing_personalisation=False),
-        mock.call('subject', {}, html='escape', redact_missing_personalisation=False, is_letter_template=True),
-        mock.call('content', {}, html='escape', markdown_lists=True, redact_missing_personalisation=False),
-    ]),
     (Template, {'redact_missing_personalisation': True}, [
         mock.call('content', {}, html='escape', redact_missing_personalisation=True),
     ]),
@@ -1158,20 +848,6 @@ def test_subject_line_gets_replaced():
     (SMSPreviewTemplate, {'redact_missing_personalisation': True}, [
         mock.call('((phone number))', {}, with_brackets=False, html='escape'),
         mock.call('content', {}, html='escape', redact_missing_personalisation=True),
-    ]),
-    (LetterPreviewTemplate, {'contact_block': 'www.gov.uk', 'redact_missing_personalisation': True}, [
-        mock.call('subject', {}, html='escape', redact_missing_personalisation=True, is_letter_template=True),
-        mock.call('content', {}, html='escape', markdown_lists=True, redact_missing_personalisation=True),
-        mock.call((
-            '((address line 1))\n'
-            '((address line 2))\n'
-            '((address line 3))\n'
-            '((address line 4))\n'
-            '((address line 5))\n'
-            '((address line 6))\n'
-            '((postcode))'
-        ), {}, with_brackets=False, html='escape', is_letter_template=True),
-        mock.call('www.gov.uk', {}, html='escape', redact_missing_personalisation=True),
     ]),
 ])
 @mock.patch('notifications_utils.template.Field.__init__', return_value=None)
@@ -1219,22 +895,6 @@ def test_templates_handle_html_and_redacting(
     (SMSPreviewTemplate, {}, [
         mock.call('content'),
     ]),
-    (LetterPreviewTemplate, {'contact_block': 'www.gov.uk'}, [
-        mock.call(Markup('subject')),
-        mock.call(Markup('<p>content</p>')),
-        mock.call((
-            "<span class='placeholder-no-brackets'>address line 1</span>\n"
-            "<span class='placeholder-no-brackets'>address line 2</span>\n"
-            "<span class='placeholder-no-brackets'>address line 3</span>\n"
-            "<span class='placeholder-no-brackets'>address line 4</span>\n"
-            "<span class='placeholder-no-brackets'>address line 5</span>\n"
-            "<span class='placeholder-no-brackets'>address line 6</span>\n"
-            "<span class='placeholder-no-brackets'>postcode</span>"
-        )),
-        mock.call(Markup('www.gov.uk')),
-        mock.call(Markup('subject')),
-        mock.call(Markup('subject')),
-    ]),
 ])
 @mock.patch('notifications_utils.template.remove_whitespace_before_punctuation', side_effect=lambda x: x)
 def test_templates_remove_whitespace_before_punctuation(
@@ -1278,10 +938,6 @@ def test_templates_remove_whitespace_before_punctuation(
     (SMSMessageTemplate, {}, [
     ]),
     (SMSPreviewTemplate, {}, [
-    ]),
-    (LetterPreviewTemplate, {'contact_block': 'www.gov.uk'}, [
-        mock.call(Markup('subject')),
-        mock.call(Markup('<p>content</p>')),
     ]),
 ])
 @mock.patch('notifications_utils.template.make_quotes_smart', side_effect=lambda x: x)
@@ -1376,22 +1032,6 @@ def test_basic_templates_return_markup():
         ),
         ['content', 'subject'],
     ),
-    (
-        LetterPreviewTemplate(
-            {"content": "((content))", "subject": "((subject))"},
-            contact_block='((contact_block))',
-        ),
-        ['content', 'subject', 'contact_block'],
-    ),
-    (
-        LetterImageTemplate(
-            {"content": "((content))", "subject": "((subject))"},
-            contact_block='((contact_block))',
-            image_url='http://example.com',
-            page_count=99,
-        ),
-        ['content', 'subject', 'contact_block'],
-    ),
 ])
 def test_templates_extract_placeholders(
     template_instance,
@@ -1464,20 +1104,6 @@ def test_email_preview_shows_recipient_address(
         template_values,
     )
     assert expected_content in str(template)
-
-
-@mock.patch('notifications_utils.template.strip_dvla_markup', return_value='FOOBARBAZ')
-def test_letter_preview_strips_dvla_markup(mock_strip_dvla_markup):
-    assert 'FOOBARBAZ' in str(LetterPreviewTemplate(
-        {
-            "content": 'content',
-            'subject': 'subject',
-        },
-    ))
-    assert mock_strip_dvla_markup.call_args_list == [
-        mock.call(Markup('subject')),
-        mock.call('content'),
-    ]
 
 
 dvla_file_spec = [
@@ -1857,171 +1483,6 @@ dvla_file_spec = [
 ]
 
 
-@pytest.mark.parametrize("address, expected", [
-    (
-        {
-            "address line 1": "line 1",
-            "address line 2": "line 2",
-            "address line 3": "line 3",
-            "address line 4": "line 4",
-            "address line 5": "line 5",
-            "address line 6": "line 6",
-            "postcode": "N1 4W2",
-        },
-        {
-            "addressline1": "line 1",
-            "addressline2": "line 2",
-            "addressline3": "line 3",
-            "addressline4": "line 4",
-            "addressline5": "line 5",
-            "addressline6": "line 6",
-            "postcode": "N1 4W2",
-        },
-    ), (
-        {
-            "addressline1": "line 1",
-            "addressline2": "line 2",
-            "addressline3": "line 3",
-            "addressline4": "line 4",
-            "addressline5": "line 5",
-            "addressLine6": "line 6",
-            "postcode": "N1 4W2",
-        },
-        {
-            "addressline1": "line 1",
-            "addressline2": "line 2",
-            "addressline3": "line 3",
-            "addressline4": "line 4",
-            "addressline5": "line 5",
-            "addressline6": "line 6",
-            "postcode": "N1 4W2",
-        },
-    ),
-    (
-        {
-            "addressline1": "line 1",
-            "addressline3": "line 3",
-            "addressline5": "line 5",
-            "addressline6": "line 6",
-            "postcode": "N1 4W2",
-        },
-        {
-            "addressline1": "line 1",
-            # addressline2 is required, but not given
-            "addressline3": "line 3",
-            "addressline4": "",
-            "addressline5": "line 5",
-            "addressline6": "line 6",
-            "postcode": "N1 4W2",
-        },
-    ),
-    (
-        {
-            "addressline1": "line 1",
-            "addressline2": "line 2",
-            "addressline3": None,
-            "addressline6": None,
-            "postcode": "N1 4W2",
-        },
-        {
-            "addressline1": "line 1",
-            "addressline2": "line 2",
-            "addressline3": "",
-            "addressline4": "",
-            "addressline5": "",
-            "addressline6": "",
-            "postcode": "N1 4W2",
-        },
-    ),
-    (
-        {
-            "addressline1": "line 1",
-            "addressline2": "\t     ,",
-            "postcode": "N1 4W2",
-        },
-        {
-            "addressline1": "line 1",
-            "addressline2": "\t     ,",
-            "addressline3": "",
-            "addressline4": "",
-            "addressline5": "",
-            "addressline6": "",
-            "postcode": "N1 4W2",
-        },
-    ),
-])
-def test_letter_address_format(address, expected):
-    template = LetterPreviewTemplate(
-        {'content': '', 'subject': ''},
-        address,
-    )
-    assert template.values_with_default_optional_address_lines == expected
-    # check that we can actually build a valid letter from this data
-    assert str(template)
-
-
-@freeze_time("2001-01-01 12:00:00.000000")
-@pytest.mark.parametrize('markdown, expected', [
-    (
-        (
-            'Here is a list of bullets:\n'
-            '\n'
-            '* one\n'
-            '* two\n'
-            '* three\n'
-            '\n'
-            'New paragraph'
-        ),
-        (
-            '<ul>\n'
-            '<li>one</li>\n'
-            '<li>two</li>\n'
-            '<li>three</li>\n'
-            '</ul>\n'
-            '<p>New paragraph</p>\n'
-        )
-    ),
-    (
-        (
-            '# List title:\n'
-            '\n'
-            '* one\n'
-            '* two\n'
-            '* three\n'
-        ),
-        (
-            '<h2>List title:</h2>\n'
-            '<ul>\n'
-            '<li>one</li>\n'
-            '<li>two</li>\n'
-            '<li>three</li>\n'
-            '</ul>\n'
-        )
-    ),
-    (
-        (
-            'Here’s an ordered list:\n'
-            '\n'
-            '1. one\n'
-            '2. two\n'
-            '3. three\n'
-        ),
-        (
-            '<p>Here’s an ordered list:</p><ol>\n'
-            '<li>one</li>\n'
-            '<li>two</li>\n'
-            '<li>three</li>\n'
-            '</ol>'
-        )
-    ),
-])
-def test_lists_in_combination_with_other_elements_in_letters(markdown, expected):
-    assert expected in str(LetterPreviewTemplate(
-        {'content': markdown, 'subject': 'Hello'},
-        {},
-    ))
-
-
 @pytest.mark.parametrize('template_class', [
     SMSMessageTemplate,
     SMSPreviewTemplate,
@@ -2036,58 +1497,11 @@ def test_message_too_long(template_class):
     (EmailPreviewTemplate, {}),
     (HTMLEmailTemplate, {}),
     (PlainTextEmailTemplate, {}),
-    (LetterPreviewTemplate, {}),
-    (LetterImageTemplate, {'image_url': 'foo', 'page_count': 1}),
 ])
 def test_non_sms_ignores_message_too_long(template_class, kwargs):
     body = 'a' * 1000
     template = template_class({'content': body, 'subject': 'foo'}, **kwargs)
     assert template.is_message_too_long() is False
-
-
-@pytest.mark.xfail(reason='Not fixing letters after Mistune 3 upgrade.', run=False)
-@pytest.mark.parametrize(
-    ('content', 'expected_preview_markup'),
-    [
-        (
-            'a\n\n\nb',
-            (
-                '<p>a</p>'
-                '<p>b</p>'
-            ),
-        ),
-        (
-            (
-                'a\n'
-                '\n'
-                '* one\n'
-                '* two\n'
-                '* three\n'
-                'and a half\n'
-                '\n'
-                '\n'
-                '\n'
-                '\n'
-                'foo'
-            ),
-            (
-                '<p>a</p><ul>\n'
-                '<li>one</li>\n'
-                '<li>two</li>\n'
-                '<li>three<br>and a half</li>\n'
-                '</ul>\n'
-                '<p>foo</p>'
-            ),
-        ),
-    ]
-)
-def test_multiple_newlines_in_letters(
-    content,
-    expected_preview_markup,
-):
-    assert expected_preview_markup in str(LetterPreviewTemplate(
-        {'content': content, 'subject': 'foo'}
-    ))
 
 
 @pytest.mark.parametrize('subject', [
@@ -2103,7 +1517,6 @@ def test_multiple_newlines_in_letters(
     (PlainTextEmailTemplate, {}),
     (HTMLEmailTemplate, {}),
     (EmailPreviewTemplate, {}),
-    (LetterPreviewTemplate, {}),
 ])
 def test_whitespace_in_subjects(template_class, subject, extra_args):
 
@@ -2148,61 +1561,6 @@ def test_govuk_email_whitespace_hack(template_class, expected_output):
         'subject': 'foo'
     })
     assert expected_output in str(template_instance)
-
-
-def test_letter_preview_uses_non_breaking_hyphens():
-    assert 'non\u2011breaking' in str(LetterPreviewTemplate(
-        {'content': 'non-breaking', 'subject': 'foo'}
-    ))
-    assert '–' in str(LetterPreviewTemplate(
-        {'content': 'en dash - not hyphen - when set with spaces', 'subject': 'foo'}
-    ))
-
-
-@freeze_time("2001-01-01 12:00:00.000000")
-def test_nested_lists_in_lettr_markup():
-
-    template_content = str(LetterPreviewTemplate({
-        'content': (
-            'nested list:\n'
-            '\n'
-            '1. one\n'
-            '2. two\n'
-            '3. three\n'
-            '  - three one\n'
-            '  - three two\n'
-            '  - three three\n'
-        ),
-        'subject': 'foo',
-    }))
-
-    assert (
-        '      <p>\n'
-        '        1 January 2001\n'
-        '      </p>\n'
-        '      <h1>\n'
-        '        foo\n'
-        '      </h1>\n'
-        '      <p>nested list:</p><ol>\n'
-        '<li>one</li>\n'
-        '<li>two</li>\n'
-        '<li>three<ul>\n'
-        '<li>three one</li>\n'
-        '<li>three two</li>\n'
-        '<li>three three</li>\n'
-        '</ul></li>\n'
-        '</ol>\n'
-        '\n'
-        '    </div>\n'
-        '  </body>\n'
-        '</html>'
-    ) in template_content
-
-
-def test_that_print_template_is_the_same_as_preview():
-    assert dir(LetterPreviewTemplate) == dir(LetterPrintTemplate)
-    assert os.path.basename(LetterPreviewTemplate.jinja_template.filename) == 'preview.jinja2'
-    assert os.path.basename(LetterPrintTemplate.jinja_template.filename) == 'print.jinja2'
 
 
 def test_plain_text_email_whitespace():
@@ -2262,42 +1620,8 @@ def test_plain_text_email_whitespace():
         'Heading <a style="word-wrap: break-word; color: #004795;" href="https://example.com" target="_blank">link</a>'
         '</h1>'
     )),
-    pytest.param(
-        LetterPreviewTemplate,
-        '<h2>Heading link: <strong>example.com</strong></h2>',
-        marks=pytest.mark.xfail(reason='Not fixing letters after Mistune 3 upgrade.', run=False),
-    ),
-    pytest.param(
-        LetterPrintTemplate,
-        '<h2>Heading link: <strong>example.com</strong></h2>',
-        marks=pytest.mark.xfail(reason='Not fixing letters after Mistune 3 upgrade.', run=False),
-    ),
 ))
 def test_heading_only_template_renders(renderer, expected_content):
     assert expected_content in str(renderer({'subject': 'foo', 'content': (
         '# Heading [link](https://example.com)'
     )}))
-
-
-@pytest.mark.parametrize("template_class", [
-    LetterPreviewTemplate,
-    LetterPrintTemplate,
-])
-@pytest.mark.parametrize("filename, expected_html_class", [
-    ('example.png', 'class="png"'),
-    ('example.svg', 'class="svg"'),
-])
-def test_image_class_applied_to_logo(template_class, filename, expected_html_class):
-    assert expected_html_class in str(template_class(
-        {'content': 'Foo', 'subject': 'Subject'},
-        logo_file_name=filename,
-    ))
-
-
-@pytest.mark.parametrize("template_class", [
-    LetterPreviewTemplate,
-    LetterPrintTemplate,
-])
-def test_image_not_present_if_no_logo(template_class):
-    # can't test that the html doesn't move in utils - tested in template preview instead
-    assert '<img' not in str(template_class({'content': 'Foo', 'subject': 'Subject'}, logo_file_name=None))
