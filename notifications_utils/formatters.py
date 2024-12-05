@@ -466,7 +466,7 @@ class NotifyLetterMarkdownPreviewRenderer(MarkdownRenderer):
     def linebreak(self, token, state):
         return "<br>"
 
-    def newline(self):
+    def newline(self, token, state):
         return self.linebreak(token, state)
 
     def list_item(self, text):
@@ -620,7 +620,7 @@ class NotifyPlainTextEmailMarkdownRenderer(NotifyEmailMarkdownRenderer):
     COLUMN_WIDTH = 65
 
     def heading(self, token, state):
-        print("MADE IT HERE HEADING", token)  # TODO - delete
+        # print("MADE IT HERE HEADING", token)  # TODO - delete
         level = token['attrs']['level']
 
         if level > 3:
@@ -636,7 +636,7 @@ class NotifyPlainTextEmailMarkdownRenderer(NotifyEmailMarkdownRenderer):
         return text + '\n' + ('-' * self.COLUMN_WIDTH) + '\n'
 
     def hrule(self, token, state):
-        print("MADE IT HERE HRULE", token)  # TODO - delete
+        # print("MADE IT HERE HRULE", token)  # TODO - delete
         return self.paragraph(
             '=' * self.COLUMN_WIDTH
         )
@@ -645,7 +645,7 @@ class NotifyPlainTextEmailMarkdownRenderer(NotifyEmailMarkdownRenderer):
         return '\n'
 
     def list(self, token, state):
-        print("MADE IT HERE LIST", token)  # TODO - delete
+        # print("MADE IT HERE LIST", token)  # TODO - delete
 
         def _get_list_marker(is_ordered):
             """
@@ -662,7 +662,8 @@ class NotifyPlainTextEmailMarkdownRenderer(NotifyEmailMarkdownRenderer):
             text += f'{bullet()}. {child_text}'
 
         # TODO - Keep this?
-        # return self.linebreak(token, state) + re.sub(magic_sequence_regex, _get_list_marker(token['attrs']['ordered']), body)
+        # return self.linebreak(token, state) +
+        # re.sub(magic_sequence_regex, _get_list_marker(token['attrs']['ordered']), body)
         return text
 
     def list_item(self, token, state):
@@ -679,7 +680,7 @@ class NotifyPlainTextEmailMarkdownRenderer(NotifyEmailMarkdownRenderer):
         return text
 
     def paragraph(self, token, state):
-        print("MADE IT HERE PARAGRAPH", token)  # TODO - delete
+        # print("MADE IT HERE PARAGRAPH", token)  # TODO - delete
         text = ''
 
         for child in token['children']:
@@ -712,6 +713,7 @@ class NotifyEmailPreheaderMarkdownRenderer(NotifyPlainTextEmailMarkdownRenderer)
         return ''
 
     def link(self, token, state):
+        print("HERE", token)  # TODO - delete
         url = token['attrs']['url']
         url_text = token['children'][0]['raw']
         return f'{url_text}({url})'
@@ -754,7 +756,7 @@ def parse_hrule(block, m, state):
     """
     Parse a horizontal rule block.
     """
-    print("TEST 2")  # TODO - delete
+    # print("TEST 2")  # TODO - delete
     state.append_token({'type': 'hrule', 'raw': m.group('hrule_text')})
     return m.end() + 1
 
@@ -774,7 +776,8 @@ def hrule(md):
         # This Mistune docs recommend specifying default HTML renderers, but this is
         # is only used with plain text e-mail right now.
         pass
-    print("TEST 1")  # TODO - delete
+    # print("TEST 1")  # TODO - delete
+
 
 notify_email_markdown = NotifyEmailMarkdown(
     # TODO - hard_wrap=True and use_xhtml=False
@@ -782,15 +785,18 @@ notify_email_markdown = NotifyEmailMarkdown(
     block=NotifyEmailBlockParser(),  # TODO - Delete?
     # plugins=[hrule],
 )
+
 notify_plain_text_email_markdown = mistune.create_markdown(
     renderer=NotifyPlainTextEmailMarkdownRenderer(),
     hard_wrap=True,
     plugins=['notifications_utils.formatters.hrule'],
 )
+
 notify_email_preheader_markdown = mistune.create_markdown(
     renderer=NotifyEmailPreheaderMarkdownRenderer(),
     hard_wrap=True,
 )
+
 notify_letter_preview_markdown = mistune.create_markdown(
     renderer=NotifyLetterMarkdownPreviewRenderer(),
     hard_wrap=True,
