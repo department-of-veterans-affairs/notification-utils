@@ -56,7 +56,7 @@ def unlink_govuk_escaped(message):
     return re.sub(
         govuk_not_a_link,
         r'\1' + '.\u200B' + r'\2',  # Unicode zero-width space
-        message
+        str(message)
     )
 
 
@@ -72,7 +72,7 @@ def nl2li(value):
 
 def add_prefix(body, prefix=None):
     if prefix:
-        return "{}: {}".format(prefix.strip(), body)
+        return f'{prefix.strip()}: {body}'
     return body
 
 
@@ -95,7 +95,7 @@ def remove_empty_lines(lines):
 
 
 def sms_encode(content):
-    return SanitiseSMS.encode(content)
+    return SanitiseSMS.encode(str(content))
 
 
 def strip_html(value):
@@ -180,7 +180,7 @@ def remove_whitespace_before_punctuation(value):
     return re.sub(
         whitespace_before_punctuation,
         lambda match: match.group(1),
-        value
+        str(value)
     )
 
 
@@ -219,7 +219,7 @@ def strip_leading_whitespace(value):
 
 
 def add_trailing_newline(value):
-    return '{}\n'.format(value)
+    return f'{value}\n'
 
 
 def tweak_dvla_list_markup(value):
@@ -422,7 +422,14 @@ def hrule(md):
 
 
 class NotifyHTMLRenderer(HTMLRenderer):
-    pass
+    def link(self, text, url, title=None):
+        # print('LINK', text, url, title) # TODO
+        value = super().link(text, url, title)
+        return value[:3] + f'style="{LINK_STYLE}"' + value[2:]
+
+    def paragraph(self, text):
+        value = super().paragraph(text)
+        return value[:3] + f'style="{PARAGRAPH_STYLE}"' + value[2:]
 
 
 class NotifyMarkdownRenderer(MarkdownRenderer):
@@ -431,6 +438,7 @@ class NotifyMarkdownRenderer(MarkdownRenderer):
 
 notify_html_markdown = mistune.create_markdown(
     renderer=NotifyHTMLRenderer(),
+    plugins=['url'],
 )
 
 notify_markdown = mistune.create_markdown(

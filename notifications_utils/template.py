@@ -28,9 +28,9 @@ from notifications_utils.formatters import (
     strip_leading_whitespace,
     strip_parentheses_in_link_placeholders,
     strip_unsupported_characters,
-    unlink_govuk_escaped)
+    unlink_govuk_escaped,
+)
 from notifications_utils.sanitise_text import SanitiseSMS
-from notifications_utils.take import Take
 from notifications_utils.template_change import TemplateChange
 
 template_env = Environment(loader=FileSystemLoader(
@@ -39,6 +39,17 @@ template_env = Environment(loader=FileSystemLoader(
         'jinja_templates',
     )
 ))
+
+
+def compose1(value, *fs):
+    """
+    Return the composition of functions applied to a single value.
+    """
+
+    return_value = value
+    for f in fs:
+        return_value = f(return_value)
+    return return_value
 
 
 class Template():
@@ -150,18 +161,14 @@ class SMSMessageTemplate(Template):
         super().__init__(template, values, jinja_path=jinja_path)
 
     def __str__(self):
-        return Take(Field(
-            self.content, self.values, html='passthrough'
-        )).then(
-            add_prefix, self.prefix
-        ).then(
-            sms_encode
-        ).then(
-            remove_whitespace_before_punctuation
-        ).then(
-            normalise_newlines
-        ).then(
-            str.strip
+        field = str(Field(self.content, self.values, html='passthrough'))
+        field = add_prefix(field, self.prefix)
+        return compose1(
+            field,
+            sms_encode,
+            remove_whitespace_before_punctuation,
+            normalise_newlines,
+            str.strip,
         )
 
     @property
@@ -174,12 +181,12 @@ class SMSMessageTemplate(Template):
 
     @property
     def content_count(self):
-        return len((
-            # we always want to call SMSMessageTemplate.__str__ regardless of subclass, to avoid any html formatting
-            SMSMessageTemplate.__str__(self)
-            if self._values
-            else sms_encode(add_prefix(self.content.strip(), self.prefix))
-        ).encode(self.encoding))
+        if self._values:
+            # Always call SMSMessageTemplate.__str__, regardless of subclass, to avoid any html formatting.
+            content = SMSMessageTemplate.__str__(self)
+        else:
+            content = sms_encode(add_prefix(self.content.strip(), self.prefix))
+        return len(content)
 
     @property
     def fragment_count(self):
@@ -214,26 +221,25 @@ class SMSPreviewTemplate(SMSMessageTemplate):
 
     def __str__(self):
 
+        field = Field(
+            self.content,
+            self.values,
+            html='escape',
+            redact_missing_personalisation=self.redact_missing_personalisation,
+        )
+        field = add_prefix(field, escape_html(self.prefix) if self.show_prefix else None)
+
         return Markup(self.jinja_template.render({
             'sender': self.sender,
             'show_sender': self.show_sender,
             'recipient': Field('((phone number))', self.values, with_brackets=False, html='escape'),
             'show_recipient': self.show_recipient,
-            'body': Take(Field(
-                self.content,
-                self.values,
-                html='escape',
-                redact_missing_personalisation=self.redact_missing_personalisation,
-            )).then(
-                add_prefix, (escape_html(self.prefix) or None) if self.show_prefix else None
-            ).then(
-                sms_encode if self.downgrade_non_sms_characters else str
-            ).then(
-                remove_whitespace_before_punctuation
-            ).then(
-                nl2br
-            ).then(
-                autolink_sms
+            'body': compose1(
+                field,
+                sms_encode if self.downgrade_non_sms_characters else str,
+                remove_whitespace_before_punctuation,
+                nl2br,
+                autolink_sms,
             )
         }))
 
@@ -264,16 +270,13 @@ class WithSubjectTemplate(Template):
 
     @property
     def subject(self):
-        return Markup(Take(Field(
+        field = Field(
             self._subject,
             self.values,
             html='escape',
             redact_missing_personalisation=self.redact_missing_personalisation,
-        )).then(
-            do_nice_typography
-        ).then(
-            normalise_whitespace
-        ))
+        )
+        return Markup(compose1(field, do_nice_typography, normalise_whitespace))
 
     @property
     def placeholders(self):
@@ -283,38 +286,29 @@ class WithSubjectTemplate(Template):
 class PlainTextEmailTemplate(WithSubjectTemplate):
 
     def __str__(self):
-        return Take(Field(
-            self.content, self.values, html='passthrough', markdown_lists=True
-        )).then(
-            unlink_govuk_escaped
-        ).then(
-            strip_unsupported_characters
-        ).then(
-            add_trailing_newline
-        ).then(
-            notify_markdown
-        ).then(
-            do_nice_typography
-        ).then(
-            unescape
-        ).then(
-            strip_leading_whitespace
-        ).then(
-            add_trailing_newline
+        field = Field(self.content, self.values, html='passthrough', markdown_lists=True)
+        return compose1(
+            field,
+            unlink_govuk_escaped,
+            strip_unsupported_characters,
+            add_trailing_newline,
+            notify_markdown,
+            do_nice_typography,
+            unescape,
+            strip_leading_whitespace,
+            add_trailing_newline,
         )
 
     @property
     def subject(self):
-        return Markup(Take(Field(
+        field = Field(
             self._subject,
             self.values,
             html='passthrough',
             redact_missing_personalisation=self.redact_missing_personalisation
-        )).then(
-            do_nice_typography
-        ).then(
-            normalise_whitespace
-        ))
+        )
+        field = compose1(field, do_nice_typography, normalise_whitespace)
+        return Markup(field)
 
 
 class HTMLEmailTemplate(WithSubjectTemplate):
@@ -358,22 +352,22 @@ class HTMLEmailTemplate(WithSubjectTemplate):
 
     @property
     def preheader(self):
-        return " ".join(Take(Field(
+        field = Field(
             self.content,
             self.values,
             html='escape',
             markdown_lists=True
-        )).then(
-            unlink_govuk_escaped
-        ).then(
-            strip_unsupported_characters
-        ).then(
-            add_trailing_newline
-        ).then(
-            notify_html_markdown
-        ).then(
-            do_nice_typography
-        ).split())[:self.PREHEADER_LENGTH_IN_CHARACTERS].strip()
+        )
+        field = compose1(
+            field,
+            unlink_govuk_escaped,
+            strip_unsupported_characters,
+            strip_unsupported_characters,
+            add_trailing_newline,
+            notify_html_markdown,
+            do_nice_typography,
+        ).split()
+        return ' '.join(field)[:self.PREHEADER_LENGTH_IN_CHARACTERS].strip()
 
     def __str__(self):
 
@@ -436,16 +430,13 @@ class EmailPreviewTemplate(WithSubjectTemplate):
 
     @property
     def subject(self):
-        return Take(Field(
+        field = Field(
             self._subject,
             self.values,
             html='escape',
             redact_missing_personalisation=self.redact_missing_personalisation
-        )).then(
-            do_nice_typography
-        ).then(
-            normalise_whitespace
         )
+        return compose1(field, do_nice_typography, normalise_whitespace)
 
 
 class NeededByTemplateError(Exception):
@@ -472,44 +463,34 @@ def is_unicode(content):
 def get_html_email_body(
         template_content, template_values, redact_missing_personalisation=False, preview_mode=False
 ):
-
-    return Take(Field(
+    field = Field(
         template_content,
         template_values,
         html='escape',
         markdown_lists=True,
         redact_missing_personalisation=redact_missing_personalisation,
         preview_mode=preview_mode
-    )).then(
-        unlink_govuk_escaped
-    ).then(
-        strip_unsupported_characters
-    ).then(
-        add_trailing_newline
-    ).then(
+    )
+    return compose1(
+        field,
+        unlink_govuk_escaped,
+        strip_unsupported_characters,
+        add_trailing_newline,
         # before converting to markdown, strip out the "(())" for placeholders (preview mode or test emails)
-        strip_parentheses_in_link_placeholders
-    ).then(
-        notify_html_markdown
-    ).then(
+        strip_parentheses_in_link_placeholders,
+        notify_html_markdown,
         # after converting to html link, replace !!foo## with ((foo))
-        replace_symbols_with_placeholder_parens
-    ).then(
-        do_nice_typography
-    ).then(
-        insert_action_link
+        replace_symbols_with_placeholder_parens,
+        do_nice_typography,
+        insert_action_link,
     )
 
 
 def do_nice_typography(value):
-    return Take(
-        value
-    ).then(
-        remove_whitespace_before_punctuation
-    ).then(
-        make_quotes_smart
-    ).then(
-        remove_smart_quotes_from_email_addresses
-    ).then(
-        replace_hyphens_with_en_dashes
+    return compose1(
+        value,
+        remove_whitespace_before_punctuation,
+        make_quotes_smart,
+        remove_smart_quotes_from_email_addresses,
+        replace_hyphens_with_en_dashes,
     )

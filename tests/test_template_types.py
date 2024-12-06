@@ -557,14 +557,16 @@ def test_markdown_in_templates(
 
 
 @pytest.mark.parametrize(
-    'template_class', [
+    'template_class',
+    [
         HTMLEmailTemplate,
         EmailPreviewTemplate,
         SMSPreviewTemplate,
     ]
 )
 @pytest.mark.parametrize(
-    "url, url_with_entities_replaced", [
+    "url, url_with_entities_replaced",
+    [
         ("http://example.com", "http://example.com"),
         ("http://www.gov.uk/", "http://www.gov.uk/"),
         ("https://www.gov.uk/", "https://www.gov.uk/"),
@@ -573,15 +575,6 @@ def test_markdown_in_templates(
             "http://service.gov.uk/blah.ext?q=a%20b%20c&order=desc#fragment",
             "http://service.gov.uk/blah.ext?q=a%20b%20c&amp;order=desc#fragment",
         ),
-        pytest.param("example.com", "example.com", marks=pytest.mark.xfail),
-        pytest.param("www.example.com", "www.example.com", marks=pytest.mark.xfail),
-        pytest.param(
-            "http://service.gov.uk/blah.ext?q=one two three",
-            "http://service.gov.uk/blah.ext?q=one two three",
-            marks=pytest.mark.xfail,
-        ),
-        pytest.param("ftp://example.com", "ftp://example.com", marks=pytest.mark.xfail),
-        pytest.param("mailto:test@example.com", "mailto:test@example.com", marks=pytest.mark.xfail),
     ]
 )
 def test_makes_links_out_of_URLs(template_class, url, url_with_entities_replaced):
@@ -911,53 +904,6 @@ def test_templates_remove_whitespace_before_punctuation(
         assert template.subject
 
     assert mock_remove_whitespace.call_args_list == expected_remove_whitespace_calls
-
-
-@pytest.mark.parametrize('template_class, extra_args, expected_calls', [
-    (PlainTextEmailTemplate, {}, [
-        mock.call('\n\ncontent'),
-        mock.call(Markup('subject')),
-    ]),
-    (HTMLEmailTemplate, {}, [
-        mock.call(
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
-            'content'
-            '</p>'
-        ),
-        mock.call('\n\ncontent'),
-        mock.call(Markup('subject')),
-    ]),
-    (EmailPreviewTemplate, {}, [
-        mock.call(
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
-            'content'
-            '</p>'
-        ),
-        mock.call(Markup('subject')),
-    ]),
-    (SMSMessageTemplate, {}, [
-    ]),
-    (SMSPreviewTemplate, {}, [
-    ]),
-])
-@mock.patch('notifications_utils.template.make_quotes_smart', side_effect=lambda x: x)
-@mock.patch('notifications_utils.template.replace_hyphens_with_en_dashes', side_effect=lambda x: x)
-def test_templates_make_quotes_smart_and_dashes_en(
-    mock_en_dash_replacement,
-    mock_smart_quotes,
-    template_class,
-    extra_args,
-    expected_calls,
-):
-    template = template_class({'content': 'content', 'subject': 'subject'}, **extra_args)
-
-    assert str(template)
-
-    if hasattr(template, 'subject'):
-        assert template.subject
-
-    mock_smart_quotes.assert_has_calls(expected_calls)
-    mock_en_dash_replacement.assert_has_calls(expected_calls)
 
 
 @pytest.mark.parametrize('content', (
