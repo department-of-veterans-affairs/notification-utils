@@ -131,24 +131,26 @@ def test_html_template_has_urls_replaced_with_links():
     ), 'subject': ''}))
 
 
-@pytest.mark.parametrize('markdown_function, expected_output', [
-    (notify_html_markdown, (
-        '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
-        '<a style="word-wrap: break-word; color: #004795;" href="https://example.com">'
-        'https://example.com'
-        '</a>'
-        '</p>'
-        '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
-        'Next paragraph'
-        '</p>'
-    )),
-    (notify_markdown, (
-        '\n'
-        '\nhttps://example.com'
-        '\n'
-        '\nNext paragraph'
-    )),
-])
+@pytest.mark.parametrize(
+    'markdown_function, expected_output',
+    [
+        (notify_html_markdown, (
+            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
+            '<a style="word-wrap: break-word; color: #004795;" href="https://example.com">'
+            'https://example.com'
+            '</a>'
+            '</p>\n'
+            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
+            'Next paragraph'
+            '</p>\n'
+        )),
+        (notify_markdown, (
+            'https://example.com\n\n'
+            'Next paragraph\n'
+        )),
+    ],
+    ids=('notify_html_markdown', 'notify_markdown'),
+)
 def test_preserves_whitespace_when_making_links(
     markdown_function, expected_output
 ):

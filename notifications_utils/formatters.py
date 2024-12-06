@@ -436,6 +436,7 @@ class NotifyMarkdownRenderer(MarkdownRenderer):
 
 
 notify_html_markdown = mistune.create_markdown(
+    hard_wrap=True,
     renderer=NotifyHTMLRenderer(escape=False),
     plugins=['url'],
 )
