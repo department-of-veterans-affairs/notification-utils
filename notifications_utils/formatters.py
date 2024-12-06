@@ -423,13 +423,13 @@ def hrule(md):
 
 class NotifyHTMLRenderer(HTMLRenderer):
     def link(self, text, url, title=None):
-        # print('LINK', text, url, title) # TODO
         value = super().link(text, url, title)
+        # print('LINK', text, url, title, value) # TODO
         return value[:3] + f'style="{LINK_STYLE}"' + value[2:]
 
     def paragraph(self, text):
         value = super().paragraph(text)
-        return value[:3] + f'style="{PARAGRAPH_STYLE}"' + value[2:]
+        return value[:2] + f' style="{PARAGRAPH_STYLE}"' + value[2:]
 
 
 class NotifyMarkdownRenderer(MarkdownRenderer):

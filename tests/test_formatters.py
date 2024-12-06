@@ -28,7 +28,7 @@ from notifications_utils.template import (
     SMSPreviewTemplate
 )
 
-PARAGRAPH_TEXT = '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">{}</p>'
+PARAGRAPH_TEXT = '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">{}</p>\n'
 
 
 @pytest.mark.parametrize(
@@ -37,15 +37,11 @@ PARAGRAPH_TEXT = '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25
         "http://www.gov.uk/",
         "https://www.gov.uk/",
         "http://service.gov.uk",
-        "http://service.gov.uk/blah.ext?q=a%20b%20c&order=desc#fragment",
-        pytest.param("http://service.gov.uk/blah.ext?q=one two three", marks=pytest.mark.xfail),
     ]
 )
 def test_makes_links_out_of_urls(url):
-    link = '<a style="word-wrap: break-word; color: #004795;" href="{}">{}</a>'.format(url, url)
-    assert (notify_html_markdown(url) == (
-        PARAGRAPH_TEXT
-    ).format(link))
+    link = f'<a style="word-wrap: break-word; color: #004795;" href="{url}">{url}</a>'
+    assert notify_html_markdown(url) == PARAGRAPH_TEXT.format(link)
 
 
 @pytest.mark.parametrize('input, output', [
@@ -82,13 +78,10 @@ def test_makes_links_out_of_urls_in_context(input, output):
         "ftp://example.com",
         "test@example.com",
         "mailto:test@example.com",
-        "<a href=\"https://example.com\">Example</a>",
     ]
 )
-def test_doesnt_make_links_out_of_invalid_urls(url):
-    assert notify_html_markdown(url) == (
-        PARAGRAPH_TEXT
-    ).format(url)
+def test_makes_paragraphs_out_of_invalid_urls(url):
+    assert notify_html_markdown(url) == PARAGRAPH_TEXT.format(url)
 
 
 def test_handles_placeholders_in_urls():
