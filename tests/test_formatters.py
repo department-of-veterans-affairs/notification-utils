@@ -93,7 +93,7 @@ def test_handles_placeholders_in_urls():
         'http://example.com/?token='
         '</a>'
         '<span class=\'placeholder\'>((token))</span>&amp;key=1'
-        '</p>'
+        '</p>\n'
     )
 
 
