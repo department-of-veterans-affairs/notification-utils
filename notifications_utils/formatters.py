@@ -431,7 +431,8 @@ class NotifyHTMLRenderer(HTMLRenderer):
             style = 'Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #323A45;' \
                     'font-size: 24px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;'
         elif level == 3:
-            style = ''
+            style = 'Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #323A45;' \
+                    'font-size: 20.8px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;'
         else:
             return self.paragraph(text)
 
@@ -472,7 +473,6 @@ class NotifyMarkdownRenderer(MarkdownRenderer):
             return self.paragraph(token, state)
 
         value = super().heading(token, state)
-        # print('HERE', value)  # TODO - delete
         indentation = 3 if level == 1 else 2
         return ('\n' * indentation) + value.strip('#\n ') + '\n' + ('-' * HEADER_COLUMN_WIDTH)
 

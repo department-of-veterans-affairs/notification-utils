@@ -301,21 +301,25 @@ def test_level_2_header(markdown_function, expected):
     assert markdown_function('## inset text') == expected
 
 
-@pytest.mark.parametrize('markdown_function, expected', (
-    [
-        notify_html_markdown,
-        '<h3 style="Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #323A45;'
-        'font-size: 20.8px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;">inset text</h3>'
-    ],
-    [
-        notify_markdown,
-        (
-            '\n'
-            '\ninset text'
-            '\n-----------------------------------------------------------------'
-        ),
-    ],
-))
+@pytest.mark.parametrize(
+    'markdown_function, expected',
+    (
+        [
+            notify_html_markdown,
+            '<h3 style="Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #323A45;'
+            'font-size: 20.8px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;">inset text</h3>\n'
+        ],
+        [
+            notify_markdown,
+            (
+                '\n'
+                '\ninset text'
+                '\n-----------------------------------------------------------------\n'
+            ),
+        ],
+    ),
+    ids=['notify_html_markdown', 'notify_markdown']
+)
 def test_level_3_header(markdown_function, expected):
     assert markdown_function('### inset text') == expected
 
