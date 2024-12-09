@@ -98,7 +98,8 @@ def test_handles_placeholders_in_urls():
 
 
 @pytest.mark.parametrize(
-    "url, expected_html, expected_html_in_template", [
+    "url, expected_html, expected_html_in_template",
+    [
         (
             """https://example.com"onclick="alert('hi')""",
             """<a style="word-wrap: break-word; color: #004795;" href="https://example.com%22onclick=%22alert%28%27hi">https://example.com"onclick="alert('hi</a>')""",  # noqa
@@ -109,12 +110,11 @@ def test_handles_placeholders_in_urls():
             """<a style="word-wrap: break-word; color: #004795;" href="https://example.com%22style=%27text-decoration:blink">https://example.com"style='text-decoration:blink</a>'""",  # noqa
             """<a style="word-wrap: break-word; color: #004795;" href="https://example.com%22style=%27text-decoration:blink">https://example.com"style='text-decoration:blink</a>’""",  # noqa
         ),
-    ]
+    ],
+    ids=['js', 'style']
 )
 def test_urls_get_escaped(url, expected_html, expected_html_in_template):
-    assert notify_html_markdown(url) == (
-        PARAGRAPH_TEXT
-    ).format(expected_html)
+    assert notify_html_markdown(url) == (PARAGRAPH_TEXT).format(expected_html)
     assert expected_html_in_template in str(HTMLEmailTemplate({'content': url, 'subject': ''}))
 
 
@@ -528,36 +528,40 @@ def test_paragraph_in_list_has_no_linebreak(markdown_function, test_text, expect
         '• three\n'
     ),
 ))
-@pytest.mark.parametrize('markdown_function, expected', (
-    [
-        notify_html_markdown,
-        (
-            '<table role="presentation" style="padding: 0 0 20px 0;">'
-            '<tr>'
-            '<td style="font-family: Helvetica, Arial, sans-serif;">'
-            '<ul style="Margin: 0 0 0 20px; padding: 0; list-style-type: disc;">'
-            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
-            'line-height: 25px; color: #323A45;">one</li>'
-            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
-            'line-height: 25px; color: #323A45;">two</li>'
-            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
-            'line-height: 25px; color: #323A45;">three</li>'
-            '</ul>'
-            '</td>'
-            '</tr>'
-            '</table>'
-        )
-    ],
-    [
-        notify_markdown,
-        (
-            '\n'
-            '\n• one'
-            '\n• two'
-            '\n• three'
-        ),
-    ],
-))
+@pytest.mark.parametrize(
+    'markdown_function, expected',
+    (
+        [
+            notify_html_markdown,
+            (
+                '<table role="presentation" style="padding: 0 0 20px 0;">'
+                '<tr>'
+                '<td style="font-family: Helvetica, Arial, sans-serif;">'
+                '<ul style="Margin: 0 0 0 20px; padding: 0; list-style-type: disc;">'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
+                'line-height: 25px; color: #323A45;">one</li>'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
+                'line-height: 25px; color: #323A45;">two</li>'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
+                'line-height: 25px; color: #323A45;">three</li>'
+                '</ul>'
+                '</td>'
+                '</tr>'
+                '</table>'
+            )
+        ],
+        [
+            notify_markdown,
+            (
+                '\n'
+                '\n• one'
+                '\n• two'
+                '\n• three'
+            ),
+        ],
+    ),
+    ids=['notify_html_markdown', 'notify_markdown']
+)
 def test_unordered_list(markdown, markdown_function, expected):
     assert markdown_function(markdown) == expected
 
@@ -819,16 +823,20 @@ def test_link_with_title(markdown_function, expected):
     ) == expected
 
 
-@pytest.mark.parametrize('markdown_function, expected', (
-    [
-        notify_html_markdown,
-        '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">Strike</p>'
-    ],
-    [
-        notify_markdown,
-        '\n\nStrike'
-    ],
-))
+@pytest.mark.parametrize(
+    'markdown_function, expected',
+    (
+        [
+            notify_html_markdown,
+            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;"><del>Strike</del></p>\n'
+        ],
+        [
+            notify_markdown,
+            '\n\nStrike\n'
+        ],
+    ),
+    ids=['notify_html_markdown', 'notify_markdown']
+)
 def test_strikethrough(markdown_function, expected):
     assert markdown_function('~~Strike~~') == expected
 

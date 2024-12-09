@@ -432,15 +432,21 @@ class NotifyHTMLRenderer(HTMLRenderer):
 
 
 class NotifyMarkdownRenderer(MarkdownRenderer):
-    pass
+    """
+    https://mistune.lepture.com/en/latest/renderers.html#with-plugins
+    """
+
+    def strikethrough(self, token, state):
+        return '\n\n' + self.render_children(token, state)
 
 
 notify_html_markdown = mistune.create_markdown(
     hard_wrap=True,
     renderer=NotifyHTMLRenderer(escape=False),
-    plugins=['url'],
+    plugins=['strikethrough', 'url'],
 )
 
 notify_markdown = mistune.create_markdown(
     renderer=NotifyMarkdownRenderer(),
+    plugins=['strikethrough'],
 )
