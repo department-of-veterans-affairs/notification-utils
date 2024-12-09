@@ -719,17 +719,15 @@ def test_codespan(markdown_function, expected):
     [
         notify_html_markdown,
         '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; '
-        'color: #323A45;">something <strong>important</strong></p>'
+        'color: #323A45;">something <strong>important</strong></p>\n'
     ],
     [
         notify_markdown,
-        '\n\nsomething important',
+        'something **important**\n',
     ],
 ))
 def test_double_emphasis(markdown_function, expected):
-    assert markdown_function(
-        'something __important__'
-    ) == expected
+    assert markdown_function('something __important__') == expected
 
 
 @pytest.mark.parametrize('markdown_function, expected', (
@@ -759,9 +757,7 @@ def test_emphasis(markdown_function, expected):
     ],
 ))
 def test_nested_emphasis(markdown_function, expected):
-    assert markdown_function(
-        'foo ___bar___'
-    ) == expected
+    assert markdown_function('foo ___bar___') == expected
 
 
 @pytest.mark.parametrize('markdown_function', (
