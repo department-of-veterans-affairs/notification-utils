@@ -597,26 +597,26 @@ def test_pluses_dont_render_as_lists(markdown_function, expected):
     ) == expected
 
 
-@pytest.mark.parametrize('markdown_function, expected', (
-    [
-        notify_html_markdown,
-        (
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">line one<br />'
-            'line two</p>'
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">new paragraph</p>'
-        )
-    ],
-    [
-        notify_markdown,
-        (
-            '\n'
-            '\nline one'
-            '\nline two'
-            '\n'
-            '\nnew paragraph'
-        ),
-    ],
-),
+@pytest.mark.parametrize(
+    'markdown_function, expected',
+    (
+        [
+            notify_html_markdown,
+            (
+                '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">line one<br />\n'
+                'line two</p>\n'
+                '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">new paragraph</p>\n'
+            )
+        ],
+        [
+            notify_markdown,
+            (
+                'line one\n'
+                'line two\n'
+                '\nnew paragraph\n'
+            ),
+        ],
+    ),
     ids=['notify_html_markdown', 'notify_markdown']
 )
 def test_paragraphs(markdown_function, expected):
