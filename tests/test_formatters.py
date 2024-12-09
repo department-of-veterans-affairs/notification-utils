@@ -250,10 +250,6 @@ def test_block_quote(markdown_function, expected):
     assert markdown_function('^ inset text') == expected
 
 
-@pytest.mark.parametrize('heading', (
-    '# heading',
-    '#heading',
-))
 @pytest.mark.parametrize(
     'markdown_function, expected',
     (
@@ -263,7 +259,7 @@ def test_block_quote(markdown_function, expected):
                 '<h1 style="Margin: 0 0 20px 0; padding: 0; font-size: 32px; '
                 'line-height: 35px; font-weight: bold; color: #323A45;">'
                 'heading'
-                '</h1>'
+                '</h1>\n'
             )
         ],
         [
@@ -272,30 +268,35 @@ def test_block_quote(markdown_function, expected):
                 '\n'
                 '\n'
                 '\nheading'
+                '\n-----------------------------------------------------------------\n'
+            ),
+        ],
+    ),
+    ids=['notify_html_markdown', 'notify_markdown']
+)
+def test_level_1_header(markdown_function, expected):
+    assert markdown_function('# heading') == expected
+
+
+@pytest.mark.parametrize(
+    'markdown_function, expected',
+    (
+        [
+            notify_html_markdown,
+            '<h2 style="Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #323A45;'
+            'font-size: 24px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;">inset text</h2>'
+        ],
+        [
+            notify_markdown,
+            (
+                '\n'
+                '\ninset text'
                 '\n-----------------------------------------------------------------'
             ),
         ],
-    )
+    ),
+    ids=['notify_html_markdown', 'notify_markdown']
 )
-def test_level_1_header(markdown_function, heading, expected):
-    assert markdown_function(heading) == expected
-
-
-@pytest.mark.parametrize('markdown_function, expected', (
-    [
-        notify_html_markdown,
-        '<h2 style="Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #323A45;'
-        'font-size: 24px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;">inset text</h2>'
-    ],
-    [
-        notify_markdown,
-        (
-            '\n'
-            '\ninset text'
-            '\n-----------------------------------------------------------------'
-        ),
-    ],
-))
 def test_level_2_header(markdown_function, expected):
     assert markdown_function('## inset text') == expected
 

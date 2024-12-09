@@ -11,8 +11,9 @@ from mistune.renderers.markdown import MarkdownRenderer
 from . import email_with_smart_quotes_regex
 from notifications_utils.sanitise_text import SanitiseSMS
 
-PARAGRAPH_STYLE = 'Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;'
+HEADER_COLUMN_WIDTH = 65
 LINK_STYLE = 'word-wrap: break-word; color: #004795;'
+PARAGRAPH_STYLE = 'Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;'
 
 OBSCURE_WHITESPACE = (
     '\u180E'  # Mongolian vowel separator
@@ -422,6 +423,20 @@ def hrule(md):
 
 
 class NotifyHTMLRenderer(HTMLRenderer):
+    def heading(self, text, level, **attrs):
+        if level == 1:
+            style = 'Margin: 0 0 20px 0; padding: 0; font-size: 32px; ' \
+                    'line-height: 35px; font-weight: bold; color: #323A45;'
+        elif level == 2:
+            style = ''
+        elif level == 3:
+            style = ''
+        else:
+            return self.paragraph(text)
+
+        value = super().heading(text, level, **attrs)
+        return value[:3] + f' style="{style}"' + value[3:]
+
     def link(self, text, url, title=None):
         """
         Add CSS to links.
@@ -448,11 +463,21 @@ class NotifyHTMLRenderer(HTMLRenderer):
 
 
 class NotifyMarkdownRenderer(MarkdownRenderer):
-    """
-    https://mistune.lepture.com/en/latest/renderers.html#with-plugins
-    """
+    def heading(self, token, state):
+        level = token['attrs']['level']
+
+        if level > 3:
+            token['type'] = 'paragraph'
+            return self.paragraph(token, state)
+
+        value = super().heading(token, state)
+        return '\n\n\n' + value.strip()[2:] + '\n' + ('-' * HEADER_COLUMN_WIDTH)
 
     def strikethrough(self, token, state):
+        """
+        https://mistune.lepture.com/en/latest/renderers.html#with-plugins
+        """
+
         return '\n\n' + self.render_children(token, state)
 
     def table(self, token, state):
