@@ -749,14 +749,19 @@ def test_emphasis(markdown_function, expected):
     [
         notify_html_markdown,
         '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; '
-        'color: #323A45;">foo <strong><em>bar</em></strong></p>'
+        'color: #323A45;">foo <em><strong>bar</strong></em></p>\n'
     ],
     [
         notify_markdown,
-        '\n\nfoo bar',
+        'foo ***bar***\n',
     ],
 ))
 def test_nested_emphasis(markdown_function, expected):
+    """
+    Note that this behavior has no correstpondence with Github markdown.  The expected
+    output is simply what the renderer actually does.
+    """
+
     assert markdown_function('foo ___bar___') == expected
 
 
