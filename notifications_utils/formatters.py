@@ -423,12 +423,27 @@ def hrule(md):
 
 class NotifyHTMLRenderer(HTMLRenderer):
     def link(self, text, url, title=None):
+        """
+        Add CSS to links.
+        """
+
         value = super().link(text, url, title)
         return value[:2] + f' style="{LINK_STYLE}"' + value[2:]
 
     def paragraph(self, text):
+        """
+        Add CSS to paragraphs.
+        """
+
         value = super().paragraph(text)
         return value[:2] + f' style="{PARAGRAPH_STYLE}"' + value[2:]
+
+    def table(self, text):
+        """
+        Delete tables.
+        """
+
+        return ''
 
 
 class NotifyMarkdownRenderer(MarkdownRenderer):
@@ -439,14 +454,21 @@ class NotifyMarkdownRenderer(MarkdownRenderer):
     def strikethrough(self, token, state):
         return '\n\n' + self.render_children(token, state)
 
+    def table(self, token, state):
+        """
+        Delete tables.
+        """
+
+        return ''
+
 
 notify_html_markdown = mistune.create_markdown(
     hard_wrap=True,
     renderer=NotifyHTMLRenderer(escape=False),
-    plugins=['strikethrough', 'url'],
+    plugins=['strikethrough', 'table', 'url'],
 )
 
 notify_markdown = mistune.create_markdown(
     renderer=NotifyMarkdownRenderer(),
-    plugins=['strikethrough'],
+    plugins=['strikethrough', 'table'],
 )

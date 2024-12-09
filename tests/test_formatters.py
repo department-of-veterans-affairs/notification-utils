@@ -651,11 +651,16 @@ def test_multiple_newlines_get_truncated(markdown_function, expected):
     notify_html_markdown, notify_markdown
 ))
 def test_table(markdown_function):
+    """
+    Delete tables.  Note that supporting them would be very easy.  Both renderers use Mistune's "table"
+    plugin.  To support tables, delete the overridden "table" method from the renderer.
+    """
+
     assert markdown_function(
         'col | col\n'
         '----|----\n'
         'val | val\n'
-    ) == (
+    ).rstrip() == (
         ''
     )
 
@@ -739,9 +744,7 @@ def test_double_emphasis(markdown_function, expected):
     ],
 ))
 def test_emphasis(markdown_function, expected):
-    assert markdown_function(
-        'something _important_'
-    ) == expected
+    assert markdown_function('something _important_') == expected
 
 
 @pytest.mark.parametrize('markdown_function, expected', (
