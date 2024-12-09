@@ -222,33 +222,27 @@ def test_block_code(markdown_function, expected):
     assert markdown_function('```\nprint("hello")\n```') == expected
 
 
-@pytest.mark.parametrize('markdown_function, expected', (
-    [
-        notify_html_markdown,
-        (
-            '<table '
-            'width="100%" '
-            'style="Margin: 0 0 20px 0; background: #F1F1F1;"'
-            '>'
-            '<td '
-            'style="Padding: 24px 24px 0.1px 24px; font-family: Helvetica, Arial, sans-serif; '
-            'font-size: 16px; line-height: 25px;"'
-            '>'
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">inset text</p>'
-            '</td>'
-            '</table>'
-        )
-    ],
-    [
-        notify_markdown,
-        (
-            '\n'
-            '\ninset text'
-        ),
-    ],
-))
+@pytest.mark.parametrize(
+    'markdown_function, expected',
+    (
+        [
+            notify_html_markdown,
+            (
+                '<blockquote style="background: #F1F1F1; padding: 24px 24px 0.1px 24px; '
+                'font-family: Helvetica, Arial, sans-serif; font-size: 16px; line-height: 25px;">\n'
+                '<p style="Margin: 0 0 20px 0; font-size: 16px; '
+                'line-height: 25px; color: #323A45;">inset text</p>\n</blockquote>\n'
+            )
+        ],
+        [
+            notify_markdown,
+            '\n\ninset text\n'
+        ],
+    ),
+    ids=['notify_html_markdown', 'notify_markdown']
+)
 def test_block_quote(markdown_function, expected):
-    assert markdown_function('^ inset text') == expected
+    assert markdown_function('> inset text') == expected
 
 
 @pytest.mark.parametrize(

@@ -1571,3 +1571,13 @@ def test_heading_only_template_renders(renderer, expected_content):
     assert expected_content in str(renderer({'subject': 'foo', 'content': (
         '# Heading [link](https://example.com)'
     )}))
+
+
+def test_block_quotes():
+    """
+    Template markup uses ^ to denote a block quote, but Github markdown, which Mistune reflects, specifies a block
+    quote with the > character.  Rather than write a custom parser, templates should preprocess their text to replace
+    the former with the latter.
+    """
+
+    assert False

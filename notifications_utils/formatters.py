@@ -11,6 +11,10 @@ from mistune.renderers.markdown import MarkdownRenderer
 from . import email_with_smart_quotes_regex
 from notifications_utils.sanitise_text import SanitiseSMS
 
+BLOCK_QUOTE_STYLE = 'background: #F1F1F1; ' \
+                    'padding: 24px 24px 0.1px 24px; ' \
+                    'font-family: Helvetica, Arial, sans-serif; ' \
+                    'font-size: 16px; line-height: 25px;'
 HEADER_COLUMN_WIDTH = 65
 LINK_STYLE = 'word-wrap: break-word; color: #004795;'
 PARAGRAPH_STYLE = 'Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;'
@@ -423,6 +427,10 @@ def hrule(md):
 
 
 class NotifyHTMLRenderer(HTMLRenderer):
+    def block_quote(self, text):
+        value = super().block_quote(text)
+        return value[:11] + f' style="{BLOCK_QUOTE_STYLE}"' + value[11:]
+
     def heading(self, text, level, **attrs):
         if level == 1:
             style = 'Margin: 0 0 20px 0; padding: 0; font-size: 32px; ' \
@@ -465,6 +473,9 @@ class NotifyHTMLRenderer(HTMLRenderer):
 
 
 class NotifyMarkdownRenderer(MarkdownRenderer):
+    def block_quote(self, token, state):
+        return '\n\n' + super().block_quote(token, state)[2:]
+
     def heading(self, token, state):
         level = token['attrs']['level']
 
