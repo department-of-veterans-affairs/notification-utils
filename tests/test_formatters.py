@@ -209,13 +209,14 @@ def test_sms_preview_adds_newlines():
     (
         [
             notify_html_markdown,
-            'print("hello")'
+            '<pre><code>print(&quot;hello&quot;)\n</code></pre>\n'
         ],
         [
             notify_markdown,
-            'print("hello")'
+            '```\nprint("hello")\n```\n'
         ],
-    )
+    ),
+    ids=['notify_html_markdown', 'notify_markdown']
 )
 def test_block_code(markdown_function, expected):
     assert markdown_function('```\nprint("hello")\n```') == expected
