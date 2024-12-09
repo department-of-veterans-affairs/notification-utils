@@ -736,11 +736,11 @@ def test_double_emphasis(markdown_function, expected):
     [
         notify_html_markdown,
         '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; '
-        'color: #323A45;">something <em>important</em></p>'
+        'color: #323A45;">something <em>important</em></p>\n'
     ],
     [
         notify_markdown,
-        '\n\nsomething important',
+        'something *important*\n',
     ],
 ))
 def test_emphasis(markdown_function, expected):

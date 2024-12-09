@@ -443,6 +443,7 @@ class NotifyHTMLRenderer(HTMLRenderer):
         Delete tables.
         """
 
+        # TODO - This is the expected test behavior, but it doesn't make sense.
         return ''
 
 
@@ -459,6 +460,7 @@ class NotifyMarkdownRenderer(MarkdownRenderer):
         Delete tables.
         """
 
+        # TODO - This is the expected test behavior, but it doesn't make sense.
         return ''
 
 
