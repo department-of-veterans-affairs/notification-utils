@@ -284,14 +284,14 @@ def test_level_1_header(markdown_function, expected):
         [
             notify_html_markdown,
             '<h2 style="Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #323A45;'
-            'font-size: 24px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;">inset text</h2>'
+            'font-size: 24px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;">inset text</h2>\n'
         ],
         [
             notify_markdown,
             (
                 '\n'
                 '\ninset text'
-                '\n-----------------------------------------------------------------'
+                '\n-----------------------------------------------------------------\n'
             ),
         ],
     ),

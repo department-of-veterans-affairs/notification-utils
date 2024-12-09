@@ -428,7 +428,8 @@ class NotifyHTMLRenderer(HTMLRenderer):
             style = 'Margin: 0 0 20px 0; padding: 0; font-size: 32px; ' \
                     'line-height: 35px; font-weight: bold; color: #323A45;'
         elif level == 2:
-            style = ''
+            style = 'Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #323A45;' \
+                    'font-size: 24px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;'
         elif level == 3:
             style = ''
         else:
@@ -471,7 +472,9 @@ class NotifyMarkdownRenderer(MarkdownRenderer):
             return self.paragraph(token, state)
 
         value = super().heading(token, state)
-        return '\n\n\n' + value.strip()[2:] + '\n' + ('-' * HEADER_COLUMN_WIDTH)
+        # print('HERE', value)  # TODO - delete
+        indentation = 3 if level == 1 else 2
+        return ('\n' * indentation) + value.strip('#\n ') + '\n' + ('-' * HEADER_COLUMN_WIDTH)
 
     def strikethrough(self, token, state):
         """
