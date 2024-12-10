@@ -1581,3 +1581,17 @@ def test_block_quotes():
     """
 
     assert False
+
+
+def test_lists_without_spaces():
+    """
+    Proper markdown for lists has a space after the number (ordered list) or dash (unordered list).
+    """
+
+    assert False
+    # No spaces after numbers
+    # assert notify_html_markdown(
+    #     '1.one\n'
+    #     '2.two\n'
+    #     '3.three\n'
+    # ) == expected # TODO See test_formatters.py::test_ordered_list

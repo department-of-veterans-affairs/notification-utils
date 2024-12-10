@@ -319,28 +319,33 @@ def test_level_3_header(markdown_function, expected):
     assert markdown_function('### inset text') == expected
 
 
-@pytest.mark.parametrize('markdown_function, expected', (
-    [
-        notify_html_markdown,
-        (
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">a</p>'
-            '<hr style="border: 0; height: 1px; background: #BFC1C3; Margin: 30px 0 30px 0;">'
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">b</p>'
-        )
-    ],
-    [
-        notify_markdown,
-        (
-            '\n'
-            '\na'
-            '\n'
-            '\n================================================================='
-            '\n'
-            '\nb'
-        ),
-    ],
-))
-def test_hrule(markdown_function, expected):
+@pytest.mark.parametrize(
+    'markdown_function, expected',
+    (
+        [
+            notify_html_markdown,
+            (
+                '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">a</p>\n'
+                '<hr style="border: 0; height: 1px; background: #BFC1C3; Margin: 30px 0 30px 0;" />\n'
+                '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">b</p>\n'
+            )
+        ],
+        [
+            notify_markdown,
+            (
+                'a\n\n'
+                '=================================================================\n'
+                'b\n'
+            ),
+        ],
+    ),
+    ids=['notify_html_markdown', 'notify_markdown']
+)
+def test_thematic_break(markdown_function, expected):
+    """
+    Thematic breaks were known as horizontal rules (hrule) in earlier versions of Mistune.
+    """
+
     assert markdown_function('a\n\n***\n\nb') == expected
     assert markdown_function('a\n\n---\n\nb') == expected
 

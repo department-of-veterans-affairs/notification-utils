@@ -15,7 +15,7 @@ BLOCK_QUOTE_STYLE = 'background: #F1F1F1; ' \
                     'padding: 24px 24px 0.1px 24px; ' \
                     'font-family: Helvetica, Arial, sans-serif; ' \
                     'font-size: 16px; line-height: 25px;'
-HEADER_COLUMN_WIDTH = 65
+COLUMN_WIDTH = 65
 LINK_STYLE = 'word-wrap: break-word; color: #004795;'
 ORDERED_LIST_STYLE = 'Margin: 0 0 0 20px; ' \
                      'padding: 0 0 20px 0; ' \
@@ -23,6 +23,7 @@ ORDERED_LIST_STYLE = 'Margin: 0 0 0 20px; ' \
                      'font-family: Helvetica, Arial, sans-serif;'
 ORDERED_LIST_ITEM_STYLE = 'Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; line-height: 25px; color: #323A45;'
 PARAGRAPH_STYLE = 'Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;'
+THEMATIC_BREAK_STYLE = 'border: 0; height: 1px; background: #BFC1C3; Margin: 30px 0 30px 0;'
 
 OBSCURE_WHITESPACE = (
     '\u180E'  # Mongolian vowel separator
@@ -461,6 +462,14 @@ class NotifyHTMLRenderer(HTMLRenderer):
         # TODO - This is the expected test behavior, but it doesn't make sense.
         return ''
 
+    def thematic_break(self):
+        """
+        Thematic breaks were known as horizontal rules (hrule) in earlier versions of Mistune.
+        """
+
+        value = super().thematic_break()
+        return value[:3] + f' style="{THEMATIC_BREAK_STYLE}"' + value[3:]
+
 
 class NotifyMarkdownRenderer(MarkdownRenderer):
     def block_quote(self, token, state):
@@ -475,7 +484,7 @@ class NotifyMarkdownRenderer(MarkdownRenderer):
 
         value = super().heading(token, state)
         indentation = 3 if level == 1 else 2
-        return ('\n' * indentation) + value.strip('#\n ') + '\n' + ('-' * HEADER_COLUMN_WIDTH)
+        return ('\n' * indentation) + value.strip('#\n ') + '\n' + ('-' * COLUMN_WIDTH)
 
     def strikethrough(self, token, state):
         """
@@ -491,6 +500,13 @@ class NotifyMarkdownRenderer(MarkdownRenderer):
 
         # TODO - This is the expected test behavior, but it doesn't make sense.
         return ''
+
+    def thematic_break(self, token, state):
+        """
+        Thematic breaks were known as horizontal rules (hrule) in earlier versions of Mistune.
+        """
+
+        return '=' * COLUMN_WIDTH + '\n'
 
 
 notify_html_markdown = mistune.create_markdown(
