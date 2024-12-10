@@ -40,18 +40,19 @@ PARAGRAPH_TEXT = '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25
     ]
 )
 def test_makes_links_out_of_urls(url):
-    link = f'<a style="word-wrap: break-word; color: #004795;" href="{url}">{url}</a>'
+    link = f'<a style="word-wrap: break-word; color: #004795;" target="_blank" href="{url}">{url}</a>'
     assert notify_html_markdown(url) == PARAGRAPH_TEXT.format(link)
 
 
-@pytest.mark.parametrize('input, output', [
+@pytest.mark.parametrize('input_text, output', [
     (
         (
             'this is some text with a link http://example.com in the middle'
         ),
         (
             'this is some text with a link '
-            '<a style="word-wrap: break-word; color: #004795;" href="http://example.com">http://example.com</a>'
+            '<a style="word-wrap: break-word; color: #004795;" target="_blank" '
+            'href="http://example.com">http://example.com</a>'
             ' in the middle'
         ),
     ),
@@ -61,14 +62,13 @@ def test_makes_links_out_of_urls(url):
         ),
         (
             'this link is in brackets '
-            '(<a style="word-wrap: break-word; color: #004795;" href="http://example.com">http://example.com</a>)'
+            '(<a style="word-wrap: break-word; color: #004795;" target="_blank" '
+            'href="http://example.com">http://example.com</a>)'
         ),
     )
 ])
-def test_makes_links_out_of_urls_in_context(input, output):
-    assert notify_html_markdown(input) == (
-        PARAGRAPH_TEXT
-    ).format(output)
+def test_makes_links_out_of_urls_in_context(input_text, output):
+    assert notify_html_markdown(input_text) == PARAGRAPH_TEXT.format(output)
 
 
 @pytest.mark.parametrize(
@@ -89,7 +89,7 @@ def test_handles_placeholders_in_urls():
         "http://example.com/?token=<span class='placeholder'>((token))</span>&key=1"
     ) == (
         '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
-        '<a style="word-wrap: break-word; color: #004795;" href="http://example.com/?token=">'
+        '<a style="word-wrap: break-word; color: #004795;" target="_blank" href="http://example.com/?token=">'
         'http://example.com/?token='
         '</a>'
         '<span class=\'placeholder\'>((token))</span>&amp;key=1'
@@ -102,13 +102,13 @@ def test_handles_placeholders_in_urls():
     [
         (
             """https://example.com"onclick="alert('hi')""",
-            """<a style="word-wrap: break-word; color: #004795;" href="https://example.com%22onclick=%22alert%28%27hi">https://example.com"onclick="alert('hi</a>')""",  # noqa
-            """<a style="word-wrap: break-word; color: #004795;" href="https://example.com%22onclick=%22alert%28%27hi">https://example.com"onclick="alert('hi</a>‘)""",  # noqa
+            """<a style="word-wrap: break-word; color: #004795;" target="_blank" href="https://example.com%22onclick=%22alert%28%27hi">https://example.com"onclick="alert('hi</a>')""",  # noqa
+            """<a style="word-wrap: break-word; color: #004795;" target="_blank" href="https://example.com%22onclick=%22alert%28%27hi">https://example.com"onclick="alert('hi</a>‘)""",  # noqa
         ),
         (
             """https://example.com"style='text-decoration:blink'""",
-            """<a style="word-wrap: break-word; color: #004795;" href="https://example.com%22style=%27text-decoration:blink">https://example.com"style='text-decoration:blink</a>'""",  # noqa
-            """<a style="word-wrap: break-word; color: #004795;" href="https://example.com%22style=%27text-decoration:blink">https://example.com"style='text-decoration:blink</a>’""",  # noqa
+            """<a style="word-wrap: break-word; color: #004795;" target="_blank" href="https://example.com%22style=%27text-decoration:blink">https://example.com"style='text-decoration:blink</a>'""",  # noqa
+            """<a style="word-wrap: break-word; color: #004795;" target="_blank" href="https://example.com%22style=%27text-decoration:blink">https://example.com"style='text-decoration:blink</a>’""",  # noqa
         ),
     ],
     ids=['js', 'style']
@@ -120,8 +120,8 @@ def test_urls_get_escaped(url, expected_html, expected_html_in_template):
 
 def test_html_template_has_urls_replaced_with_links():
     assert (
-        '<a style="word-wrap: break-word; color: #004795;" href="https://service.example.com/accept_invite/a1b2c3d4">'
-        'https://service.example.com/accept_invite/a1b2c3d4'
+        '<a style="word-wrap: break-word; color: #004795;" target="_blank" '
+        'href="https://service.example.com/accept_invite/a1b2c3d4">https://service.example.com/accept_invite/a1b2c3d4'
         '</a>'
     ) in str(HTMLEmailTemplate({'content': (
         'You’ve been invited to a service. Click this link:\n'
@@ -136,7 +136,7 @@ def test_html_template_has_urls_replaced_with_links():
     [
         (notify_html_markdown, (
             '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
-            '<a style="word-wrap: break-word; color: #004795;" href="https://example.com">'
+            '<a style="word-wrap: break-word; color: #004795;" target="_blank" href="https://example.com">'
             'https://example.com'
             '</a>'
             '</p>\n'
@@ -660,7 +660,8 @@ def test_table(markdown_function):
         'http://example.com',
         (
             '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
-            '<a style="word-wrap: break-word; color: #004795;" href="http://example.com">http://example.com</a>'
+            '<a style="word-wrap: break-word; color: #004795;" target="_blank" '
+            'href="http://example.com">http://example.com</a>'
             '</p>'
         )
     ],
@@ -669,7 +670,8 @@ def test_table(markdown_function):
         """https://example.com"onclick="alert('hi')""",
         (
             '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
-            '<a style="word-wrap: break-word; color: #004795;" href="https://example.com%22onclick=%22alert%28%27hi">'
+            '<a style="word-wrap: break-word; color: #004795;" target="_blank" '
+            'href="https://example.com%22onclick=%22alert%28%27hi">'
             'https://example.com"onclick="alert(\'hi'
             '</a>\')'
             '</p>'
@@ -766,24 +768,26 @@ def test_image(markdown_function, expected):
     assert markdown_function('![alt text](http://example.com/image.png)') == expected
 
 
-@pytest.mark.parametrize('markdown_function, expected', (
-    [
-        notify_html_markdown,
-        (
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; '
-            'color: #323A45;">'
-            '<a style="word-wrap: break-word; color: #004795;" href="http://example.com" target="_blank">Example</a>'
-            '</p>'
-        )
-    ],
-    [
-        notify_markdown,
-        (
-            '\n'
-            '\nExample: http://example.com'
-        ),
-    ],
-))
+@pytest.mark.parametrize(
+    'markdown_function, expected',
+    (
+        [
+            notify_html_markdown,
+            (
+                '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; '
+                'color: #323A45;">'
+                '<a style="word-wrap: break-word; color: #004795;" '
+                'target="_blank" href="http://example.com">Example</a>'
+                '</p>\n'
+            )
+        ],
+        [
+            notify_markdown,
+            '[Example](http://example.com)\n',
+        ],
+    ),
+    ids=['notify_html_markdown', 'notify_markdown']
+)
 def test_link(markdown_function, expected):
     assert markdown_function('[Example](http://example.com)') == expected
 

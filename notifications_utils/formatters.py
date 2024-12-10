@@ -439,7 +439,7 @@ class NotifyHTMLRenderer(HTMLRenderer):
         """
 
         value = super().link(text, url, title)
-        return value[:2] + f' style="{LINK_STYLE}"' + value[2:]
+        return value[:2] + f' style="{LINK_STYLE}" target="_blank"' + value[2:]
 
     def list(self, text, ordered, **attrs):
         value = super().list(text, ordered, **attrs)
