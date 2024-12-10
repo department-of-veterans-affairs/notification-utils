@@ -17,6 +17,11 @@ BLOCK_QUOTE_STYLE = 'background: #F1F1F1; ' \
                     'font-size: 16px; line-height: 25px;'
 HEADER_COLUMN_WIDTH = 65
 LINK_STYLE = 'word-wrap: break-word; color: #004795;'
+ORDERED_LIST_STYLE = 'Margin: 0 0 0 20px; ' \
+                     'padding: 0 0 20px 0; ' \
+                     'list-style-type: decimal; ' \
+                     'font-family: Helvetica, Arial, sans-serif;'
+ORDERED_LIST_ITEM_STYLE = 'Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; line-height: 25px; color: #323A45;'
 PARAGRAPH_STYLE = 'Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;'
 
 OBSCURE_WHITESPACE = (
@@ -399,33 +404,6 @@ def replace_symbols_with_placeholder_parens(value: str) -> str:
     return value
 
 
-def parse_hrule(block, m, state):
-    """
-    Parse a horizontal rule block.
-    """
-    # print("TEST 2")  # TODO - delete
-    state.append_token({'type': 'hrule', 'raw': m.group('hrule_text')})
-    return m.end() + 1
-
-
-HRULE_PATTERN = r'''^(?P<hrule_text>[-*_]{3,})\s*$'''
-
-
-def hrule(md):
-    """
-    A Mistune plug-in to recognize a horizontal rule.
-        https://mistune.lepture.com/en/latest/advanced.html
-        https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#horizontal-rule
-    """
-
-    md.block.register('hrule', HRULE_PATTERN, parse_hrule)
-    if md.renderer and md.renderer.NAME == 'html':
-        # This Mistune docs recommend specifying default HTML renderers, but this is
-        # is only used with plain text e-mail right now.
-        pass
-    # print("TEST 1")  # TODO - delete
-
-
 class NotifyHTMLRenderer(HTMLRenderer):
     def block_quote(self, text):
         value = super().block_quote(text)
@@ -454,6 +432,18 @@ class NotifyHTMLRenderer(HTMLRenderer):
 
         value = super().link(text, url, title)
         return value[:2] + f' style="{LINK_STYLE}"' + value[2:]
+
+    def list(self, text, ordered, **attrs):
+        value = super().list(text, ordered, **attrs)
+
+        if ordered:
+            value = value[:3] + f' role="presentation" style="{ORDERED_LIST_STYLE}"' + value[3:]
+
+        return value
+
+    def list_item(self, text, **attrs):
+        value = super().list_item(text, **attrs)
+        return value[:3] + f' style="{ORDERED_LIST_ITEM_STYLE}"' + value[3:]
 
     def paragraph(self, text):
         """

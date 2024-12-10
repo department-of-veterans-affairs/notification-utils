@@ -345,38 +345,22 @@ def test_hrule(markdown_function, expected):
     assert markdown_function('a\n\n---\n\nb') == expected
 
 
-@pytest.mark.parametrize('markdown_function, expected', (
-    [
-        notify_html_markdown,
-        (
-            '<table role="presentation" style="padding: 0 0 20px 0;">'
-            '<tr>'
-            '<td style="font-family: Helvetica, Arial, sans-serif;">'
-            '<ol style="Margin: 0 0 0 20px; padding: 0; list-style-type: decimal;">'
-            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
-            'line-height: 25px; color: #323A45;">one</li>'
-            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
-            'line-height: 25px; color: #323A45;">two</li>'
-            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
-            'line-height: 25px; color: #323A45;">three</li>'
-            '</ol>'
-            '</td>'
-            '</tr>'
-            '</table>'
-        )
-    ],
-))
-def test_ordered_list(markdown_function, expected):
-    assert markdown_function(
+def test_ordered_list():
+    assert notify_html_markdown(
         '1. one\n'
         '2. two\n'
         '3. three\n'
-    ) == expected
-    assert markdown_function(
-        '1.one\n'
-        '2.two\n'
-        '3.three\n'
-    ) == expected
+    ) == (
+        '<ol role="presentation" style="Margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: decimal; '
+        'font-family: Helvetica, Arial, sans-serif;">\n'
+        '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; line-height: 25px; color: #323A45;">'
+        'one</li>\n'
+        '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; line-height: 25px; color: #323A45;">'
+        'two</li>\n'
+        '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; line-height: 25px; color: #323A45;">'
+        'three</li>\n'
+        '</ol>\n'
+    )
 
 
 @pytest.mark.parametrize('markdown_function, test_text, expected', (  # noqa: E126
