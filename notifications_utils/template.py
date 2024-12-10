@@ -219,8 +219,7 @@ class SMSPreviewTemplate(SMSMessageTemplate):
         self.redact_missing_personalisation = redact_missing_personalisation
         self.jinja_template = self.template_env.get_template('sms_preview_template.jinja2')
 
-    def __str__(self):
-
+    def __str__(self) -> str:
         field = Field(
             self.content,
             self.values,
@@ -229,7 +228,7 @@ class SMSPreviewTemplate(SMSMessageTemplate):
         )
         field = add_prefix(field, escape_html(self.prefix) if self.show_prefix else None)
 
-        return Markup(self.jinja_template.render({
+        return str(Markup(self.jinja_template.render({
             'sender': self.sender,
             'show_sender': self.show_sender,
             'recipient': Field('((phone number))', self.values, with_brackets=False, html='escape'),
@@ -241,7 +240,7 @@ class SMSPreviewTemplate(SMSMessageTemplate):
                 nl2br,
                 autolink_sms,
             )
-        }))
+        })))
 
 
 class WithSubjectTemplate(Template):

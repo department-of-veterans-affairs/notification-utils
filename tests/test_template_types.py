@@ -639,31 +639,60 @@ def test_stripping_of_unsupported_characters_in_email_templates():
     assert expected in str(HTMLEmailTemplate({'content': template_content, 'subject': ''}))
 
 
-@mock.patch('notifications_utils.template.add_prefix', return_value='')
 @pytest.mark.parametrize(
-    "template_class, prefix, body, expected_call", [
-        (SMSMessageTemplate, "a", "b", (Markup("b"), "a")),
-        (SMSPreviewTemplate, "a", "b", (Markup("b"), "a")),
-        (SMSMessageTemplate, None, "b", (Markup("b"), None)),
-        (SMSPreviewTemplate, None, "b", (Markup("b"), None)),
-        (SMSMessageTemplate, '<em>ht&ml</em>', "b", (Markup("b"), '<em>ht&ml</em>')),
-        (SMSPreviewTemplate, '<em>ht&ml</em>', "b", (Markup("b"), '&lt;em&gt;ht&amp;ml&lt;/em&gt;')),
-    ]
+    "template_class, prefix, body, expected",
+    [
+        (
+            SMSMessageTemplate,
+            'a',
+            'b',
+            'a: b',
+        ),
+        (
+            SMSMessageTemplate,
+            None,
+            'b',
+            'b',
+        ),
+        (
+            SMSMessageTemplate,
+            '<em>ht&ml</em>',
+            'b',
+            '<em>ht&ml</em>: b',
+        ),
+        (
+            SMSPreviewTemplate,
+            'a',
+            'b',
+            '\n\n<div class="sms-message-wrapper">\n  a: b\n</div>',
+        ),
+        (
+            SMSPreviewTemplate,
+            None,
+            'b',
+            '\n\n<div class="sms-message-wrapper">\n  b\n</div>',
+        ),
+        (
+            SMSPreviewTemplate,
+            '<em>ht&ml</em>',
+            'b',
+            '\n\n<div class="sms-message-wrapper">\n  &lt;em&gt;ht&amp;ml&lt;/em&gt;: b\n</div>',
+        ),
+    ],
+    ids=['message_a', 'message_none', 'message_html', 'preview_a', 'preview_none', 'preview_html']
 )
-def test_sms_message_adds_prefix(add_prefix, template_class, prefix, body, expected_call):
+def test_sms_templates_add_prefix(template_class, prefix, body, expected):
     template = template_class({'content': body})
     template.prefix = prefix
     template.sender = None
-    str(template)
-    add_prefix.assert_called_once_with(*expected_call)
+    assert str(template) == expected
 
 
 @mock.patch('notifications_utils.template.add_prefix', return_value='')
+@pytest.mark.parametrize('template_class', [SMSMessageTemplate, SMSPreviewTemplate])
 @pytest.mark.parametrize(
-    'template_class', [SMSMessageTemplate, SMSPreviewTemplate]
-)
-@pytest.mark.parametrize(
-    "show_prefix, prefix, body, sender, expected_call", [
+    "show_prefix, prefix, body, sender, expected_call",
+    [
         (False, "a", "b", "c", (Markup("b"), None)),
         (True, "a", "b", None, (Markup("b"), "a")),
         (True, "a", "b", False, (Markup("b"), "a")),
