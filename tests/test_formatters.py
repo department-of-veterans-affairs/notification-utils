@@ -600,24 +600,23 @@ def test_paragraphs(markdown_function, expected):
     ) == expected
 
 
-@pytest.mark.parametrize('markdown_function, expected', (
-    [
-        notify_html_markdown,
-        (
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">before</p>'
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">after</p>'
-        )
-    ],
-    [
-        notify_markdown,
-        (
-            '\n'
-            '\nbefore'
-            '\n'
-            '\nafter'
-        ),
-    ],
-))
+@pytest.mark.parametrize(
+    'markdown_function, expected',
+    (
+        [
+            notify_html_markdown,
+            (
+                '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">before</p>\n'
+                '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">after</p>\n'
+            )
+        ],
+        [
+            notify_markdown,
+            'before\n\nafter\n',
+        ],
+    ),
+    ids=['notify_html_markdown', 'notify_markdown']
+)
 def test_multiple_newlines_get_truncated(markdown_function, expected):
     assert markdown_function(
         'before\n\n\n\n\n\nafter'
