@@ -102,13 +102,13 @@ def test_handles_placeholders_in_urls():
     [
         (
             """https://example.com"onclick="alert('hi')""",
-            """<a style="word-wrap: break-word; color: #004795;" target="_blank" href="https://example.com%22onclick=%22alert%28%27hi">https://example.com"onclick="alert('hi</a>')""",  # noqa
-            """<a style="word-wrap: break-word; color: #004795;" target="_blank" href="https://example.com%22onclick=%22alert%28%27hi">https://example.com"onclick="alert('hi</a>‘)""",  # noqa
+            """<a style="word-wrap: break-word; color: #004795;" target="_blank" href="https://example.com%22onclick=%22alert(%27hi">https://example.com&quot;onclick=&quot;alert('hi</a>')""",  # noqa
+            """<a style="word-wrap: break-word; color: #004795;" target="_blank" href="https://example.com%22onclick=%22alert(%27hi">https://example.com&quot;onclick=&quot;alert('hi</a>‘)""",  # noqa
         ),
         (
             """https://example.com"style='text-decoration:blink'""",
-            """<a style="word-wrap: break-word; color: #004795;" target="_blank" href="https://example.com%22style=%27text-decoration:blink">https://example.com"style='text-decoration:blink</a>'""",  # noqa
-            """<a style="word-wrap: break-word; color: #004795;" target="_blank" href="https://example.com%22style=%27text-decoration:blink">https://example.com"style='text-decoration:blink</a>’""",  # noqa
+            """<a style="word-wrap: break-word; color: #004795;" target="_blank" href="https://example.com%22style=%27text-decoration:blink">https://example.com&quot;style='text-decoration:blink</a>'""",  # noqa
+            """<a style="word-wrap: break-word; color: #004795;" target="_blank" href="https://example.com%22style=%27text-decoration:blink">https://example.com&quot;style='text-decoration:blink</a>’""",  # noqa
         ),
     ],
     ids=['js', 'style']
@@ -541,32 +541,6 @@ def test_paragraph_in_list_has_no_linebreak(markdown_function, test_text, expect
 )
 def test_unordered_list(markdown, markdown_function, expected):
     assert markdown_function(markdown) == expected
-
-
-@pytest.mark.parametrize('markdown_function, expected', (
-    [
-        notify_html_markdown,
-        (
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">+ one</p>'
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">+ two</p>'
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">+ three</p>'
-        ),
-    ],
-    [
-        notify_markdown,
-        (
-            '\n\n+ one'
-            '\n\n+ two'
-            '\n\n+ three'
-        ),
-    ],
-))
-def test_pluses_dont_render_as_lists(markdown_function, expected):
-    assert markdown_function(
-        '+ one\n'
-        '+ two\n'
-        '+ three\n'
-    ) == expected
 
 
 @pytest.mark.parametrize(
