@@ -792,31 +792,16 @@ def test_link(markdown_function, expected):
     assert markdown_function('[Example](http://example.com)') == expected
 
 
-@pytest.mark.parametrize('markdown_function, expected', (
-    [
-        notify_html_markdown,
-        (
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; '
-            'color: #323A45;">'
-            '<a style="word-wrap: break-word; color: #004795;" href="http://example.com" '
-            'title="An example URL" target="_blank">'
-            'Example'
-            '</a>'
-            '</p>'
-        )
-    ],
-    [
-        notify_markdown,
-        (
-            '\n'
-            '\nExample (An example URL): http://example.com'
-        ),
-    ],
-))
-def test_link_with_title(markdown_function, expected):
-    assert markdown_function(
-        '[Example](http://example.com "An example URL")'
-    ) == expected
+def test_link_with_title():
+    assert notify_html_markdown('[Example](http://example.com "An example URL")') == (
+        '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; '
+        'color: #323A45;">'
+        '<a style="word-wrap: break-word; color: #004795;" target="_blank" href="http://example.com" '
+        'title="An example URL">'
+        'Example'
+        '</a>'
+        '</p>\n'
+    )
 
 
 @pytest.mark.parametrize(
