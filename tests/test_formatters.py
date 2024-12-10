@@ -754,15 +754,16 @@ def test_nested_emphasis(markdown_function, expected):
     assert markdown_function('foo ___bar___') == expected
 
 
-@pytest.mark.parametrize('markdown_function', (
-    notify_html_markdown, notify_markdown
-))
-def test_image(markdown_function):
-    assert markdown_function(
-        '![alt text](http://example.com/image.png)'
-    ) == (
-        ''
-    )
+@pytest.mark.parametrize(
+    'markdown_function, expected',
+    [
+        (notify_html_markdown, ''),
+        (notify_markdown, '\n'),
+    ],
+    ids=['notify_html_markdown', 'notify_markdown']
+)
+def test_image(markdown_function, expected):
+    assert markdown_function('![alt text](http://example.com/image.png)') == expected
 
 
 @pytest.mark.parametrize('markdown_function, expected', (
@@ -784,9 +785,7 @@ def test_image(markdown_function):
     ],
 ))
 def test_link(markdown_function, expected):
-    assert markdown_function(
-        '[Example](http://example.com)'
-    ) == expected
+    assert markdown_function('[Example](http://example.com)') == expected
 
 
 @pytest.mark.parametrize('markdown_function, expected', (

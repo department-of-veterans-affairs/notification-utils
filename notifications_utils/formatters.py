@@ -426,6 +426,13 @@ class NotifyHTMLRenderer(HTMLRenderer):
         value = super().heading(text, level, **attrs)
         return value[:3] + f' style="{style}"' + value[3:]
 
+    def image(self, alt, url, title=None):
+        """
+        Delete images.  VA e-mail messages contain only 1 image that is not managed by clients.
+        """
+
+        return ''
+
     def link(self, text, url, title=None):
         """
         Add CSS to links.
@@ -452,6 +459,11 @@ class NotifyHTMLRenderer(HTMLRenderer):
         """
 
         value = super().paragraph(text)
+
+        if value == '<p></p>\n':
+            # This is the case when all child elements, such as tables and images, are deleted.
+            return ''
+
         return value[:2] + f' style="{PARAGRAPH_STYLE}"' + value[2:]
 
     def table(self, text):
@@ -485,6 +497,13 @@ class NotifyMarkdownRenderer(MarkdownRenderer):
         value = super().heading(token, state)
         indentation = 3 if level == 1 else 2
         return ('\n' * indentation) + value.strip('#\n ') + '\n' + ('-' * COLUMN_WIDTH)
+
+    def image(self, token, state):
+        """
+        Delete images.  VA e-mail messages contain only 1 image that is not managed by clients.
+        """
+
+        return ''
 
     def strikethrough(self, token, state):
         """
