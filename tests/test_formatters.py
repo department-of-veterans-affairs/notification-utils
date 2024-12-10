@@ -679,20 +679,23 @@ def test_autolink(markdown_function, link, expected):
     assert markdown_function(link) == expected
 
 
-@pytest.mark.parametrize('markdown_function, expected', (
-    [
-        notify_html_markdown,
-        '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">variable called thing</p>'
-    ],
-    [
-        notify_markdown,
-        '\n\nvariable called thing',
-    ],
-))
+@pytest.mark.parametrize(
+    'markdown_function, expected',
+    (
+        [
+            notify_html_markdown,
+            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
+            'variable called <code>thing</code></p>\n'
+        ],
+        [
+            notify_markdown,
+            'variable called `thing`\n',
+        ],
+    ),
+    ids=['notify_html_markdown', 'notify_markdown']
+)
 def test_codespan(markdown_function, expected):
-    assert markdown_function(
-        'variable called `thing`'
-    ) == expected
+    assert markdown_function('variable called `thing`') == expected
 
 
 @pytest.mark.parametrize('markdown_function, expected', (
