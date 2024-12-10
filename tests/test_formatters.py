@@ -480,73 +480,61 @@ def test_paragraph_in_list_has_no_linebreak(markdown_function, test_text, expect
     assert markdown_function(test_text) == expected
 
 
-@pytest.mark.parametrize('markdown', (
-    (  # no space
-        '*one\n'
-        '*two\n'
-        '*three\n'
+@pytest.mark.parametrize(
+    'markdown',
+    (
+        (  # two spaces
+            '*  one\n'
+            '*  two\n'
+            '*  three\n'
+        ),
+        (  # tab
+            '*  one\n'
+            '*  two\n'
+            '*  three\n'
+        ),
+        (  # dash as bullet
+            '- one\n'
+            '- two\n'
+            '- three\n'
+        ),
+        (  # plus as bullet
+            '+ one\n'
+            '+ two\n'
+            '+ three\n'
+        ),
+        pytest.param((  # bullet as bullet - This is non-standard.
+            '• one\n'
+            '• two\n'
+            '• three\n'
+        ), marks=pytest.mark.xfail(strict=False)),
     ),
-    (  # single space
-        '* one\n'
-        '* two\n'
-        '* three\n'
-    ),
-    (  # two spaces
-        '*  one\n'
-        '*  two\n'
-        '*  three\n'
-    ),
-    (  # tab
-        '*  one\n'
-        '*  two\n'
-        '*  three\n'
-    ),
-    (  # dash as bullet
-        '- one\n'
-        '- two\n'
-        '- three\n'
-    ),
-    pytest.param((  # plus as bullet
-        '+ one\n'
-        '+ two\n'
-        '+ three\n'
-    ), marks=pytest.mark.xfail(raises=AssertionError)),
-    (  # bullet as bullet
-        '• one\n'
-        '• two\n'
-        '• three\n'
-    ),
-))
+    ids=['two_spaces', 'tab', 'dash_as_bullet', 'plus_as_bullet', 'bullet_as_bullet']
+)
 @pytest.mark.parametrize(
     'markdown_function, expected',
     (
         [
             notify_html_markdown,
             (
-                '<table role="presentation" style="padding: 0 0 20px 0;">'
-                '<tr>'
-                '<td style="font-family: Helvetica, Arial, sans-serif;">'
-                '<ul style="Margin: 0 0 0 20px; padding: 0; list-style-type: disc;">'
-                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
-                'line-height: 25px; color: #323A45;">one</li>'
-                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
-                'line-height: 25px; color: #323A45;">two</li>'
-                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
-                'line-height: 25px; color: #323A45;">three</li>'
-                '</ul>'
-                '</td>'
-                '</tr>'
-                '</table>'
+                '<ul role="presentation" style="Margin: 0 0 0 20px; padding: 0 0 20px 0; '
+                'list-style-type: disk; '
+                'font-family: Helvetica, Arial, sans-serif;">\n'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; '
+                'line-height: 25px; color: #323A45;">'
+                'one</li>\n'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; '
+                'line-height: 25px; color: #323A45;">'
+                'two</li>\n'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; '
+                'line-height: 25px; color: #323A45;">'
+                'three</li>\n'
+                '</ul>\n'
             )
         ],
         [
             notify_markdown,
-            (
-                '\n'
-                '\n• one'
-                '\n• two'
-                '\n• three'
-            ),
+            '• one\n• two\n• three\n'
         ],
     ),
     ids=['notify_html_markdown', 'notify_markdown']

@@ -17,13 +17,13 @@ BLOCK_QUOTE_STYLE = 'background: #F1F1F1; ' \
                     'font-size: 16px; line-height: 25px;'
 COLUMN_WIDTH = 65
 LINK_STYLE = 'word-wrap: break-word; color: #004795;'
-ORDERED_LIST_STYLE = 'Margin: 0 0 0 20px; ' \
-                     'padding: 0 0 20px 0; ' \
-                     'list-style-type: decimal; ' \
+ORDERED_LIST_STYLE = 'Margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: decimal; ' \
                      'font-family: Helvetica, Arial, sans-serif;'
-ORDERED_LIST_ITEM_STYLE = 'Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; line-height: 25px; color: #323A45;'
+LIST_ITEM_STYLE = 'Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; line-height: 25px; color: #323A45;'
 PARAGRAPH_STYLE = 'Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;'
 THEMATIC_BREAK_STYLE = 'border: 0; height: 1px; background: #BFC1C3; Margin: 30px 0 30px 0;'
+UNORDERED_LIST_STYLE = 'Margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: disk; ' \
+                       'font-family: Helvetica, Arial, sans-serif;'
 
 OBSCURE_WHITESPACE = (
     '\u180E'  # Mongolian vowel separator
@@ -443,15 +443,12 @@ class NotifyHTMLRenderer(HTMLRenderer):
 
     def list(self, text, ordered, **attrs):
         value = super().list(text, ordered, **attrs)
-
-        if ordered:
-            value = value[:3] + f' role="presentation" style="{ORDERED_LIST_STYLE}"' + value[3:]
-
-        return value
+        style = ORDERED_LIST_STYLE if ordered else UNORDERED_LIST_STYLE
+        return value[:3] + f' role="presentation" style="{style}"' + value[3:]
 
     def list_item(self, text, **attrs):
         value = super().list_item(text, **attrs)
-        return value[:3] + f' style="{ORDERED_LIST_ITEM_STYLE}"' + value[3:]
+        return value[:3] + f' style="{LIST_ITEM_STYLE}"' + value[3:]
 
     def paragraph(self, text):
         """
@@ -504,6 +501,14 @@ class NotifyMarkdownRenderer(MarkdownRenderer):
         """
 
         return ''
+
+    def list(self, token, state):
+        """
+        Use the bullet character as the actual bullet output for all input (asterisks, pluses, and minues).
+        """
+
+        token['bullet'] = '•'
+        return super().list(token, state)
 
     def strikethrough(self, token, state):
         """
