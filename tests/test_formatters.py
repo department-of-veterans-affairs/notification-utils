@@ -654,38 +654,39 @@ def test_table(markdown_function):
     )
 
 
-@pytest.mark.parametrize('markdown_function, link, expected', (
-    [
-        notify_html_markdown,
-        'http://example.com',
-        (
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
-            '<a style="word-wrap: break-word; color: #004795;" target="_blank" '
-            'href="http://example.com">http://example.com</a>'
-            '</p>'
-        )
-    ],
-    [
-        notify_html_markdown,
-        """https://example.com"onclick="alert('hi')""",
-        (
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
-            '<a style="word-wrap: break-word; color: #004795;" target="_blank" '
-            'href="https://example.com%22onclick=%22alert%28%27hi">'
-            'https://example.com"onclick="alert(\'hi'
-            '</a>\')'
-            '</p>'
-        )
-    ],
-    [
-        notify_markdown,
-        'http://example.com',
-        (
-            '\n'
-            '\nhttp://example.com'
-        ),
-    ],
-))
+@pytest.mark.parametrize(
+    'markdown_function, link, expected',
+    (
+        [
+            notify_html_markdown,
+            'http://example.com',
+            (
+                '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
+                '<a style="word-wrap: break-word; color: #004795;" target="_blank" '
+                'href="http://example.com">http://example.com</a>'
+                '</p>\n'
+            )
+        ],
+        [
+            notify_html_markdown,
+            """https://example.com"onclick="alert('hi')""",
+            (
+                '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
+                '<a style="word-wrap: break-word; color: #004795;" target="_blank" '
+                'href="https://example.com%22onclick=%22alert(%27hi">'
+                'https://example.com&quot;onclick=&quot;alert(\'hi'
+                '</a>\')'
+                '</p>\n'
+            )
+        ],
+        [
+            notify_markdown,
+            'http://example.com',
+            'http://example.com\n'
+        ],
+    ),
+    ids=['html_link', 'html_link_js', 'markdown']
+)
 def test_autolink(markdown_function, link, expected):
     assert markdown_function(link) == expected
 
