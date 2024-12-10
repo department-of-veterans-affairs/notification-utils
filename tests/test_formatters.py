@@ -368,116 +368,102 @@ def test_ordered_list():
     )
 
 
-@pytest.mark.parametrize('markdown_function, test_text, expected', (  # noqa: E126
-    [
-        notify_html_markdown,
-        (
-            '1. List item 1\n\n'
-            '\tShould be paragraph in the list item without extra br above'
-        ),
-        (
-            '<table role="presentation" style="padding: 0 0 20px 0;">'
-            '<tr>'
-            '<td style="font-family: Helvetica, Arial, sans-serif;">'
-            '<ol style="Margin: 0 0 0 20px; padding: 0; list-style-type: decimal;">'
-            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
-            'line-height: 25px; color: #323A45;">'
-            '<p style="Margin: 5px 0 5px 0; font-size: 16px; line-height: 25px; color: #323A45;">List item 1</p>'
-            '<p style="Margin: 5px 0 5px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
-            '  Should be paragraph in the list item without extra br above</p>'
-            '</li>'
-            '</ol>'
-            '</td>'
-            '</tr>'
-            '</table>'
-        )
-    ],
-    [
-        notify_html_markdown,
-        (
-            '1. List item 1\n\n'
-            ' Should be paragraph in the list item without extra br above'
-        ),
-        (
-            '<table role="presentation" style="padding: 0 0 20px 0;">'
-            '<tr>'
-            '<td style="font-family: Helvetica, Arial, sans-serif;">'
-            '<ol style="Margin: 0 0 0 20px; padding: 0; list-style-type: decimal;">'
-            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
-            'line-height: 25px; color: #323A45;">'
-            '<p style="Margin: 5px 0 5px 0; font-size: 16px; line-height: 25px; color: #323A45;">List item 1</p>'
-            '<p style="Margin: 5px 0 5px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
-            'Should be paragraph in the list item without extra br above</p>'
-            '</li>'
-            '</ol>'
-            '</td>'
-            '</tr>'
-            '</table>'
-        )
-    ],
-    [
-        notify_html_markdown,
-        (
-            '1. one'
-            '\n\n nested 1'
-            '\n\n nested 2'
-            '\n1. two'
-            '\n1. three'
-        ),
-        (
-            '<table role="presentation" style="padding: 0 0 20px 0;">'
-            '<tr>'
-            '<td style="font-family: Helvetica, Arial, sans-serif;">'
-            '<ol style="Margin: 0 0 0 20px; padding: 0; list-style-type: decimal;">'
-            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
-            'line-height: 25px; color: #323A45;">'
-            '<p style="Margin: 5px 0 5px 0; font-size: 16px; line-height: 25px; color: #323A45;">one</p>'
-            '<p style="Margin: 5px 0 5px 0; font-size: 16px; line-height: 25px; color: #323A45;">nested 1</p>'
-            '<p style="Margin: 5px 0 5px 0; font-size: 16px; line-height: 25px; color: #323A45;">nested 2</p>'
-            '</li>'
-            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
-            'line-height: 25px; color: #323A45;">two</li>'
-            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
-            'line-height: 25px; color: #323A45;">three</li>'
-            '</ol>'
-            '</td>'
-            '</tr>'
-            '</table>'
-        )
-    ],
-    [
-        notify_html_markdown,
-        (
-            '* one'
-            '\n\n nested 1'
-            '\n\n nested 2'
-            '\n* two'
-            '\n* three'
-        ),
-        (
-            '<table role="presentation" style="padding: 0 0 20px 0;">'
-            '<tr>'
-            '<td style="font-family: Helvetica, Arial, sans-serif;">'
-            '<ul style="Margin: 0 0 0 20px; padding: 0; list-style-type: disc;">'
-            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
-            'line-height: 25px; color: #323A45;">'
-            '<p style="Margin: 5px 0 5px 0; font-size: 16px; line-height: 25px; color: #323A45;">one</p>'
-            '<p style="Margin: 5px 0 5px 0; font-size: 16px; line-height: 25px; color: #323A45;">nested 1</p>'
-            '<p style="Margin: 5px 0 5px 0; font-size: 16px; line-height: 25px; color: #323A45;">nested 2</p>'
-            '</li>'
-            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
-            'line-height: 25px; color: #323A45;">two</li>'
-            '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px;'
-            'line-height: 25px; color: #323A45;">three</li>'
-            '</ul>'
-            '</td>'
-            '</tr>'
-            '</table>'
-        )
-    ],
-))
-def test_paragraph_in_list_has_no_linebreak(markdown_function, test_text, expected):
-    assert markdown_function(test_text) == expected
+@pytest.mark.parametrize(
+    'test_text, expected',
+    (
+        [
+            (
+                '1. List item 1\n\n'
+                '\tShould be paragraph in the list item without extra br above'
+            ),
+            (
+                '<ol role="presentation" style="Margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: decimal; '
+                'font-family: Helvetica, Arial, sans-serif;">\n'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; '
+                'line-height: 25px; color: #323A45;">'
+                '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">List item 1</p>\n'
+                '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
+                'Should be paragraph in the list item without extra br above</p>\n'
+                '</li>\n'
+                '</ol>\n'
+            )
+        ],
+        [
+            (
+                '1. List item 1\n\n'
+                ' Should not be paragraph in the list item without extra br above'
+            ),
+            (
+                '<ol role="presentation" style="Margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: decimal; '
+                'font-family: Helvetica, Arial, sans-serif;">\n'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; '
+                'line-height: 25px; color: #323A45;">'
+                'List item 1'
+                '</li>\n'
+                '</ol>\n'
+                '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
+                'Should not be paragraph in the list item without extra br above</p>\n'
+            )
+        ],
+        [
+            (
+                '1. one'
+                '\n\n nested 1'
+                '\n\n nested 2'
+                '\n1. two'
+                '\n1. three'
+            ),
+            (
+                '<ol role="presentation" style="Margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: decimal; '
+                'font-family: Helvetica, Arial, sans-serif;">\n'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; '
+                'line-height: 25px; color: #323A45;">'
+                'one'
+                '</li>\n'
+                '</ol>\n'
+                '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">nested 1</p>\n'
+                '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">nested 2</p>\n'
+                '<ol role="presentation" style="Margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: decimal; '
+                'font-family: Helvetica, Arial, sans-serif;">\n'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; '
+                'line-height: 25px; color: #323A45;">two</li>\n'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; '
+                'line-height: 25px; color: #323A45;">three</li>\n'
+                '</ol>\n'
+            )
+        ],
+        [
+            (
+                '* one'
+                '\n\n nested 1'
+                '\n\n nested 2'
+                '\n* two'
+                '\n* three'
+            ),
+            (
+                '<ul role="presentation" style="Margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: disk; '
+                'font-family: Helvetica, Arial, sans-serif;">\n'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; '
+                'line-height: 25px; color: #323A45;">'
+                'one'
+                '</li>\n'
+                '</ul>\n'
+                '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">nested 1</p>\n'
+                '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">nested 2</p>\n'
+                '<ul role="presentation" style="Margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: disk; '
+                'font-family: Helvetica, Arial, sans-serif;">\n'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; '
+                'line-height: 25px; color: #323A45;">two</li>\n'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; '
+                'line-height: 25px; color: #323A45;">three</li>\n'
+                '</ul>\n'
+            )
+        ],
+    ),
+    ids=['paragraph_in_list', 'paragraph_not_in_list', 'ordered_nested_list', 'unordered_nested_list']
+)
+def test_paragraph_in_list_has_no_linebreak(test_text, expected):
+    assert notify_html_markdown(test_text) == expected
 
 
 @pytest.mark.parametrize(
