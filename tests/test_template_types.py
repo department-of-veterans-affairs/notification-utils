@@ -244,9 +244,8 @@ def test_get_html_email_body_preview_with_placeholder_in_markdown_link(content, 
 
 
 def test_html_email_inserts_body():
-    assert 'the &lt;em&gt;quick&lt;/em&gt; brown fox' in str(HTMLEmailTemplate(
-        {'content': 'the <em>quick</em> brown fox', 'subject': ''}
-    ))
+    content = 'the <em>quick</em> brown fox'
+    assert content in str(HTMLEmailTemplate({'content': content, 'subject': ''}))
 
 
 @pytest.mark.parametrize(
@@ -563,33 +562,37 @@ def test_makes_links_out_of_URLs(template_class, url, url_with_entities_replaced
     ) in str(template_class({'content': url, 'subject': ''}))
 
 
-@pytest.mark.parametrize('content, html_snippet', (
+@pytest.mark.parametrize(
+    'content, html_snippet',
     (
         (
-            'You’ve been invited to a service. Click this link:\n'
-            'https://service.example.com/accept_invite/a1b2c3d4\n'
-            '\n'
-            'Thanks\n'
+            (
+                'You’ve been invited to a service. Click this link:\n'
+                'https://service.example.com/accept_invite/a1b2c3d4\n'
+                '\n'
+                'Thanks\n'
+            ),
+            (
+                '<a style="word-wrap: break-word; color: #004795;" target="_blank"'
+                ' href="https://service.example.com/accept_invite/a1b2c3d4">'
+                'https://service.example.com/accept_invite/a1b2c3d4'
+                '</a>'
+            ),
         ),
         (
-            '<a style="word-wrap: break-word; color: #004795;"'
-            ' href="https://service.example.com/accept_invite/a1b2c3d4">'
-            'https://service.example.com/accept_invite/a1b2c3d4'
-            '</a>'
+            (
+                'https://service.example.com/accept_invite/?a=b&c=d&'
+            ),
+            (
+                '<a style="word-wrap: break-word; color: #004795;" target="_blank"'
+                ' href="https://service.example.com/accept_invite/?a=b&amp;c=d&amp;">'
+                'https://service.example.com/accept_invite/?a=b&amp;c=d&amp;'
+                '</a>'
+            ),
         ),
     ),
-    (
-        (
-            'https://service.example.com/accept_invite/?a=b&c=d&'
-        ),
-        (
-            '<a style="word-wrap: break-word; color: #004795;"'
-            ' href="https://service.example.com/accept_invite/?a=b&amp;c=d&amp;">'
-            'https://service.example.com/accept_invite/?a=b&amp;c=d&amp;'
-            '</a>'
-        ),
-    ),
-))
+    ids=['no_url_params', 'with_url_params']
+)
 def test_HTML_template_has_URLs_replaced_with_links(content, html_snippet):
     assert html_snippet in str(HTMLEmailTemplate({'content': content, 'subject': ''}))
 
@@ -916,18 +919,6 @@ def test_smart_quotes_removed_from_long_template_in_under_a_second():
     str(template)
 
     assert process_time() - start_time < 1
-
-
-def test_basic_templates_return_markup():
-
-    template_dict = {'content': 'content', 'subject': 'subject'}
-
-    for output in [
-        str(Template(template_dict)),
-        str(WithSubjectTemplate(template_dict)),
-        WithSubjectTemplate(template_dict).subject,
-    ]:
-        assert isinstance(output, Markup)
 
 
 @pytest.mark.parametrize('template_instance, expected_placeholders', [

@@ -110,10 +110,18 @@ def sms_encode(content):
 
 
 def strip_html(value):
+    """
+    Calls to bleach.clean escapes HTML.  This function strips and escapes the input.
+    """
+
     return bleach.clean(value, tags=[], strip=True)
 
 
 def escape_html(value):
+    """
+    Calls to bleach.clean escapes HTML.  This function escapes, but does not strip, the input.
+    """
+
     if not value:
         return value
     value = str(value).replace('<', '&lt;')

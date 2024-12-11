@@ -46,9 +46,11 @@ def compose1(value, *fs):
     Return the composition of functions applied to a single value.
     """
 
+    # print('COMPOSE', value)  # TODO
     return_value = value
     for f in fs:
         return_value = f(return_value)
+        # print('COMPOSE', return_value)  # TODO
     return return_value
 
 
@@ -369,12 +371,8 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         return ' '.join(field)[:self.PREHEADER_LENGTH_IN_CHARACTERS].strip()
 
     def __str__(self):
-
         return self.jinja_template.render({
-            'body': get_html_email_body(
-                self.content, self.values, preview_mode=self.preview_mode
-            ),
-            'preheader': self.preheader if not self.preview_mode else '',
+            'body': get_html_email_body(self.content, self.values, preview_mode=self.preview_mode),
             'default_banner': self.default_banner,
             'complete_html': self.complete_html,
             'brand_logo': self.brand_logo,
@@ -460,16 +458,17 @@ def is_unicode(content):
 
 
 def get_html_email_body(
-        template_content, template_values, redact_missing_personalisation=False, preview_mode=False
-):
-    field = Field(
+    template_content, template_values, redact_missing_personalisation=False, preview_mode=False
+) -> str:
+    field = str(Field(
         template_content,
         template_values,
-        html='escape',
+        html='passthrough',  # notify_html_markdown will escape the input
         markdown_lists=True,
         redact_missing_personalisation=redact_missing_personalisation,
         preview_mode=preview_mode
-    )
+    ))
+
     return compose1(
         field,
         unlink_govuk_escaped,

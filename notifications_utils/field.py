@@ -86,7 +86,7 @@ class Field:
         markdown_lists=False,
         redact_missing_personalisation=False,
         preview_mode=False,
-        is_letter_template=False
+        is_letter_template=False  # TODO - remove
     ):
         self.content = content
         self.values = values
