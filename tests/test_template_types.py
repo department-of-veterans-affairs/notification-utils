@@ -642,36 +642,11 @@ def test_stripping_of_unsupported_characters_in_email_templates():
 @pytest.mark.parametrize(
     "template_class, prefix, body, expected",
     [
-        (
-            SMSMessageTemplate,
-            'a',
-            'b',
-            'a: b',
-        ),
-        (
-            SMSMessageTemplate,
-            None,
-            'b',
-            'b',
-        ),
-        (
-            SMSMessageTemplate,
-            '<em>ht&ml</em>',
-            'b',
-            '<em>ht&ml</em>: b',
-        ),
-        (
-            SMSPreviewTemplate,
-            'a',
-            'b',
-            '\n\n<div class="sms-message-wrapper">\n  a: b\n</div>',
-        ),
-        (
-            SMSPreviewTemplate,
-            None,
-            'b',
-            '\n\n<div class="sms-message-wrapper">\n  b\n</div>',
-        ),
+        (SMSMessageTemplate, 'a', 'b', 'a: b'),
+        (SMSMessageTemplate, None, 'b', 'b'),
+        (SMSMessageTemplate, '<em>ht&ml</em>', 'b', '<em>ht&ml</em>: b'),
+        (SMSPreviewTemplate, 'a', 'b', '\n\n<div class="sms-message-wrapper">\n  a: b\n</div>'),
+        (SMSPreviewTemplate, None, 'b', '\n\n<div class="sms-message-wrapper">\n  b\n</div>'),
         (
             SMSPreviewTemplate,
             '<em>ht&ml</em>',
@@ -688,24 +663,24 @@ def test_sms_templates_add_prefix(template_class, prefix, body, expected):
     assert str(template) == expected
 
 
-@mock.patch('notifications_utils.template.add_prefix', return_value='')
-@pytest.mark.parametrize('template_class', [SMSMessageTemplate, SMSPreviewTemplate])
 @pytest.mark.parametrize(
-    "show_prefix, prefix, body, sender, expected_call",
+    "template_class, show_prefix, prefix, body, sender, expected",
     [
-        (False, "a", "b", "c", (Markup("b"), None)),
-        (True, "a", "b", None, (Markup("b"), "a")),
-        (True, "a", "b", False, (Markup("b"), "a")),
+        (SMSMessageTemplate, False, "a", "b", "c", 'b'),
+        (SMSMessageTemplate, True, "a", "b", None, 'a: b'),
+        (SMSMessageTemplate, True, "a", "b", False, 'a: b'),
+        (SMSPreviewTemplate, False, "a", "b", "c", '\n\n<div class="sms-message-wrapper">\n  b\n</div>'),
+        (SMSPreviewTemplate, True, "a", "b", None, '\n\n<div class="sms-message-wrapper">\n  a: b\n</div>'),
+        (SMSPreviewTemplate, True, "a", "b", False, '\n\n<div class="sms-message-wrapper">\n  a: b\n</div>'),
     ]
 )
 def test_sms_message_adds_prefix_only_if_asked_to(
-    add_prefix,
+    template_class,
     show_prefix,
     prefix,
     body,
     sender,
-    expected_call,
-    template_class,
+    expected,
 ):
     template = template_class(
         {'content': body},
@@ -713,8 +688,7 @@ def test_sms_message_adds_prefix_only_if_asked_to(
         show_prefix=show_prefix,
         sender=sender,
     )
-    str(template)
-    add_prefix.assert_called_once_with(*expected_call)
+    assert str(template) == expected
 
 
 @pytest.mark.parametrize('content_to_look_for', [
@@ -1638,3 +1612,13 @@ def test_unordered_list_without_spaces():
     #     '*two\n'
     #     '*three\n'
     # ) # TODO See test_formatters.py::test_unordered_list
+
+
+def test_unordered_list_with_literal_bullets():
+    assert False
+    # No spaces after bullets
+    # (
+    #     '• one\n'
+    #     '• two\n'
+    #     '• three\n'
+    # )
