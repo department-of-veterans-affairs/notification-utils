@@ -81,7 +81,7 @@ def nl2li(value):
     ))
 
 
-def add_prefix(body, prefix=None):
+def add_prefix(body, prefix=None) -> str:
     if prefix:
         return f'{prefix.strip()}: {body}'
     return body
@@ -89,7 +89,7 @@ def add_prefix(body, prefix=None):
 
 def autolink_sms(body):
     return url.sub(
-        lambda match: '<a style="{}" href="{}">{}</a>'.format(
+        lambda match: '<a style="{}" target="_blank" href="{}">{}</a>'.format(
             LINK_STYLE,
             match.group(1), match.group(1),
         ),

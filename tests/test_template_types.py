@@ -578,8 +578,8 @@ def test_markdown_in_templates(
     ]
 )
 def test_makes_links_out_of_URLs(template_class, url, url_with_entities_replaced):
-    assert '<a style="word-wrap: break-word; color: #004795;" href="{}">{}</a>'.format(
-        url_with_entities_replaced, url_with_entities_replaced
+    assert '<a style="{}" target="_blank" href="{}">{}</a>'.format(
+        LINK_STYLE, url_with_entities_replaced, url_with_entities_replaced
     ) in str(template_class({'content': url, 'subject': ''}))
 
 

@@ -220,12 +220,12 @@ class SMSPreviewTemplate(SMSMessageTemplate):
         self.jinja_template = self.template_env.get_template('sms_preview_template.jinja2')
 
     def __str__(self) -> str:
-        field = Field(
+        field = str(Field(
             self.content,
             self.values,
             html='escape',
             redact_missing_personalisation=self.redact_missing_personalisation,
-        )
+        ))
         field = add_prefix(field, escape_html(self.prefix) if self.show_prefix else None)
 
         return str(Markup(self.jinja_template.render({
