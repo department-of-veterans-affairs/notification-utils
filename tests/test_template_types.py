@@ -1489,20 +1489,24 @@ def test_whitespace_in_subject_placeholders(template_class):
     ).subject == 'Your tax is due'
 
 
-@pytest.mark.parametrize('template_class, expected_output', [
-    (
-        PlainTextEmailTemplate,
-        'paragraph one\n\n\xa0\n\nparagraph two',
-    ),
-    (
-        HTMLEmailTemplate,
+@pytest.mark.parametrize(
+    'template_class, expected_output',
+    [
         (
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">paragraph one</p>'
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">&nbsp;</p>'
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">paragraph two</p>'
+            PlainTextEmailTemplate,
+            'paragraph one\n\n\xa0\n\nparagraph two',
         ),
-    ),
-])
+        (
+            HTMLEmailTemplate,
+            (
+                '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">paragraph one</p>\n'
+                '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">\xa0</p>\n'
+                '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">paragraph two</p>\n'
+            ),
+        ),
+    ],
+    ids=['plain', 'html']
+)
 def test_govuk_email_whitespace_hack(template_class, expected_output):
 
     template_instance = template_class({
