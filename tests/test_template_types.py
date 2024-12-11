@@ -522,38 +522,18 @@ def test_content_of_preheader_in_html_emails(
     assert mock_jinja_template.call_args[0][0]['preheader'] == expected_preheader
 
 
-@pytest.mark.parametrize('template_class, extra_args, result, markdown_renderer', [
-    [
-        HTMLEmailTemplate,
-        {},
-        (
-            'the quick brown fox\n'
-            '\n'
-            'jumped over the lazy dog\n'
-        ),
-        'notifications_utils.template.notify_email_markdown',
-    ],
-])
-def test_markdown_in_templates(
-    template_class,
-    extra_args,
-    result,
-    markdown_renderer,
-):
-    with mock.patch(markdown_renderer, return_value='') as mock_markdown_renderer:
-        str(template_class(
-            {
-                "content": (
-                    'the quick ((colour)) ((animal))\n'
-                    '\n'
-                    'jumped over the lazy dog'
-                ),
-                'subject': 'animal story'
-            },
-            {'animal': 'fox', 'colour': 'brown'},
-            **extra_args
-        ))
-    mock_markdown_renderer.assert_called_once_with(result)
+def test_markdown_in_templates():
+    str(HTMLEmailTemplate(
+        {
+            "content": (
+                'the quick ((colour)) ((animal))\n'
+                '\n'
+                'jumped over the lazy dog'
+            ),
+            'subject': 'animal story'
+        },
+        {'animal': 'fox', 'colour': 'brown'},
+    )) == 'the quick brown fox\n\njumped over the lazy dog\n'
 
 
 @pytest.mark.parametrize(
