@@ -182,50 +182,51 @@ def test_get_html_email_body_with_action_links(content, values, expected):
             'normal placeholder formatting: ((foo))',
             (
                 f'<p style="{PARAGRAPH_STYLE}">normal placeholder formatting: <span class=\'placeholder\'><mark>((foo))'
-                '</mark></span></p>'
+                '</mark></span></p>\n'
             ),
         ),
         (
             'regular markdown link: [link text](#)',
             (
                 f'<p style="{PARAGRAPH_STYLE}">regular markdown link: '
-                f'<a style="{LINK_STYLE}" href="#" target="_blank">link text</a></p>'
+                f'<a style="{LINK_STYLE}" target="_blank" href="#">link text</a></p>\n'
             ),
         ),
         (
             'placeholder in link text, without placeholder in link: [link ((foo))](https://test.com/)',
             (
                 f'<p style="{PARAGRAPH_STYLE}">placeholder in link text, without placeholder in link: '
-                f'<a style="{LINK_STYLE}" href="https://test.com/" target="_blank">link '
-                '<span class=\'placeholder\'><mark>((foo))</mark></span></a></p>'
+                f'<a style="{LINK_STYLE}" target="_blank" href="https://test.com/">link '
+                '<span class=\'placeholder\'><mark>((foo))</mark></span></a></p>\n'
             ),
         ),
         (
             'no format within link, placeholder at end: [link text](https://test.com/((foo)))',
             (
                 f'<p style="{PARAGRAPH_STYLE}">no format within link, placeholder at end: '
-                f'<a style="{LINK_STYLE}" href="https://test.com/((foo))" target="_blank">link text</a></p>'
+                f'<a style="{LINK_STYLE}" target="_blank" href="https://test.com/((foo))">link text</a></p>\n'
             )
         ),
         (
             'no format within link, placeholder in middle: [link text](https://test.com/((foo))?xyz=123)',
             (
                 f'<p style="{PARAGRAPH_STYLE}">no format within link, placeholder in middle: '
-                f'<a style="{LINK_STYLE}" href="https://test.com/((foo))?xyz=123" target="_blank">link text</a></p>'
+                f'<a style="{LINK_STYLE}" target="_blank" href="https://test.com/((foo))?xyz=123">link text</a></p>\n'
             )
         ),
         (
             'no format in link, with only placeholder: [link text](((foo)))',
             (
                 f'<p style="{PARAGRAPH_STYLE}">no format in link, with only placeholder: '
-                f'<a style="{LINK_STYLE}" href="((foo))" target="_blank">link text</a></p>'
+                f'<a style="{LINK_STYLE}" target="_blank" href="((foo))">link text</a></p>\n'
             )
         ),
         (
             'no format within link, multiple placeholders: [link text](https://test.com/((foo))?xyz=((bar)))',
             (
                 f'<p style="{PARAGRAPH_STYLE}">no format within link, multiple placeholders: '
-                f'<a style="{LINK_STYLE}" href="https://test.com/((foo))?xyz=((bar))" target="_blank">link text</a></p>'
+                f'<a style="{LINK_STYLE}" target="_blank" href="https://test.com/((foo))?xyz=((bar))">'
+                'link text</a></p>\n'
             )
         ),
     ],

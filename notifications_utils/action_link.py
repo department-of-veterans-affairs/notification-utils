@@ -11,6 +11,10 @@ from mistune.markdown import Markdown
 from mistune.util import escape_url
 
 
+# TODO - See these examples of how mistune matches link and block_quote:
+#   https://github.com/lepture/mistune/blob/master/src/mistune/inline_parser.py#L75
+#   https://github.com/lepture/mistune/blob/master/src/mistune/block_parser.py#L73
+# How I use "before" matters.  I'm not certain if this should be inline, block, or both.
 ACTION_LINK_PATTERN = r'''>>\[(?P<text>[\w ]+)\]\((?P<url>\S+)\)'''
 # ACTION_LINK_PATTERN = r'''\[action'''
 
