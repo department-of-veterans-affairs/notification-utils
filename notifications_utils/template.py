@@ -13,6 +13,7 @@ from notifications_utils.formatters import (
     add_prefix,
     add_trailing_newline,
     autolink_sms, escape_html,
+    insert_action_link,
     make_quotes_smart,
     nl2br,
     normalise_newlines,
@@ -350,19 +351,19 @@ class HTMLEmailTemplate(WithSubjectTemplate):
 
     @property
     def preheader(self):
-        field = Field(
+        field = str(Field(
             self.content,
             self.values,
             html='escape',
             markdown_lists=True
-        )
+        ))
         field = compose1(
             field,
             unlink_govuk_escaped,
             strip_unsupported_characters,
-            strip_unsupported_characters,
+            strip_unsupported_characters,  # TODO - Called twice?
             add_trailing_newline,
-            notify_html_markdown,
+            # notify_html_markdown,  # TODO - delete?
             do_nice_typography,
         ).split()
         return ' '.join(field)[:self.PREHEADER_LENGTH_IN_CHARACTERS].strip()
@@ -471,8 +472,9 @@ def get_html_email_body(
         unlink_govuk_escaped,
         strip_unsupported_characters,
         add_trailing_newline,
-        # before converting to markdown, strip out the "(())" for placeholders (preview mode or test emails)
+        # before converting from markdown, strip out the "(())" for placeholders (preview mode or test emails)
         strip_parentheses_in_link_placeholders,
+        insert_action_link,
         notify_html_markdown,
         # after converting to html link, replace !!foo## with ((foo))
         replace_symbols_with_placeholder_parens,

@@ -9,9 +9,9 @@ from markupsafe import Markup
 from mistune.renderers.html import HTMLRenderer
 from mistune.renderers.markdown import MarkdownRenderer
 from . import email_with_smart_quotes_regex
-from notifications_utils.action_link import action_link
 from notifications_utils.sanitise_text import SanitiseSMS
 
+ACTION_LINK_IMAGE_STYLE = 'vertical-align: middle;'
 BLOCK_QUOTE_STYLE = 'background: #F1F1F1; ' \
                     'padding: 24px 24px 0.1px 24px; ' \
                     'font-family: Helvetica, Arial, sans-serif; ' \
@@ -64,6 +64,7 @@ magic_sequence_regex = re.compile(MAGIC_SEQUENCE)
 url = re.compile(r'''(https?:\/\/[^\s<]+[^<.,:"')\]\s])''')
 
 
+# TODO - Delete this?  Is it relevant for USA?
 def unlink_govuk_escaped(message):
     return re.sub(
         govuk_not_a_link,
@@ -72,10 +73,12 @@ def unlink_govuk_escaped(message):
     )
 
 
+# TODO - Delete this?  I would expect Mistune to handle this.
 def nl2br(value):
     return re.sub(r'\n|\r', '<br>', value.strip())
 
 
+# TODO - Delete this?  I would expect Mistune to handle this.
 def nl2li(value):
     return '<ul><li>{}</li></ul>'.format('</li><li>'.join(
         value.strip().split('\n')
@@ -282,81 +285,38 @@ def normalise_whitespace(value):
     return ' '.join(strip_and_remove_obscure_whitespace(value).split())
 
 
-def get_action_links(html: str) -> list[str]:
-    """Get the action links from the html email body and return them as a list. (insert_action_link helper)"""
-    # set regex to find action link in html, should look like this:
-    # &gt;&gt;<a ...>link_text</a>
-    action_link_regex = re.compile(
-        r'(>|(&gt;)){2}(<a style=".+?" href=".+?"( title=".+?")? target="_blank">)(.*?</a>)'
-    )
-
-    return re.findall(action_link_regex, html)
-
-
 def get_action_link_image_url() -> str:
-    """Get action link image url for the current environment. (insert_action_link helper)"""
+    """Get the action link image url for the current environment."""
+
     env_map = {
         'production': 'prod',
         'staging': 'staging',
         'performance': 'staging',
     }
-    # default to dev if NOTIFY_ENVIRONMENT isn't provided
+
     img_env = env_map.get(os.environ.get('NOTIFY_ENVIRONMENT'), 'dev')
     return f'https://{img_env}-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png'
 
 
 def insert_action_link(html: str) -> str:
     """
-    Finds an action link and replaces it with the desired format. The action link is placed on it's own line, the link
-    image is inserted into the link, and the styling is updated appropriately.
+    Finds an "action link" and replaces it with the desired format. This preprocessing should take place before
+    any manipulation by Mistune.
+
+    Given:
+        >>[text](url)
+
+    Output:
+        \n\n<a href="url"><img alt="call to action img" src="img_src" style="..."> <b>text</b></a>\n\n
     """
-    # common html used
-    p_start = f'<p style="{PARAGRAPH_STYLE}">'
-    p_end = '</p>'
 
-    action_link_list = get_action_links(html)
+    img_src = get_action_link_image_url()
+    substitution = r'\n\n<a href="\3">' \
+                   fr'<img alt="call to action img" src="{img_src}" style="{ACTION_LINK_IMAGE_STYLE}"> ' \
+                   r'<b>\2</b></a>\n\n'
 
-    img_link = get_action_link_image_url()
-
-    for item in action_link_list:
-        # Puts the action link in a new <p> tag with appropriate styling.
-        # item[0] and item[1] values will be '&gt;' symbols
-        # item[2] is the html link <a ...> tag info
-        # item[-1] is the link text and end of the link tag </a>
-        action_link = (
-            f'{item[2]}<img src="{img_link}" alt="call to action img" '
-            f'style="vertical-align: middle;"> <b>{item[-1][:-4]}</b></a>'
-        )
-
-        action_link_p_tags = f'{p_start}{action_link}{p_end}'
-
-        # get the text around the action link if there is any
-        # ensure there are only two items in list with maxsplit
-        before_link, after_link = html.split("".join(item), maxsplit=1)
-
-        # value is the converted action link if there's nothing around it, otherwise <p> tags will need to be
-        # closed / open around the action link
-        if before_link == p_start and after_link == p_end:
-            # action link exists on its own, unlikely to happen
-            html = action_link_p_tags
-        elif before_link.endswith(p_start) and after_link.startswith(p_end):
-            # an action link on it's own line, as it should be
-            html = f'{before_link}{action_link}{after_link}'
-        elif before_link.endswith(p_start):
-            # action link is on a newline, but has something after it on that line
-            html = f'{before_link}{action_link}{p_end}{p_start}{after_link}'
-        elif after_link == p_end:
-            # paragraph ends with action link
-            html = f'{before_link}{"</p>" if "<p" in before_link else ""}{action_link_p_tags}'
-        else:
-            # there's text before and after the action link within the paragraph
-            html = (
-                f'{before_link}{"</p>" if "<p" in before_link else ""}'
-                f'{action_link_p_tags}'
-                f'{p_start}{after_link}'
-            )
-
-    return html
+    #                     text        url
+    return re.sub(r'''(>|&gt;){2}\[([\w -]+)\]\((\S+)\)''', substitution, html)
 
 
 def strip_parentheses_in_link_placeholders(value: str) -> str:
@@ -427,10 +387,10 @@ class NotifyHTMLRenderer(HTMLRenderer):
             style = 'Margin: 0 0 20px 0; padding: 0; font-size: 32px; ' \
                     'line-height: 35px; font-weight: bold; color: #323A45;'
         elif level == 2:
-            style = 'Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #323A45;' \
+            style = 'Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #323A45; ' \
                     'font-size: 24px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;'
         elif level == 3:
-            style = 'Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #323A45;' \
+            style = 'Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #323A45; ' \
                     'font-size: 20.8px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;'
         else:
             return self.paragraph(text)
@@ -440,7 +400,9 @@ class NotifyHTMLRenderer(HTMLRenderer):
 
     def image(self, alt, url, title=None):
         """
-        Delete images.  VA e-mail messages contain only 1 image that is not managed by clients.
+        VA e-mail messages generally contain only 1 header image that is not managed by clients.
+        There is also an image associated with "action links", but action links are handled
+        in preprocessing.  (See insert_action_link above.)
         """
 
         return ''
@@ -548,7 +510,7 @@ class NotifyMarkdownRenderer(MarkdownRenderer):
 notify_html_markdown = mistune.create_markdown(
     hard_wrap=True,
     renderer=NotifyHTMLRenderer(escape=False),
-    plugins=[action_link, 'strikethrough', 'table', 'url'],
+    plugins=['strikethrough', 'table', 'url'],
 )
 
 notify_markdown = mistune.create_markdown(

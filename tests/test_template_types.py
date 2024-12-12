@@ -41,10 +41,10 @@ def test_pass_through_renderer():
             '>>[action](https://example.com/foo?a=b)',
             {},
             (
-                f'<p style="{PARAGRAPH_STYLE}"><a style="{LINK_STYLE}" target="_blank" '
-                'href="https://example.com/foo?a=b">'
-                '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'alt="call to action img" style="vertical-align: middle;"> <b>action</b></a></p>\n'
+                f'<p style="{PARAGRAPH_STYLE}"><a href="https://example.com/foo?a=b">'
+                '<img alt="call to action img" '
+                'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'style="vertical-align: middle;"> <b>action</b></a></p>\n'
             )
         ),
         (
@@ -57,12 +57,14 @@ def test_pass_through_renderer():
             {'color': 'brown'},
             (
                 '<h1 style="Margin: 0 0 20px 0; padding: 0; font-size: 32px; line-height: 35px; font-weight: bold; '
-                'color: #323A45;">foo</h1><h2 style="Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #323A45;'
-                'font-size: 24px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;">Bar</h2>'
-                f'<p style="{PARAGRAPH_STYLE}">The quick brown fox<br /></p>\n'
-                f'<p style="{PARAGRAPH_STYLE}"><a style="{LINK_STYLE}" href="https://example.com" target="_blank">'
-                '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'alt="call to action img" style="vertical-align: middle;"> <b>the action_link-of doom</b></a></p>\n'
+                'color: #323A45;">foo</h1>\n'
+                '<h2 style="Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #323A45; '
+                'font-size: 24px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;">Bar</h2>\n'
+                f'<p style="{PARAGRAPH_STYLE}">The quick brown fox</p>\n'
+                f'<p style="{PARAGRAPH_STYLE}"><a href="https://example.com">'
+                '<img alt="call to action img" '
+                'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'style="vertical-align: middle;"> <b>the action_link-of doom</b></a></p>\n'
             ),
         ),
         (
@@ -70,9 +72,10 @@ def test_pass_through_renderer():
             {},
             (
                 f'<p style="{PARAGRAPH_STYLE}">text before link</p>\n'
-                f'<p style="{PARAGRAPH_STYLE}"><a style="{LINK_STYLE}" href="http://example.com" target="_blank">'
-                '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'alt="call to action img" style="vertical-align: middle;"> <b>great link</b></a></p>\n'
+                f'<p style="{PARAGRAPH_STYLE}"><a href="http://example.com">'
+                '<img alt="call to action img" '
+                'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'style="vertical-align: middle;"> <b>great link</b></a></p>\n'
                 f'<p style="{PARAGRAPH_STYLE}">text after link</p>\n'
             )
         ),
@@ -80,58 +83,64 @@ def test_pass_through_renderer():
             'action link: &gt;&gt;[Example](http://example.com)\nanother link: [test](https://example2.com)',
             {},
             (
-                f'<p style="{PARAGRAPH_STYLE}">action link: </p>\n'
-                f'<p style="{PARAGRAPH_STYLE}"><a style="{LINK_STYLE}" href="http://example.com" target="_blank">'
-                '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'alt="call to action img" style="vertical-align: middle;"> <b>Example</b></a></p>\n'
-                f'<p style="{PARAGRAPH_STYLE}"><br />'
-                f'another link: <a style="{LINK_STYLE}" href="https://example2.com" target="_blank">test</a></p>\n'
+                f'<p style="{PARAGRAPH_STYLE}">action link:</p>\n'
+                f'<p style="{PARAGRAPH_STYLE}"><a href="http://example.com">'
+                '<img alt="call to action img" '
+                'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'style="vertical-align: middle;"> <b>Example</b></a></p>\n'
+                f'<p style="{PARAGRAPH_STYLE}">'
+                f'another link: <a style="{LINK_STYLE}" target="_blank" href="https://example2.com">test</a></p>\n'
             )
         ),
         (
             'action link: &gt;&gt;[grin](http://example.com) another action link: >>[test](https://example2.com)',
             {},
             (
-                f'<p style="{PARAGRAPH_STYLE}">action link: </p>\n'
-                f'<p style="{PARAGRAPH_STYLE}"><a style="{LINK_STYLE}" href="http://example.com" target="_blank">'
-                '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'alt="call to action img" style="vertical-align: middle;"> <b>grin</b></a></p>\n'
-                f'<p style="{PARAGRAPH_STYLE}"> another action link: </p>\n'
-                f'<p style="{PARAGRAPH_STYLE}"><a style="{LINK_STYLE}" href="https://example2.com" target="_blank">'
-                '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'alt="call to action img" style="vertical-align: middle;"> <b>test</b></a></p>\n'
+                f'<p style="{PARAGRAPH_STYLE}">action link:</p>\n'
+                f'<p style="{PARAGRAPH_STYLE}"><a href="http://example.com">'
+                '<img alt="call to action img" '
+                'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'style="vertical-align: middle;"> <b>grin</b></a></p>\n'
+                f'<p style="{PARAGRAPH_STYLE}">another action link:</p>\n'
+                f'<p style="{PARAGRAPH_STYLE}"><a href="https://example2.com">'
+                '<img alt="call to action img" '
+                'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'style="vertical-align: middle;"> <b>test</b></a></p>\n'
             )
         ),
         (
             'text before && link &gt;&gt;[Example](http://example.com) text after & link',
             {},
             (
-                f'<p style="{PARAGRAPH_STYLE}">text before &amp;&amp; link </p>\n'
-                f'<p style="{PARAGRAPH_STYLE}"><a style="{LINK_STYLE}" href="http://example.com" target="_blank">'
-                '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'alt="call to action img" style="vertical-align: middle;"> <b>Example</b></a></p>\n'
-                f'<p style="{PARAGRAPH_STYLE}"> text after &amp; link</p>\n'
+                f'<p style="{PARAGRAPH_STYLE}">text before &amp;&amp; link</p>\n'
+                f'<p style="{PARAGRAPH_STYLE}"><a href="http://example.com">'
+                '<img alt="call to action img" '
+                'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'style="vertical-align: middle;"> <b>Example</b></a></p>\n'
+                f'<p style="{PARAGRAPH_STYLE}">text after &amp; link</p>\n'
             )
         ),
         (
             'text before >> link &gt;&gt;[great action](http://example.com) text after >>link',
             {},
             (
-                f'<p style="{PARAGRAPH_STYLE}">text before &gt;&gt; link </p>\n'
-                f'<p style="{PARAGRAPH_STYLE}"><a style="{LINK_STYLE}" href="http://example.com" target="_blank">'
-                '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'alt="call to action img" style="vertical-align: middle;"> <b>great action</b></a></p>\n'
-                f'<p style="{PARAGRAPH_STYLE}"> text after &gt;&gt;link</p>\n'
+                f'<p style="{PARAGRAPH_STYLE}">text before &gt;&gt; link</p>\n'
+                f'<p style="{PARAGRAPH_STYLE}"><a href="http://example.com">'
+                '<img alt="call to action img" '
+                'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'style="vertical-align: middle;"> <b>great action</b></a></p>\n'
+                f'<p style="{PARAGRAPH_STYLE}">text after &gt;&gt;link</p>\n'
             )
         ),
         (
             'text >> then [item] and (things) then >>[action](link)',
             {},
             (
-                f'<p style="{PARAGRAPH_STYLE}">text &gt;&gt; then [item] and (things) then </p>\n'
-                f'<p style="{PARAGRAPH_STYLE}"><a style="{LINK_STYLE}" href="link" target="_blank">'
-                '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'alt="call to action img" style="vertical-align: middle;"> <b>action</b></a></p>\n'
+                f'<p style="{PARAGRAPH_STYLE}">text &gt;&gt; then [item] and (things) then</p>\n'
+                f'<p style="{PARAGRAPH_STYLE}"><a href="link">'
+                '<img alt="call to action img" '
+                'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'style="vertical-align: middle;"> <b>action</b></a></p>\n'
             )
         ),
         (
@@ -142,19 +151,22 @@ def test_pass_through_renderer():
             ),
             {},
             (
-                f'<p style="{PARAGRAPH_STYLE}"><a style="{LINK_STYLE}" href="#" target="_blank">'
-                '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'alt="call to action img" style="vertical-align: middle;"> <b>action link</b></a></p>\n'
-                f'<p style="{PARAGRAPH_STYLE}">testing the new </p>\n'
-                f'<p style="{PARAGRAPH_STYLE}"><a style="{LINK_STYLE}" href="#" target="_blank">'
-                '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'alt="call to action img" style="vertical-align: middle;"> <b>action link</b></a></p>\n'
-                f'<p style="{PARAGRAPH_STYLE}"> thingy...</p>\n'
-                f'<p style="{PARAGRAPH_STYLE}"><a style="{LINK_STYLE}" href="#" target="_blank">'
-                '<img src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'alt="call to action img" style="vertical-align: middle;"> <b>click me</b></a></p>\n'
+                f'<p style="{PARAGRAPH_STYLE}"><a href="#">'
+                '<img alt="call to action img" '
+                'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'style="vertical-align: middle;"> <b>action link</b></a></p>\n'
+                f'<p style="{PARAGRAPH_STYLE}">testing the new</p>\n'
+                f'<p style="{PARAGRAPH_STYLE}"><a href="#">'
+                '<img alt="call to action img" '
+                'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'style="vertical-align: middle;"> <b>action link</b></a></p>\n'
+                f'<p style="{PARAGRAPH_STYLE}">thingy...</p>\n'
+                f'<p style="{PARAGRAPH_STYLE}"><a href="#">'
+                '<img alt="call to action img" '
+                'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'style="vertical-align: middle;"> <b>click me</b></a></p>\n'
                 f'<p style="{PARAGRAPH_STYLE}">! Text with a '
-                '<a style="word-wrap: break-word; color: #004795;" href="#" target="_blank">regular link</a></p>\n'
+                '<a style="word-wrap: break-word; color: #004795;" target="_blank" href="#">regular link</a></p>\n'
             )
         )
     ],
@@ -453,73 +465,71 @@ def test_preheader_is_at_start_of_html_emails():
     )
 
 
-@pytest.mark.parametrize('content, values, expected_preheader', [
-    (
+@pytest.mark.parametrize(
+    'content, values, expected_preheader',
+    [
         (
-            'Hello (( name ))\n'
-            '\n'
-            '# This - is a "heading"\n'
-            '\n'
-            'My favourite websites\' URLs are:\n'
-            '- GOV.UK\n'
-            '- https://www.example.com\n'
+            (
+                'Hello (( name ))\n'
+                '\n'
+                '# This - is a "heading"\n'
+                '\n'
+                'My favourite websites\' URLs are:\n'
+                '- GOV.UK\n'
+                '- https://www.example.com\n'
+            ),
+            {'name': 'Jo'},
+            'Hello Jo This – is a “heading” My favourite websites’ URLs are: • GOV.​UK • https://www.example.com',
         ),
-        {'name': 'Jo'},
-        'Hello Jo This – is a “heading” My favourite websites’ URLs are: • GOV.​UK • https://www.example.com',
-    ),
-    (
         (
-            '[Markdown link](https://www.example.com)\n'
+            (
+                '[Markdown link](https://www.example.com)\n'
+            ),
+            {},
+            'Markdown link',
         ),
-        {},
-        'Markdown link',
-    ),
-    (
-        """
-            Lorem Ipsum is simply dummy text of the printing and
-            typesetting industry.
-
-            Lorem Ipsum has been the industry’s standard dummy text
-            ever since the 1500s, when an unknown printer took a galley
-            of type and scrambled it to make a type specimen book.
-
-            Lorem Ipsum is simply dummy text of the printing and
-            typesetting industry.
-
-            Lorem Ipsum has been the industry’s standard dummy text
-            ever since the 1500s, when an unknown printer took a galley
-            of type and scrambled it to make a type specimen book.
-        """,
-        {},
         (
-            'Lorem Ipsum is simply dummy text of the printing and '
-            'typesetting industry. Lorem Ipsum has been the industry’s '
-            'standard dummy text ever since the 1500s, when an unknown '
-            'printer took a galley of type and scrambled it to make a '
-            'type specimen book. Lorem Ipsu'
+            """
+                Lorem Ipsum is simply dummy text of the printing and
+                typesetting industry.
+
+                Lorem Ipsum has been the industry’s standard dummy text
+                ever since the 1500s, when an unknown printer took a galley
+                of type and scrambled it to make a type specimen book.
+
+                Lorem Ipsum is simply dummy text of the printing and
+                typesetting industry.
+
+                Lorem Ipsum has been the industry’s standard dummy text
+                ever since the 1500s, when an unknown printer took a galley
+                of type and scrambled it to make a type specimen book.
+            """,
+            {},
+            (
+                'Lorem Ipsum is simply dummy text of the printing and '
+                'typesetting industry. Lorem Ipsum has been the industry’s '
+                'standard dummy text ever since the 1500s, when an unknown '
+                'printer took a galley of type and scrambled it to make a '
+                'type specimen book. Lorem Ipsu'
+            ),
         ),
-    ),
-    (
-        'short email',
-        {},
-        'short email',
-    ),
-])
-@mock.patch(
-    'notifications_utils.template.HTMLEmailTemplate.jinja_template.render',
-    return_value='mocked'
+        (
+            'short email',
+            {},
+            'short email',
+        ),
+    ],
+    ids=['1', '2', '3', '4']
 )
 def test_content_of_preheader_in_html_emails(
-    mock_jinja_template,
     content,
     values,
     expected_preheader,
 ):
-    assert str(HTMLEmailTemplate(
+    assert HTMLEmailTemplate(
         {'content': content, 'subject': 'subject'},
         values
-    )) == 'mocked'
-    assert mock_jinja_template.call_args[0][0]['preheader'] == expected_preheader
+    ).preheader == expected_preheader
 
 
 def test_markdown_in_templates():
