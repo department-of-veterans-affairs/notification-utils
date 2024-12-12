@@ -9,6 +9,7 @@ from markupsafe import Markup
 from mistune.renderers.html import HTMLRenderer
 from mistune.renderers.markdown import MarkdownRenderer
 from . import email_with_smart_quotes_regex
+from notifications_utils.action_link import action_link
 from notifications_utils.sanitise_text import SanitiseSMS
 
 BLOCK_QUOTE_STYLE = 'background: #F1F1F1; ' \
@@ -414,6 +415,9 @@ def replace_symbols_with_placeholder_parens(value: str) -> str:
 
 
 class NotifyHTMLRenderer(HTMLRenderer):
+    def action_link(self, text, url):
+        raise NotImplementedError('MADE IT HERE')
+
     def block_quote(self, text):
         value = super().block_quote(text)
         return value[:11] + f' style="{BLOCK_QUOTE_STYLE}"' + value[11:]
@@ -544,7 +548,7 @@ class NotifyMarkdownRenderer(MarkdownRenderer):
 notify_html_markdown = mistune.create_markdown(
     hard_wrap=True,
     renderer=NotifyHTMLRenderer(escape=False),
-    plugins=['strikethrough', 'table', 'url'],
+    plugins=[action_link, 'strikethrough', 'table', 'url'],
 )
 
 notify_markdown = mistune.create_markdown(

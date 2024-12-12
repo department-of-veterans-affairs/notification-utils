@@ -13,7 +13,6 @@ from notifications_utils.formatters import (
     add_prefix,
     add_trailing_newline,
     autolink_sms, escape_html,
-    insert_action_link,
     make_quotes_smart,
     nl2br,
     normalise_newlines,
@@ -46,11 +45,9 @@ def compose1(value, *fs):
     Return the composition of functions applied to a single value.
     """
 
-    # print('COMPOSE', value)  # TODO
     return_value = value
     for f in fs:
         return_value = f(return_value)
-        # print('COMPOSE', return_value)  # TODO
     return return_value
 
 
@@ -480,7 +477,6 @@ def get_html_email_body(
         # after converting to html link, replace !!foo## with ((foo))
         replace_symbols_with_placeholder_parens,
         do_nice_typography,
-        insert_action_link,
     )
 
 
