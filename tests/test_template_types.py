@@ -728,7 +728,7 @@ def test_sms_messages_dont_downgrade_non_sms_if_setting_is_false(mock_sms_encode
     assert mock_sms_encode.called is False
 
 
-@mock.patch('notifications_utils.template.nl2br')
+@mock.patch('notifications_utils.template.nl2br', return_value='')
 def test_sms_preview_adds_newlines(nl2br):
     content = "the\nquick\n\nbrown fox"
     str(SMSPreviewTemplate({'content': content}))
@@ -806,12 +806,11 @@ def test_subject_line_gets_replaced():
         mock.call('content', {}, html='passthrough', markdown_lists=True)
     ]),
     (HTMLEmailTemplate, {}, [
-        mock.call('content', {}, preview_mode=False, html='escape', markdown_lists=True,
-                  redact_missing_personalisation=False),
-        mock.call('content', {}, html='escape', markdown_lists=True),
+        mock.call('content', {}, html='passthrough', markdown_lists=True,
+                  redact_missing_personalisation=False, preview_mode=False),
     ]),
     (EmailPreviewTemplate, {}, [
-        mock.call('content', {}, preview_mode=False, html='escape', markdown_lists=True,
+        mock.call('content', {}, preview_mode=False, html='passthrough', markdown_lists=True,
                   redact_missing_personalisation=False),
         mock.call('subject', {}, html='escape', redact_missing_personalisation=False),
         mock.call('((email address))', {}, with_brackets=False),
@@ -820,8 +819,8 @@ def test_subject_line_gets_replaced():
         mock.call('content', {}, html='passthrough'),
     ]),
     (SMSPreviewTemplate, {}, [
-        mock.call('((phone number))', {}, with_brackets=False, html='escape'),
         mock.call('content', {}, html='escape', redact_missing_personalisation=False),
+        mock.call('((phone number))', {}, with_brackets=False, html='escape'),
     ]),
     (Template, {'redact_missing_personalisation': True}, [
         mock.call('content', {}, html='escape', redact_missing_personalisation=True),
@@ -830,14 +829,14 @@ def test_subject_line_gets_replaced():
         mock.call('content', {}, html='passthrough', redact_missing_personalisation=True, markdown_lists=True),
     ]),
     (EmailPreviewTemplate, {'redact_missing_personalisation': True}, [
-        mock.call('content', {}, preview_mode=False, html='escape', markdown_lists=True,
+        mock.call('content', {}, preview_mode=False, html='passthrough', markdown_lists=True,
                   redact_missing_personalisation=True),
         mock.call('subject', {}, html='escape', redact_missing_personalisation=True),
         mock.call('((email address))', {}, with_brackets=False),
     ]),
     (SMSPreviewTemplate, {'redact_missing_personalisation': True}, [
-        mock.call('((phone number))', {}, with_brackets=False, html='escape'),
         mock.call('content', {}, html='escape', redact_missing_personalisation=True),
+        mock.call('((phone number))', {}, with_brackets=False, html='escape'),
     ]),
 ])
 @mock.patch('notifications_utils.template.Field.__init__', return_value=None)
@@ -851,6 +850,7 @@ def test_templates_handle_html_and_redacting(
 ):
     assert str(template_class({'content': 'content', 'subject': 'subject'}, **extra_args))
     assert mock_field_init.call_args_list == expected_field_calls
+    mock_field_str.assert_called()
 
 
 @pytest.mark.parametrize('template_class, extra_args, expected_remove_whitespace_calls', [
