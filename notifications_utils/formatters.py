@@ -476,6 +476,16 @@ class NotifyMarkdownRenderer(MarkdownRenderer):
 
         return ''
 
+    def link(self, token, state):
+        """
+        Input:
+            [text](url)
+        Output:
+            text: url
+        """
+
+        return self.render_children(token, state) + ': ' + token['attrs']['url']
+
     def list(self, token, state):
         """
         Use the bullet character as the actual bullet output for all input (asterisks, pluses, and minues).

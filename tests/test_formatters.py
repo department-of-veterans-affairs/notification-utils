@@ -734,7 +734,7 @@ def test_image(markdown_function, expected):
         ],
         [
             notify_markdown,
-            '[Example](http://example.com)\n',
+            'Example: http://example.com\n',
         ],
     ),
     ids=['notify_html_markdown', 'notify_markdown']
