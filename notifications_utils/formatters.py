@@ -200,6 +200,10 @@ def strip_pipes(value):
 
 
 def remove_whitespace_before_punctuation(value):
+    """
+    Remove spaces and tabs before various punctuation marks.
+    """
+
     return re.sub(
         whitespace_before_punctuation,
         lambda match: match.group(1),
@@ -209,7 +213,7 @@ def remove_whitespace_before_punctuation(value):
 
 def make_quotes_smart(value):
     return smartypants.smartypants(
-        value,
+        str(value),
         smartypants.Attr.q | smartypants.Attr.u
     )
 

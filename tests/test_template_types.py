@@ -853,54 +853,23 @@ def test_templates_handle_html_and_redacting(
     mock_field_str.assert_called()
 
 
-@pytest.mark.parametrize('template_class, extra_args, expected_remove_whitespace_calls', [
-    (PlainTextEmailTemplate, {}, [
-        mock.call('\n\ncontent'),
-        mock.call(Markup('subject')),
-        mock.call(Markup('subject')),
-    ]),
-    (HTMLEmailTemplate, {}, [
-        mock.call(
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
-            'content'
-            '</p>'
-        ),
-        mock.call('\n\ncontent'),
-        mock.call(Markup('subject')),
-        mock.call(Markup('subject')),
-    ]),
-    (EmailPreviewTemplate, {}, [
-        mock.call(
-            '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">'
-            'content'
-            '</p>'
-        ),
-        mock.call(Markup('subject')),
-        mock.call(Markup('subject')),
-        mock.call(Markup('subject')),
-    ]),
-    (SMSMessageTemplate, {}, [
-        mock.call('content'),
-    ]),
-    (SMSPreviewTemplate, {}, [
-        mock.call('content'),
-    ]),
-])
-@mock.patch('notifications_utils.template.remove_whitespace_before_punctuation', side_effect=lambda x: x)
-def test_templates_remove_whitespace_before_punctuation(
-    mock_remove_whitespace,
-    template_class,
-    extra_args,
-    expected_remove_whitespace_calls,
-):
-    template = template_class({'content': 'content', 'subject': 'subject'}, **extra_args)
+@pytest.mark.parametrize(
+    'template_class',
+    [
+        PlainTextEmailTemplate,
+        HTMLEmailTemplate,
+        EmailPreviewTemplate,
+        SMSMessageTemplate,
+        SMSPreviewTemplate,
+    ],
+)
+def test_templates_remove_whitespace_before_punctuation(template_class):
+    template = template_class({'content': 'content  \t\t .', 'subject': 'subject\t \t,'})
 
-    assert str(template)
+    assert 'content.' in str(template)
 
     if hasattr(template, 'subject'):
-        assert template.subject
-
-    assert mock_remove_whitespace.call_args_list == expected_remove_whitespace_calls
+        assert template.subject == 'subject,'
 
 
 @pytest.mark.parametrize('content', (
