@@ -311,7 +311,7 @@ def insert_action_link(html: str) -> str:
         >>[text](url)
 
     Output:
-        \n\n<a href="url"><img alt="call to action img" src="img_src" style="..."> <b>text</b></a>\n\n
+        \n\n<a href="url"><img alt="call to action img" src="..." style="..."> <b>text</b></a>\n\n
     """
 
     img_src = get_action_link_image_url()
@@ -319,7 +319,7 @@ def insert_action_link(html: str) -> str:
                    fr'<img alt="call to action img" src="{img_src}" style="{ACTION_LINK_IMAGE_STYLE}"> ' \
                    r'<b>\2</b></a>\n\n'
 
-    #                     text        url
+    #                               text        url
     return re.sub(r'''(>|&gt;){2}\[([\w -]+)\]\((\S+)\)''', substitution, html)
 
 
@@ -471,7 +471,7 @@ class NotifyMarkdownRenderer(MarkdownRenderer):
 
         value = super().heading(token, state)
         indentation = 3 if level == 1 else 2
-        return ('\n' * indentation) + value.strip('#\n ') + '\n' + ('-' * COLUMN_WIDTH)
+        return ('\n' * indentation) + value.strip('#\n ') + '\n' + ('-' * COLUMN_WIDTH) + '\n'
 
     def image(self, token, state):
         """
@@ -492,10 +492,13 @@ class NotifyMarkdownRenderer(MarkdownRenderer):
 
     def list(self, token, state):
         """
-        Use the bullet character as the actual bullet output for all input (asterisks, pluses, and minues).
+        Use the bullet character as the actual bullet output for all input (asterisks, pluses, and minues)
+        when the list is unordered.
         """
 
-        token['bullet'] = '•'
+        if not token['attrs']['ordered']:
+            token['bullet'] = '•'
+
         return super().list(token, state)
 
     def strikethrough(self, token, state):
