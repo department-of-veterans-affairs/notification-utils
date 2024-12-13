@@ -489,6 +489,13 @@ def test_preheader_is_at_start_of_html_emails():
             'Markdown link',
         ),
         (
+            (
+                '>>[action link](https://www.example.com)\n'
+            ),
+            {},
+            'action link',
+        ),
+        (
             """
                 Lorem Ipsum is simply dummy text of the printing and
                 typesetting industry.
@@ -519,7 +526,7 @@ def test_preheader_is_at_start_of_html_emails():
             'short email',
         ),
     ],
-    ids=['1', '2', '3', '4']
+    ids=['1', '2', '3', '4', '5']
 )
 def test_content_of_preheader_in_html_emails(
     content,

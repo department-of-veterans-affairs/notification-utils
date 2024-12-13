@@ -284,6 +284,23 @@ def strip_unsupported_characters(value):
     return value.replace('\u2028', '')
 
 
+def strip_unsupported_characters_in_preheader(value):
+    """
+    Preheaders should not contain headers or links, and unordered lists should use the literal bullet.
+    """
+
+    # No headers
+    value = re.sub(r'''^(\s+)#''', '', value, flags=re.M)
+
+    # No links (regular or action)
+    value = re.sub(r'''((>|&gt;){2})?\[([\w -]+)\]\(\S+\)''', r'\3', value)
+
+    # Bullets for unordered lists
+    value = re.sub(r'''^(\s*)[-+*]''', r'\1•', value, flags=re.M)
+
+    return value
+
+
 def normalise_whitespace(value):
     # leading and trailing whitespace removed, all inner whitespace becomes a single space
     return ' '.join(strip_and_remove_obscure_whitespace(value).split())
