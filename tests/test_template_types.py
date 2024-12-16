@@ -1502,25 +1502,22 @@ def test_plain_text_email_whitespace():
     assert str(email) == (
         'Heading\n'
         '-----------------------------------------------------------------\n'
-        '\n'
         '1. one\n'
         '2. two\n'
         '3. three\n'
         '\n'
         '=================================================================\n'
         '\n'
-        '\n'
-        'Heading\n'
+        '\n\nHeading\n'
         '-----------------------------------------------------------------\n'
-        '\n'
         'Paragraph\n'
         '\n'
         'Paragraph\n'
         '\n'
-        'callout\n'
-        '\n'
+        '\n\ncallout\n\n\n\n'
         '1. one not four\n'
         '2. two not five\n'
+        '\n'
     )
 
 
@@ -1550,7 +1547,6 @@ def test_heading_only_template_renders(renderer, expected_content):
     ))
 
 
-# <p>Hi</p>\n<blockquote>\n<p>This is a block quote.</p>\n</blockquote>\n<p>hello</p>\n
 @pytest.mark.parametrize(
     'template_type, expected_content',
     (
