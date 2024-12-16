@@ -14,6 +14,7 @@ from notifications_utils.formatters import (
     add_trailing_newline,
     autolink_sms, escape_html,
     insert_action_link,
+    insert_block_quotes,
     make_quotes_smart,
     nl2br,
     normalise_newlines,
@@ -292,6 +293,7 @@ class PlainTextEmailTemplate(WithSubjectTemplate):
             unlink_govuk_escaped,
             strip_unsupported_characters,
             add_trailing_newline,
+            insert_block_quotes,
             notify_markdown,
             do_nice_typography,
             unescape,
@@ -477,6 +479,7 @@ def get_html_email_body(
         # before converting from markdown, strip out the "(())" for placeholders (preview mode or test emails)
         strip_parentheses_in_link_placeholders,
         insert_action_link,
+        insert_block_quotes,
         notify_html_markdown,
         # after converting to html link, replace !!foo## with ((foo))
         replace_symbols_with_placeholder_parens,

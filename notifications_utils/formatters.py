@@ -340,6 +340,22 @@ def insert_action_link(html: str) -> str:
     return re.sub(r'''(>|&gt;){2}\[([\w -]+)\]\((\S+)\)''', substitution, html)
 
 
+def insert_block_quotes(md: str) -> str:
+    """
+    Template markup uses ^ to denote a block quote, but Github markdown, which Mistune reflects, specifies a block
+    quote with the > character.  Rather than write a custom parser, templates should preprocess their text to replace
+    the former with the latter.  This preprocessing should take place before any manipulation by Mistune.
+
+    Given:
+        ^ This is a block quote.
+
+    Output:
+        > This is a block quote.
+    """
+
+    return re.sub(r'''^(\s*)\^(\s*)''', r'''\1>\2''', md, flags=re.M)
+
+
 def strip_parentheses_in_link_placeholders(value: str) -> str:
     """
     Captures markdown links with placeholders in them and replaces the parentheses around the placeholders with

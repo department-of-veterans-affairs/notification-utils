@@ -4,7 +4,12 @@ from unittest import mock
 import pytest
 from markupsafe import Markup
 
-from notifications_utils.formatters import LINK_STYLE, PARAGRAPH_STYLE, unlink_govuk_escaped
+from notifications_utils.formatters import (
+    BLOCK_QUOTE_STYLE,
+    LINK_STYLE,
+    PARAGRAPH_STYLE,
+    unlink_govuk_escaped,
+)
 from notifications_utils.template import (
     Template,
     HTMLEmailTemplate,
@@ -1545,14 +1550,31 @@ def test_heading_only_template_renders(renderer, expected_content):
     ))
 
 
-def test_block_quotes():
+# <p>Hi</p>\n<blockquote>\n<p>This is a block quote.</p>\n</blockquote>\n<p>hello</p>\n
+@pytest.mark.parametrize(
+    'template_type, expected_content',
+    (
+        (PlainTextEmailTemplate, 'Hi\n\n\n\nThis is a block quote.\n\n\n\nhello\n\n'),
+        (HTMLEmailTemplate, (
+            f'<p style="{PARAGRAPH_STYLE}">Hi</p>\n'
+            f'<blockquote style="{BLOCK_QUOTE_STYLE}">\n'
+            f'<p style="{PARAGRAPH_STYLE}">This is a block quote.</p>\n'
+            '</blockquote>\n'
+            f'<p style="{PARAGRAPH_STYLE}">hello</p>\n'
+        )),
+    ),
+    ids=['plain', 'html']
+)
+def test_block_quotes(template_type, expected_content):
     """
     Template markup uses ^ to denote a block quote, but Github markdown, which Mistune reflects, specifies a block
     quote with the > character.  Rather than write a custom parser, templates should preprocess their text to replace
     the former with the latter.
     """
 
-    assert False
+    assert expected_content in str(
+        template_type({'content': '\nHi\n\n^ This is a block quote.\n\nhello', 'subject': ''})
+    )
 
 
 def test_ordered_list_without_spaces():
