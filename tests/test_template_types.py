@@ -7,8 +7,11 @@ from markupsafe import Markup
 from notifications_utils.formatters import (
     BLOCK_QUOTE_STYLE,
     LINK_STYLE,
+    LIST_ITEM_STYLE,
+    ORDERED_LIST_STYLE,
     PARAGRAPH_STYLE,
     unlink_govuk_escaped,
+    UNORDERED_LIST_STYLE
 )
 from notifications_utils.template import (
     Template,
@@ -1573,39 +1576,56 @@ def test_block_quotes(template_type, expected_content):
     )
 
 
-def test_ordered_list_without_spaces():
+@pytest.mark.parametrize(
+    'template_type, expected',
+    [
+        (PlainTextEmailTemplate, '1. one\n2. two\n3. three\n'),
+        (
+            HTMLEmailTemplate,
+            f'<ol role="presentation" style="{ORDERED_LIST_STYLE}">\n'
+            f'<li style="{LIST_ITEM_STYLE}">one</li>\n'
+            f'<li style="{LIST_ITEM_STYLE}">two</li>\n'
+            f'<li style="{LIST_ITEM_STYLE}">three</li>\n'
+            '</ol>\n'
+        ),
+    ]
+)
+def test_ordered_list_without_spaces(template_type, expected):
     """
-    Proper markdown for ordered lists has a space after the number.
+    Proper markdown for ordered lists has a space after the number and period.
     """
 
-    assert False
-    # No spaces after numbers
-    # assert notify_html_markdown(
-    #     '1.one\n'
-    #     '2.two\n'
-    #     '3.three\n'
-    # ) == expected # TODO See test_formatters.py::test_ordered_list
+    content = '1.one\n2.two\n3.three\n'
+
+    if isinstance(template_type, PlainTextEmailTemplate):
+        assert str(template_type({'content': content, 'subject': ''})) == expected
+    else:
+        assert expected in str(template_type({'content': content, 'subject': ''}))
 
 
-def test_unordered_list_without_spaces():
+@pytest.mark.parametrize(
+    'template_type, expected',
+    [
+        (PlainTextEmailTemplate, '• one\n• two\n• three\n\n'),
+        (
+            HTMLEmailTemplate,
+            f'<ul role="presentation" style="{UNORDERED_LIST_STYLE}">\n'
+            f'<li style="{LIST_ITEM_STYLE}">one</li>\n'
+            f'<li style="{LIST_ITEM_STYLE}">two</li>\n'
+            f'<li style="{LIST_ITEM_STYLE}">three</li>\n'
+            '</ul>\n'
+        ),
+    ]
+)
+@pytest.mark.parametrize('bullet', ['*', '-', '+', '•'])
+def test_unordered_list_without_spaces(bullet, template_type, expected):
     """
     Proper markdown for unordered lists has a space after the bullet.
     """
 
-    assert False
-    # No spaces after bullets
-    # (  # no space
-    #     '*one\n'
-    #     '*two\n'
-    #     '*three\n'
-    # ) # TODO See test_formatters.py::test_unordered_list
+    content = f'{bullet}one\n{bullet}two\n{bullet}three\n'
 
-
-def test_unordered_list_with_literal_bullets():
-    assert False
-    # No spaces after bullets
-    # (
-    #     '• one\n'
-    #     '• two\n'
-    #     '• three\n'
-    # )
+    if isinstance(template_type, PlainTextEmailTemplate):
+        assert str(template_type({'content': content, 'subject': ''})) == expected
+    else:
+        assert expected in str(template_type({'content': content, 'subject': ''}))

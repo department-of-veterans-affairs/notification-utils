@@ -356,6 +356,19 @@ def insert_block_quotes(md: str) -> str:
     return re.sub(r'''^(\s*)\^(\s*)''', r'''\1>\2''', md, flags=re.M)
 
 
+def insert_list_spaces(md: str) -> str:
+    """
+    Proper markdown for lists has a space after the number or bullet.  This is a preprocessing step to insert
+    any missing spaces in lists.  This preprocessing should take place before any manipulation by Mistune.
+    """
+
+    # Ordered lists
+    md = re.sub(r'''^(\s*)(\d+\.)''', r'''\1\2 ''', md, flags=re.M)
+
+    # Unordered lists
+    return re.sub(r'''^(\s*)(\*|-|\+|•)(?!\2)''', r'''\1- ''', md, flags=re.M)
+
+
 def strip_parentheses_in_link_placeholders(value: str) -> str:
     """
     Captures markdown links with placeholders in them and replaces the parentheses around the placeholders with
