@@ -460,9 +460,7 @@ def test_preheader_is_at_start_of_html_emails():
         'font-size: 16px;Margin: 0;color:#323A45;">\n'
         '\n'
         '<span style="display: none;font-size: 1px;color: #fff; max-height: 0;">content…</span>'
-    ) in str(
-        HTMLEmailTemplate({'content': 'content', 'subject': 'subject'})
-    )
+    ) in str(HTMLEmailTemplate({'content': 'content', 'subject': 'subject'}))
 
 
 @pytest.mark.parametrize(
@@ -815,6 +813,7 @@ def test_subject_line_gets_replaced():
     (HTMLEmailTemplate, {}, [
         mock.call('content', {}, html='passthrough', markdown_lists=True,
                   redact_missing_personalisation=False, preview_mode=False),
+        mock.call('content', {}, html='escape', markdown_lists=True),
     ]),
     (EmailPreviewTemplate, {}, [
         mock.call('content', {}, preview_mode=False, html='passthrough', markdown_lists=True,

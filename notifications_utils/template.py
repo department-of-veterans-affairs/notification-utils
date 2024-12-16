@@ -345,10 +345,11 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         self.ga_pixel_url = ga_pixel_url
         self.ga4_open_email_event_url = ga4_open_email_event_url
         self.preview_mode = preview_mode
-        # set this again to make sure the correct either utils / downstream local jinja is used
-        # however, don't set if we are in a test environment (to preserve the above mock)
+
         if "pytest" not in sys.modules:
+            # Ensure use of the correct utils or downstream local jinja template.
             self.jinja_template = self.template_env.get_template('email_template.jinja2')
+        # Else, this is a test environment.  The above mock prevails.
 
     @property
     def preheader(self):
@@ -371,6 +372,7 @@ class HTMLEmailTemplate(WithSubjectTemplate):
     def __str__(self):
         return self.jinja_template.render({
             'body': get_html_email_body(self.content, self.values, preview_mode=self.preview_mode),
+            'preheader': self.preheader if not self.preview_mode else '',
             'default_banner': self.default_banner,
             'complete_html': self.complete_html,
             'brand_logo': self.brand_logo,
