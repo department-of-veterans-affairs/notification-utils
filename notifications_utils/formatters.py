@@ -57,12 +57,10 @@ hyphens_surrounded_by_spaces = re.compile(r'\s+[-|–|—]{1,3}\s+')
 multiple_newlines = re.compile(r'((\n)\2{2,})')
 
 
-# TODO - Delete this?  I would expect Mistune to handle this.
 def nl2br(value):
     return re.sub(r'\n|\r', '<br>', value.strip())
 
 
-# TODO - Delete this?  I would expect Mistune to handle this.
 def nl2li(value):
     return '<ul><li>{}</li></ul>'.format('</li><li>'.join(
         value.strip().split('\n')
