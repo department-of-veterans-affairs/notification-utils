@@ -86,13 +86,11 @@ class Field:
         markdown_lists=False,
         redact_missing_personalisation=False,
         preview_mode=False,
-        is_letter_template=False  # TODO - remove
     ):
         self.content = content
         self.values = values
         self.markdown_lists = markdown_lists
         self.preview_mode = preview_mode
-        self.is_letter_template = is_letter_template
         if not with_brackets:
             self.placeholder_tag = self.placeholder_tag_no_brackets
         if preview_mode:
@@ -160,7 +158,7 @@ class Field:
         return self.format_match(match)
 
     def is_okay_to_have_null_values(self, placeholder) -> bool:
-        return self.redact_missing_personalisation or placeholder.is_conditional() or self.is_letter_template
+        return self.redact_missing_personalisation or placeholder.is_conditional()
 
     def get_replacement(self, placeholder):
         replacement = self.values.get(placeholder.name)
