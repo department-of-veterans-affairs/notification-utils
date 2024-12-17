@@ -1584,6 +1584,7 @@ def test_ordered_list_without_spaces(template_type, expected):
         assert expected in str(template_type({'content': content, 'subject': ''}))
 
 
+@pytest.mark.parametrize('with_spaces', [True, False])
 @pytest.mark.parametrize(
     'template_type, expected',
     [
@@ -1599,12 +1600,13 @@ def test_ordered_list_without_spaces(template_type, expected):
     ]
 )
 @pytest.mark.parametrize('bullet', ['*', '-', '+', '•'])
-def test_unordered_list_without_spaces(bullet, template_type, expected):
+def test_unordered_list(bullet, template_type, expected, with_spaces):
     """
     Proper markdown for unordered lists has a space after the bullet.
     """
 
-    content = f'{bullet}one\n{bullet}two\n{bullet}three\n'
+    space = ' ' if with_spaces else ''
+    content = f'{bullet}{space}one\n{bullet}{space}two\n{bullet}{space}three\n'
 
     if isinstance(template_type, PlainTextEmailTemplate):
         assert str(template_type({'content': content, 'subject': ''})) == expected

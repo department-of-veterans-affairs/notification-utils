@@ -2,23 +2,24 @@ import pytest
 from markupsafe import Markup
 
 from notifications_utils.formatters import (
+    escape_html,
+    formatted_list,
+    insert_list_spaces,
+    make_quotes_smart,
+    nl2li,
+    normalise_whitespace,
     notify_html_markdown,
     notify_markdown,
+    remove_smart_quotes_from_email_addresses,
+    remove_whitespace_before_punctuation,
+    replace_hyphens_with_en_dashes,
     sms_encode,
-    formatted_list,
+    strip_and_remove_obscure_whitespace,
     strip_dvla_markup,
     strip_pipes,
-    escape_html,
-    remove_whitespace_before_punctuation,
-    make_quotes_smart,
-    replace_hyphens_with_en_dashes,
-    tweak_dvla_list_markup,
-    nl2li,
-    strip_whitespace,
-    strip_and_remove_obscure_whitespace,
-    remove_smart_quotes_from_email_addresses,
     strip_unsupported_characters,
-    normalise_whitespace,
+    strip_whitespace,
+    tweak_dvla_list_markup,
 )
 from notifications_utils.template import (
     HTMLEmailTemplate,
@@ -421,7 +422,7 @@ def test_ordered_list():
                 '\n* three'
             ),
             (
-                '<ul role="presentation" style="Margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: disk; '
+                '<ul role="presentation" style="Margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: disc; '
                 'font-family: Helvetica, Arial, sans-serif;">\n'
                 '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; '
                 'line-height: 25px; color: #323A45;">'
@@ -430,7 +431,7 @@ def test_ordered_list():
                 '</ul>\n'
                 '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">nested 1</p>\n'
                 '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">nested 2</p>\n'
-                '<ul role="presentation" style="Margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: disk; '
+                '<ul role="presentation" style="Margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: disc; '
                 'font-family: Helvetica, Arial, sans-serif;">\n'
                 '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; '
                 'line-height: 25px; color: #323A45;">two</li>\n'
@@ -469,13 +470,8 @@ def test_paragraph_in_list_has_no_linebreak(test_text, expected):
             '+ two\n'
             '+ three\n'
         ),
-        pytest.param((  # bullet as bullet - This is non-standard.
-            '• one\n'
-            '• two\n'
-            '• three\n'
-        ), marks=pytest.mark.xfail(strict=False)),
     ),
-    ids=['two_spaces', 'tab', 'dash_as_bullet', 'plus_as_bullet', 'bullet_as_bullet']
+    ids=['two_spaces', 'tab', 'dash_as_bullet', 'plus_as_bullet']
 )
 @pytest.mark.parametrize(
     'markdown_function, expected',
@@ -484,7 +480,7 @@ def test_paragraph_in_list_has_no_linebreak(test_text, expected):
             notify_html_markdown,
             (
                 '<ul role="presentation" style="Margin: 0 0 0 20px; padding: 0 0 20px 0; '
-                'list-style-type: disk; '
+                'list-style-type: disc; '
                 'font-family: Helvetica, Arial, sans-serif;">\n'
                 '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; '
                 'line-height: 25px; color: #323A45;">'
@@ -993,3 +989,63 @@ def test_strip_unsupported_characters():
 
 def test_normalise_whitespace():
     assert normalise_whitespace('\u200C Your tax   is\ndue\n\n') == 'Your tax is due'
+
+
+@pytest.mark.parametrize(
+    'actual, expected',
+    [
+        (
+            '1.one\n2.two\n3.three',
+            '1. one\n2. two\n3. three',
+        ),
+        (
+            '-one\n   -two\n-three',
+            '- one\n   - two\n- three',
+        ),
+        (
+            '+one\n   +two\n+three',
+            '- one\n   - two\n- three',
+        ),
+        (
+            '*one\n   *two\n*three',
+            '- one\n   - two\n- three',
+        ),
+        (
+            '•one\n   •two\n•three',
+            '- one\n   - two\n- three',
+        ),
+        # Next 2 tests: Shouldn't misinterpret a thematic break as a list item
+        (
+            '***one\n   *two\n*three',
+            '***one\n   - two\n- three',
+        ),
+        (
+            '-one\n   ---two\n-three',
+            '- one\n   ---two\n- three',
+        ),
+        (
+            '# This is Heading 1\n'
+            '## This is heading 2\n'
+            '### This is heading 3\n'
+            '\n'
+            '__This has been emboldened__\n'
+            '\n'
+            '- this is a bullet list\n'
+            '- list list list\n'
+            '\n'
+            'Testing personalisation, ((name)).\n',
+            '# This is Heading 1\n'
+            '## This is heading 2\n'
+            '### This is heading 3\n'
+            '\n'
+            '__This has been emboldened__\n'
+            '\n'
+            '- this is a bullet list\n'
+            '- list list list\n'
+            '\n'
+            'Testing personalisation, ((name)).\n',
+        ),
+    ]
+)
+def test_insert_list_spaces(actual, expected):
+    assert insert_list_spaces(actual) == expected

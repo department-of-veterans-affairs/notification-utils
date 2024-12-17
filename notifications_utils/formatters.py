@@ -23,7 +23,7 @@ ORDERED_LIST_STYLE = 'Margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: 
 LIST_ITEM_STYLE = 'Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; line-height: 25px; color: #323A45;'
 PARAGRAPH_STYLE = 'Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;'
 THEMATIC_BREAK_STYLE = 'border: 0; height: 1px; background: #BFC1C3; Margin: 30px 0 30px 0;'
-UNORDERED_LIST_STYLE = 'Margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: disk; ' \
+UNORDERED_LIST_STYLE = 'Margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: disc; ' \
                        'font-family: Helvetica, Arial, sans-serif;'
 
 OBSCURE_WHITESPACE = (
@@ -346,13 +346,17 @@ def insert_list_spaces(md: str) -> str:
     """
     Proper markdown for lists has a space after the number or bullet.  This is a preprocessing step to insert
     any missing spaces in lists.  This preprocessing should take place before any manipulation by Mistune.
+
+    The regular expression for unordered lists replaces the bullet with the minus, which Mistune handles.
+    This is necessary because Utils allows the non-standard literal • in markdown to denote an unordered list.
+    Performing this substitution avoids having to write custom parsing logic for Mistune.
     """
 
     # Ordered lists
-    md = re.sub(r'''^(\s*)(\d+\.)''', r'''\1\2 ''', md, flags=re.M)
+    md = re.sub(r'''^(\s*)(\d+\.)(?=\S)''', r'''\1\2 ''', md, flags=re.M)
 
     # Unordered lists
-    return re.sub(r'''^(\s*)(\*|-|\+|•)(?!\2)''', r'''\1- ''', md, flags=re.M)
+    return re.sub(r'''^(\s*)(\*|-|\+|•)(?!\2)(\s*)''', r'''\1- ''', md, flags=re.M)
 
 
 def strip_parentheses_in_link_placeholders(value: str) -> str:
