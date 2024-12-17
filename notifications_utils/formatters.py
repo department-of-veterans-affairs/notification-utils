@@ -36,11 +36,6 @@ OBSCURE_WHITESPACE = (
 )
 
 
-govuk_not_a_link = re.compile(
-    r'(?<!\.|\/)(GOV)\.(UK)(?!\/|\?)',
-    re.IGNORECASE
-)
-
 dvla_markup_tags = re.compile(
     str('|'.join('<{}>'.format(tag) for tag in {
         'cr', 'h1', 'h2', 'p', 'normal', 'op', 'np', 'bul', 'tab'
@@ -290,7 +285,10 @@ def strip_unsupported_characters_in_preheader(value):
 
 
 def normalise_whitespace(value):
-    # leading and trailing whitespace removed, all inner whitespace becomes a single space
+    """
+    Remove leading and trailing whitespace.  All inner whitespace becomes a single space.
+    """
+
     return ' '.join(strip_and_remove_obscure_whitespace(value).split())
 
 
@@ -309,7 +307,7 @@ def get_action_link_image_url() -> str:
 
 def insert_action_link(html: str) -> str:
     """
-    Finds an "action link" and replaces it with the desired format. This preprocessing should take place before
+    Finds an "action link," and replaces it with the desired format. This preprocessing should take place before
     any manipulation by Mistune.
 
     Given:
