@@ -31,7 +31,6 @@ from notifications_utils.formatters import (
     strip_parentheses_in_link_placeholders,
     strip_unsupported_characters,
     strip_unsupported_characters_in_preheader,
-    unlink_govuk_escaped,
 )
 from notifications_utils.sanitise_text import SanitiseSMS
 from notifications_utils.template_change import TemplateChange
@@ -291,7 +290,6 @@ class PlainTextEmailTemplate(WithSubjectTemplate):
         field = str(Field(self.content, self.values, html='passthrough', markdown_lists=True))
         return compose1(
             field,
-            unlink_govuk_escaped,
             strip_unsupported_characters,
             add_trailing_newline,
             insert_block_quotes,
@@ -365,7 +363,6 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         ))
         field = compose1(
             field,
-            unlink_govuk_escaped,
             strip_unsupported_characters,
             add_trailing_newline,
             strip_unsupported_characters_in_preheader,
@@ -475,7 +472,6 @@ def get_html_email_body(
 
     return compose1(
         field,
-        unlink_govuk_escaped,
         strip_unsupported_characters,
         add_trailing_newline,
         # before converting from markdown, strip out the "(())" for placeholders (preview mode or test emails)

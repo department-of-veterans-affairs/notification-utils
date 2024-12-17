@@ -56,22 +56,6 @@ hyphens_surrounded_by_spaces = re.compile(r'\s+[-|–|—]{1,3}\s+')
 
 multiple_newlines = re.compile(r'((\n)\2{2,})')
 
-MAGIC_SEQUENCE = "🇬🇧🐦✉️"
-magic_sequence_regex = re.compile(MAGIC_SEQUENCE)
-
-# The Mistune URL regex only matches URLs at the start of a string,
-# using `^`, so we slice that off and recompile
-url = re.compile(r'''(https?:\/\/[^\s<]+[^<.,:"')\]\s])''')
-
-
-# TODO - Delete this?  Is it relevant for USA?
-def unlink_govuk_escaped(message):
-    return re.sub(
-        govuk_not_a_link,
-        r'\1' + '.\u200B' + r'\2',  # Unicode zero-width space
-        str(message)
-    )
-
 
 # TODO - Delete this?  I would expect Mistune to handle this.
 def nl2br(value):
@@ -89,6 +73,12 @@ def add_prefix(body, prefix=None) -> str:
     if prefix:
         return f'{prefix.strip()}: {body}'
     return body
+
+
+# The Mistune URL regex only matches URLs at the start of a string,
+# using `^`, so we slice that off and recompile
+# 17 DEC 2024: The above comment might be stale.
+url = re.compile(r'''(https?:\/\/[^\s<]+[^<.,:"')\]\s])''')
 
 
 def autolink_sms(body):

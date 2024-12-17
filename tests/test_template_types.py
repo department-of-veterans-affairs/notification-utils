@@ -10,7 +10,6 @@ from notifications_utils.formatters import (
     LIST_ITEM_STYLE,
     ORDERED_LIST_STYLE,
     PARAGRAPH_STYLE,
-    unlink_govuk_escaped,
     UNORDERED_LIST_STYLE
 )
 from notifications_utils.template import (
@@ -481,11 +480,11 @@ def test_preheader_is_at_start_of_html_emails():
                 '# This - is a "heading"\n'
                 '\n'
                 'My favourite websites\' URLs are:\n'
-                '- GOV.UK\n'
+                '- va.gov\n'
                 '- https://www.example.com\n'
             ),
             {'name': 'Jo'},
-            'Hello Jo This – is a “heading” My favourite websites’ URLs are: • GOV.​UK • https://www.example.com',
+            'Hello Jo This – is a “heading” My favourite websites’ URLs are: • va.gov • https://www.example.com',
         ),
         (
             (
@@ -619,24 +618,6 @@ def test_makes_links_out_of_URLs(template_class, url, url_with_entities_replaced
 )
 def test_HTML_template_has_URLs_replaced_with_links(content, html_snippet):
     assert html_snippet in str(HTMLEmailTemplate({'content': content, 'subject': ''}))
-
-
-@pytest.mark.parametrize(
-    "template_content,expected", [
-        ("gov.uk", u"gov.\u200Buk"),
-        ("GOV.UK", u"GOV.\u200BUK"),
-        ("Gov.uk", u"Gov.\u200Buk"),
-        ("https://gov.uk", "https://gov.uk"),
-        ("https://www.gov.uk", "https://www.gov.uk"),
-        ("www.gov.uk", "www.gov.uk"),
-        ("gov.uk/register-to-vote", "gov.uk/register-to-vote"),
-        ("gov.uk?q=", "gov.uk?q=")
-    ]
-)
-def test_escaping_govuk_in_email_templates(template_content, expected):
-    assert unlink_govuk_escaped(template_content) == expected
-    assert expected in str(PlainTextEmailTemplate({'content': template_content, 'subject': ''}))
-    assert expected in str(HTMLEmailTemplate({'content': template_content, 'subject': ''}))
 
 
 def test_stripping_of_unsupported_characters_in_email_templates():

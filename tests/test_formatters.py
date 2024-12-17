@@ -2,7 +2,6 @@ import pytest
 from markupsafe import Markup
 
 from notifications_utils.formatters import (
-    unlink_govuk_escaped,
     notify_html_markdown,
     notify_markdown,
     sms_encode,
@@ -23,7 +22,6 @@ from notifications_utils.formatters import (
 )
 from notifications_utils.template import (
     HTMLEmailTemplate,
-    PlainTextEmailTemplate,
     SMSMessageTemplate,
     SMSPreviewTemplate
 )
@@ -159,24 +157,6 @@ def test_preserves_whitespace_when_making_links(
         '\n'
         'Next paragraph'
     ) == expected_output
-
-
-@pytest.mark.parametrize(
-    "template_content,expected", [
-        ("gov.uk", u"gov.\u200Buk"),
-        ("GOV.UK", u"GOV.\u200BUK"),
-        ("Gov.uk", u"Gov.\u200Buk"),
-        ("https://gov.uk", "https://gov.uk"),
-        ("https://www.gov.uk", "https://www.gov.uk"),
-        ("www.gov.uk", "www.gov.uk"),
-        ("gov.uk/register-to-vote", "gov.uk/register-to-vote"),
-        ("gov.uk?q=", "gov.uk?q=")
-    ]
-)
-def test_escaping_govuk_in_email_templates(template_content, expected):
-    assert unlink_govuk_escaped(template_content) == expected
-    assert expected in str(PlainTextEmailTemplate({'content': template_content, 'subject': ''}))
-    assert expected in str(HTMLEmailTemplate({'content': template_content, 'subject': ''}))
 
 
 @pytest.mark.parametrize(
