@@ -4,8 +4,8 @@ from notifications_utils.columns import Columns
 class TemplateChange():
 
     def __init__(self, old_template, new_template):
-        self.old_placeholders = Columns.from_keys(old_template.placeholders)
-        self.new_placeholders = Columns.from_keys(new_template.placeholders)
+        self.old_placeholders = Columns.from_keys(old_template.placeholder_names)
+        self.new_placeholders = Columns.from_keys(new_template.placeholder_names)
 
     @property
     def has_different_placeholders(self):

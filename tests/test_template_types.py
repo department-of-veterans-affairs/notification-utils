@@ -951,7 +951,7 @@ def test_templates_extract_placeholders(
     template_instance,
     expected_placeholders,
 ):
-    assert template_instance.placeholders == set(expected_placeholders)
+    assert template_instance.placeholder_names == set(expected_placeholders)
 
 
 @pytest.mark.parametrize('extra_args', [

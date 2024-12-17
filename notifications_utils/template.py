@@ -114,16 +114,16 @@ class Template():
         if not value:
             self._values = {}
         else:
-            placeholders = Columns.from_keys(self.placeholders)
+            placeholders = Columns.from_keys(self.placeholder_names)
             self._values = Columns(value).as_dict_with_keys(
-                self.placeholders | set(
+                self.placeholder_names | set(
                     key for key in value.keys()
                     if Columns.make_key(key) not in placeholders.keys()
                 )
             )
 
     @property
-    def placeholders(self):  # TODO: rename to placeholder_names
+    def placeholder_names(self):
         return Field(self.content).placeholder_names
 
     @property
@@ -135,7 +135,7 @@ class Template():
 
     @property
     def additional_data(self):
-        return self.values.keys() - self.placeholders
+        return self.values.keys() - self.placeholder_names
 
     def get_raw(self, key, default=None):
         return self._template.get(key, default)
@@ -281,7 +281,7 @@ class WithSubjectTemplate(Template):
         return Markup(compose1(field, do_nice_typography, normalise_whitespace))
 
     @property
-    def placeholders(self):
+    def placeholder_names(self):
         return Field(self._subject).placeholder_names | Field(self.content).placeholder_names
 
 

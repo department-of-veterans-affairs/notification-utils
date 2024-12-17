@@ -492,7 +492,6 @@ class NotifyHTMLRenderer(HTMLRenderer):
         Delete tables.
         """
 
-        # TODO - This is the expected test behavior, but it doesn't make sense.
         return ''
 
     def thematic_break(self):
@@ -559,7 +558,6 @@ class NotifyMarkdownRenderer(MarkdownRenderer):
         Delete tables.
         """
 
-        # TODO - This is the expected test behavior, but it doesn't make sense.
         return ''
 
     def thematic_break(self, token, state):
