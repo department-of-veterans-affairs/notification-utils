@@ -5,3 +5,8 @@ exclude = venv*,__pycache__,cache
 ignore = W503
 max-complexity = 8
 max-line-length = 120
+per-file-ignores =
+    # Ignore files because flake does not recongize 'https:' is apart of an HTML example
+    notifications_utils/formatters.py:E231
+    tests/test_template_types.py:E702, E231
+    tests/test_formatters.py:E702,E231
