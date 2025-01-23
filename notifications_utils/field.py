@@ -1,4 +1,5 @@
 import re
+from functools import partial
 
 from markupsafe import Markup
 
@@ -21,14 +22,12 @@ class Placeholder:
     def from_match(cls, match):
         return cls(match.group(0))
 
-    def is_conditional(self):
+    def is_conditional(self) -> bool:
         return '??' in self.body
 
     @staticmethod
     def should_render_conditional(palceholder_value: str) -> bool:
-        if str(palceholder_value) in ['', 'False']:
-            return False
-        return True
+        return str(palceholder_value) not in ('', 'False')
 
     @property
     def name(self):
@@ -56,8 +55,8 @@ class Placeholder:
 
 class Field:
     placeholder_pattern = re.compile(
-        # this is simply the below regex on one line for easier analysis
-        # r'\({2}([\w \-]+(?:\?{2}.*?(?!\({2}[\w \-]+\){2}.*?))?)\){2}'
+        # This is the below regex on one line for easier analysis:
+        #   r'\({2}([\w \-]+(?:\?{2}.*?(?!\({2}[\w \-]+\){2}.*?))?)\){2}'
         r'\({2}'        # opening ((
         r'('            # start capture group
         r'[\w \-]+'     # placeholder name that allows only alpha numberic characters, space and dash
@@ -135,7 +134,11 @@ class Field:
             self.sanitizer(placeholder.name)
         )
 
-    def replace_match(self, match):
+    def replace_match(self, match, is_inside_block_quote=False):
+        """
+        Return the substitution string that should replace a placeholder.
+        """
+
         placeholder = Placeholder.from_match(match)
         replacement = self.values.get(placeholder.name)
 
@@ -147,44 +150,46 @@ class Field:
             )
 
         if not self.preview_mode:
-            replaced_value = self.get_replacement(placeholder)
+            replaced_value = self.get_replacement(placeholder, is_inside_block_quote)
+
             if replaced_value is None and not self.is_okay_to_have_null_values(placeholder):
                 raise NullValueForNonConditionalPlaceholderException
             elif replaced_value is not None:
-                return self.get_replacement(placeholder)
+                return self.get_replacement(placeholder, is_inside_block_quote)
 
-        # TODO - Investigate why this fallback is necessary, and potentially remove
-        # it to enable truly conditional placeholders.
+        # This is preview mode, or the replacement value is None.
         return self.format_match(match)
 
     def is_okay_to_have_null_values(self, placeholder) -> bool:
         return self.redact_missing_personalisation or placeholder.is_conditional()
 
-    def get_replacement(self, placeholder):
+    def get_replacement(self, placeholder, is_inside_block_quote):
         replacement = self.values.get(placeholder.name)
         if replacement is None:
             return None
 
         if isinstance(replacement, list):
+            # Prune all element that are boolean False.  (See the Python docs for "filter".)
             vals = list(filter(None, replacement))
             if not vals:
                 return None
-            return self.sanitizer(self.get_replacement_as_list(vals))
+
+            return self.sanitizer(self.get_replacement_as_list(vals, is_inside_block_quote))
 
         return self.sanitizer(str(replacement))
 
-    def get_replacement_as_list(self, replacement):
+    def get_replacement_as_list(self, replacement, is_inside_block_quote):
         if self.markdown_lists:
-            return '\n\n' + '\n'.join(
-                '* {}'.format(item) for item in replacement
-            )
+            if is_inside_block_quote:
+                return '\n' + '\n'.join(f'^ * {item}' for item in replacement)
+            else:
+                return '\n\n' + '\n'.join(f'* {item}' for item in replacement)
+
         return unescaped_formatted_list(replacement, before_each='', after_each='')
 
     @property
     def _raw_formatted(self):
-        return re.sub(
-            self.placeholder_pattern, self.format_match, self.sanitizer(self.content)
-        )
+        return self.placeholder_pattern.sub(self.format_match, self.sanitizer(self.content))
 
     @property
     def formatted(self):
@@ -204,9 +209,24 @@ class Field:
 
     @property
     def replaced(self):
-        return re.sub(
-            self.placeholder_pattern, self.replace_match, self.sanitizer(self.content)
-        )
+        result = ''
+        block_quote_replace_match = partial(self.replace_match, is_inside_block_quote=True)
+
+        # Process line by line.  This is necessary correctly to handle block quotes.
+        for line in self.sanitizer(self.content).split('\n'):
+            print(line)  # TODO
+            # This assumes that execution occurs before the preprocessing step that
+            # replaces ^ with >.
+            is_inside_block_quote = line.lstrip().startswith('^')
+            print(is_inside_block_quote)  # TODO
+
+            result += self.placeholder_pattern.sub(
+                # This argument is a function.
+                block_quote_replace_match if is_inside_block_quote else self.replace_match,
+                line
+            )
+
+        return result
 
 
 class NullValueForNonConditionalPlaceholderException(Exception):

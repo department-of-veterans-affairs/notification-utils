@@ -469,19 +469,7 @@ def get_html_email_body(
         redact_missing_personalisation=redact_missing_personalisation,
         preview_mode=preview_mode
     ))
-############# TODO - delete this block
-    # TODO - The problem is that the personalization substitutions are removing the block quote character in front of list items.
-    print(field, 'END')
-    print(compose1(
-        field,
-        strip_unsupported_characters,
-        add_trailing_newline,
-        # before converting from markdown, strip out the "(())" for placeholders (preview mode or test emails)
-        strip_parentheses_in_link_placeholders,
-        insert_action_link,
-        insert_block_quotes
-    ))
-#############
+
     return compose1(
         field,
         strip_unsupported_characters,

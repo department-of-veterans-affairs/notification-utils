@@ -136,6 +136,17 @@ def test_replacement_of_placeholders(template_content, data, expected):
     assert str(Field(template_content, data)) == expected
 
 
+def test_replacement_with_list_in_blockquote():
+    """
+    List substitution inside a block quote should not add new content outside of the block quote.
+    """
+
+    content = "^ This is a block quote with a list: ((the_list))"
+    values = {"the_list": ["list item 1", "list item 2"]}
+    expected = "^ This is a block quote with a list: \n^ * list item 1\n^ * list item 2"
+    assert str(Field(content, values, markdown_lists=True)) == expected
+
+
 @pytest.mark.parametrize(
     "template_content,data,expected", [
         (
