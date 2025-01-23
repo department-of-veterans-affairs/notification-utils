@@ -1,7 +1,7 @@
 ---
 name: Notify Regular Dependency Template
-about: Regular dependency update for Notification-Utils repo
-title: 'Regular Dependency Update: '
+about: Regular dependency update for the Notification-Utils repo
+title: 'Utils - Regular Update for Dependencies'
 labels: Notify, QA
 assignees: ''
 ---
