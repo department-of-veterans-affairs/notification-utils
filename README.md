@@ -6,7 +6,7 @@ Shared Python 3 code for Notification to provide logging utilities, etc.  It has
 
 Run these commands from the project's root directory to install and activate a virtual environment and to install Python dependencies, including dependencies for running unit tests.
 
-1. `python3 -m venv venv/`
+1. `python3.10 -m venv venv`
 2. `. venv/bin/activate`
 3. `./scripts/bootstrap.sh`
 
