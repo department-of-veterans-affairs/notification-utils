@@ -1,3 +1,11 @@
+---
+name: Notify Regular Dependency Template
+about: Regular dependency update for Notification-Utils repo
+title: 'Regular Dependency Update: '
+labels: Notify, QA
+assignees: ''
+---
+
 
 ## User Story - Business Need
 
