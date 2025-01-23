@@ -8,7 +8,7 @@ from uuid import uuid4
 
 from flask import request, g
 from flask.ctx import has_request_context
-from pythonjsonlogger.jsonlogger import JsonFormatter
+from pythonjsonlogger.json import JsonFormatter
 
 
 # The "application" and "requestId" fields are non-standard LogRecord attributes added below in the
