@@ -20,7 +20,6 @@ See outstanding dependabot[PRs](https://github.com/department-of-veterans-affair
 - [ ] [setup.py](https://github.com/department-of-veterans-affairs/notification-utils/blob/main/setup.py) seems to be out of scope for dependabot, review it and ensure that the versions there match the versions in the requirements_for_test file 
 - [ ] Modify the files to update to the latest versions
 - [ ] Unit tests pass
-- [ ] Bump the version number
 - [ ] Modify the Notification API pyproject.toml file to pull in this branch/sha and then deploy that API branch
 - [ ] Ticket is created for specific dependency if any given dependency isn't working correctly
 
