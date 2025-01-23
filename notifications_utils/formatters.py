@@ -339,7 +339,8 @@ def insert_block_quotes(md: str) -> str:
         > This is a block quote.
     """
 
-    return re.sub(r'''^(\s*)\^(\s*)''', r'''\1>\2''', md, flags=re.M)
+    # TODO - Do I need to worry about the spaces?  Wasn't there a reason for that?
+    return re.sub(r'''(\s*)\^(\s*)''', r'''\1>\2''', md, flags=re.M)
 
 
 def insert_list_spaces(md: str) -> str:

@@ -1532,20 +1532,65 @@ def test_heading_only_template_renders(renderer, expected_content):
 
 
 @pytest.mark.parametrize(
-    'template_type, expected_content',
+    'template_type, md, personalization, expected_content',
     (
-        (PlainTextEmailTemplate, 'Hi\n\n\n\nThis is a block quote.\n\n\n\nhello\n\n'),
-        (HTMLEmailTemplate, (
-            f'<p style="{PARAGRAPH_STYLE}">Hi</p>\n'
-            f'<blockquote style="{BLOCK_QUOTE_STYLE}">\n'
-            f'<p style="{PARAGRAPH_STYLE}">This is a block quote.</p>\n'
-            '</blockquote>\n'
-            f'<p style="{PARAGRAPH_STYLE}">hello</p>\n'
-        )),
+        (
+            PlainTextEmailTemplate,
+            '\nHi\n\n^ This is a block quote.\n\nhello',
+            {},
+            'Hi\n\n\n\nThis is a block quote.\n\n\n\nhello\n\n',
+        ),
+        (
+            HTMLEmailTemplate,
+            '\nHi\n\n^ This is a block quote.\n\nhello',
+            {},
+            (
+                f'<p style="{PARAGRAPH_STYLE}">Hi</p>\n'
+                f'<blockquote style="{BLOCK_QUOTE_STYLE}">\n'
+                f'<p style="{PARAGRAPH_STYLE}">This is a block quote.</p>\n'
+                '</blockquote>\n'
+                f'<p style="{PARAGRAPH_STYLE}">hello</p>\n'
+            ),
+        ),
+        (
+            HTMLEmailTemplate,
+            (
+                '^ ## Submission Details\n'
+                '^ __Form submitted__\n'
+                '^ Disability Claim (VA Form 21-526EZ)\n'
+                '^\n'
+                '^ __Additional forms included__\n'
+                '^ ((forms_submitted))'
+                '^\n'
+                '^\n'
+                '^ __Supporting evidence included__\n'
+            ),
+            {
+                'forms_submitted': [
+                    'VA Form 21-4142',
+                    'VA Form 21-0781',
+                    'VA Form 21-8940',
+                ],
+            },
+            (
+                f'<blockquote style="{BLOCK_QUOTE_STYLE}">\n'
+                '<h2 style="Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #323A45; font-size: 24px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;">Submission Details</h2>\n'
+                f'<p style="{PARAGRAPH_STYLE}"><strong>Form submitted</strong><br />\n'
+                'Disability Claim (VA Form 21-526EZ)</p>\n'
+                f'<p style="{PARAGRAPH_STYLE}"><strong>Additional forms included</strong></p>\n'
+                f'<ul style="{UNORDERED_LIST_STYLE}">\n'
+                f'<li style="{LIST_ITEM_STYLE}">VA Form 21-4142</li>\n'
+                f'<li style="{LIST_ITEM_STYLE}">VA Form 21-0781</li>\n'
+                f'<li style="{LIST_ITEM_STYLE}">VA Form 21-8940</li>\n'
+                '</ul>\n'
+                f'<p style="{PARAGRAPH_STYLE}"><strong>Supporting evidence included</strong></p>\n'
+                '</blockquote>\n'
+            ),
+        ),
     ),
-    ids=['plain', 'html']
+    ids=['plain', 'html_simple', 'html_list_and_personalization']
 )
-def test_block_quotes(template_type, expected_content):
+def test_block_quotes(template_type, md, personalization, expected_content):
     """
     Template markup uses ^ to denote a block quote, but Github markdown, which Mistune reflects, specifies a block
     quote with the > character.  Rather than write a custom parser, templates should preprocess their text to replace
@@ -1553,7 +1598,7 @@ def test_block_quotes(template_type, expected_content):
     """
 
     assert expected_content in str(
-        template_type({'content': '\nHi\n\n^ This is a block quote.\n\nhello', 'subject': ''})
+        template_type({'content': md, 'subject': ''}, personalization)
     )
 
 

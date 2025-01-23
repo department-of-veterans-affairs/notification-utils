@@ -4,6 +4,7 @@ from markupsafe import Markup
 from notifications_utils.formatters import (
     escape_html,
     formatted_list,
+    insert_block_quotes,
     insert_list_spaces,
     make_quotes_smart,
     nl2li,
@@ -204,10 +205,16 @@ def test_block_code(markdown_function, expected):
 
 
 @pytest.mark.parametrize(
-    'markdown_function, expected',
+    'markdown_function, md, expected',
     (
         [
+            notify_markdown,
+            '> inset text',
+            '\n\ninset text\n'
+        ],
+        [
             notify_html_markdown,
+            '> inset text',
             (
                 '<blockquote style="background: #F1F1F1; padding: 24px 24px 0.1px 24px; '
                 'font-family: Helvetica, Arial, sans-serif; font-size: 16px; line-height: 25px;">\n'
@@ -216,14 +223,48 @@ def test_block_code(markdown_function, expected):
             )
         ],
         [
-            notify_markdown,
-            '\n\ninset text\n'
+            notify_html_markdown,
+            '> line 1\n> line 2',
+            (
+                '<blockquote style="background: #F1F1F1; padding: 24px 24px 0.1px 24px; '
+                'font-family: Helvetica, Arial, sans-serif; font-size: 16px; line-height: 25px;">\n'
+                '<p style="Margin: 0 0 20px 0; font-size: 16px; '
+                'line-height: 25px; color: #323A45;">line 1<br />\nline 2</p>\n'
+                '</blockquote>\n'
+            )
+        ],
+        [
+            notify_html_markdown,
+            '> insert text\n>\n>\n> - list item 1\n> - list item 2',
+            (
+                '<blockquote style="background: #F1F1F1; padding: 24px 24px 0.1px 24px; '
+                'font-family: Helvetica, Arial, sans-serif; font-size: 16px; line-height: 25px;">\n'
+                '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">insert text</p>\n'
+                '<ul role="presentation" style="Margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: disc; '
+                'font-family: Helvetica, Arial, sans-serif;">\n'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; line-height: 25px; '
+                'color: #323A45;">list item 1</li>\n'
+                '<li style="Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; line-height: 25px; '
+                'color: #323A45;">list item 2</li>\n'
+                '</ul>\n'
+                '</blockquote>\n'
+            )
         ],
     ),
-    ids=['notify_html_markdown', 'notify_markdown']
+    ids=[
+        'notify_markdown_simple',
+        'notify_html_markdown_simple',
+        'notify_html_markdown_multiline',
+        'notify_html_markdown_embedded_list',
+    ]
 )
-def test_block_quote(markdown_function, expected):
-    assert markdown_function('> inset text') == expected
+def test_block_quote(markdown_function, md, expected):
+    """
+    NOTE: Plain text rendering of multiline blockquotes is not expected to work correctly because Mistune doesn't
+    handle them correctly.
+    """
+
+    assert markdown_function(md) == expected
 
 
 @pytest.mark.parametrize(
@@ -1049,3 +1090,25 @@ def test_normalise_whitespace():
 )
 def test_insert_list_spaces(actual, expected):
     assert insert_list_spaces(actual) == expected
+
+
+@pytest.mark.parametrize(
+    'given, expected',
+    [
+        (
+            '^ This is a simple block quote.',
+            '> This is a simple block quote.',
+        ),
+        (
+            '^ This is a block quote.\n^ And so is this.',
+            '> This is a block quote.\n> And so is this.',
+        ),
+        (
+            '^ This is a block quote.\n^\n^\n^ - list item 1\n^ - list item 2',
+            '> This is a block quote.\n>\n>\n> - list item 1\n> - list item 2',
+        )
+    ],
+    ids=['simple', 'multiline', 'embedded_list'],
+)
+def test_insert_block_quotes(given, expected):
+    assert insert_block_quotes(given) == expected
