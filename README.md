@@ -28,7 +28,7 @@ git tag <current-utils-version>
 git push origin <current-utils-version>
 ```
 
-Please create and publish release notes when the [new tag is available in Github.](https://github.com/department-of-veterans-affairs/notification-utils/tags) 
+Please create and publish release notes when the [new tag is available in Github.](https://github.com/department-of-veterans-affairs/notification-utils/tags). This can be done by viewing [Releases](https://github.com/department-of-veterans-affairs/notification-utils/releases), selecting `Draft a new release` and selecting the most recent tag. 
 
 
 After merging changes in this repository and creating the release notes, you must update notification-api to use the changes. Run `poetry update notification-utils` in an api branch, and then push the PR for approval/merge. The PR only should contain changes made to the lock file.
