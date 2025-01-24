@@ -227,7 +227,7 @@ class Field:
                 # This argument is a function.
                 block_quote_replace_match if is_inside_block_quote else self.replace_match,
                 line
-            ).rstrip('^') + '\n'  # TODO
+            ).rstrip('^') + '\n'
 
         return result.rstrip('\n')
 
