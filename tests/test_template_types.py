@@ -1574,7 +1574,8 @@ def test_heading_only_template_renders(renderer, expected_content):
             },
             (
                 f'<blockquote style="{BLOCK_QUOTE_STYLE}">\n'
-                '<h2 style="Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #323A45; font-size: 24px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;">Submission Details</h2>\n'
+                '<h2 style="Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #323A45; font-size: 24px; '
+                'font-weight: bold; font-family: Helvetica, Arial, sans-serif;">Submission Details</h2>\n'
                 f'<p style="{PARAGRAPH_STYLE}"><strong>Form submitted</strong><br />\n'
                 'Disability Claim (VA Form 21-526EZ)</p>\n'
                 f'<p style="{PARAGRAPH_STYLE}"><strong>Additional forms included</strong></p>\n'
