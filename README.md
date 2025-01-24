@@ -20,9 +20,18 @@ The `./scripts/run_tests.sh` script runs all unit tests using [py.test](http://p
 
 With the virtual environment active, run `python setup.py --version` to see the current version **on the current branch**.  
 
-Before merging, update the version in the `notifications_utils/version.py` file. Once merged, use `git tag` to add release tags to commits, and push the tags.
+Before merging, update the version in the `notifications_utils/version.py` file. Once merged, while on the `main` branch use `git tag` to add release tags to commits, and push the tags. 
 
-After merging changes in this repository, you must update notification-api to use the changes. Run `poetry update notification-utils` in an api branch, and then push the PR for approval/merge. The PR only should contain changes made to the lock file.
+For example
+```
+git tag <current-utils-version>
+git push origin <current-utils-version>
+```
+
+Please create and publish release notes when the [new tag is available in Github.](https://github.com/department-of-veterans-affairs/notification-utils/tags) 
+
+
+After merging changes in this repository and creating the release notes, you must update notification-api to use the changes. Run `poetry update notification-utils` in an api branch, and then push the PR for approval/merge. The PR only should contain changes made to the lock file.
 
 ## E-mail Template Documentation
 
