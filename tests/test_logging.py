@@ -4,7 +4,7 @@ import os
 import uuid
 
 import pytest
-from pythonjsonlogger.json import JsonFormatter
+from pythonjsonlogger.jsonlogger import JsonFormatter
 
 from notifications_utils import logging
 
