@@ -3,4 +3,6 @@ fileignoreconfig:
   checksum: c20998c896b9d321343bc4f45b5b9f04ec37ddbee7d823101e052972a5b6be00
 - filename: notifications_utils/sanitise_text.py
   checksum: 96cf794e49031d454616ae36522a62082e68e3019ba4533084cebf6a6ce0ec0d
+- filename: notifications_utils/template.py
+  checksum: 6b21fc1cf5983be1e813b066eb5bfc761905e56ce894b6b6e0a30566df327298
 version: "1.0"

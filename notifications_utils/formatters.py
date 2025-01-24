@@ -326,23 +326,6 @@ def insert_action_link(html: str) -> str:
     return re.sub(r'''(>|&gt;){2}\[([\w -]+)\]\((\S+)\)''', substitution, html)
 
 
-def insert_block_quotes(md: str) -> str:
-    """
-    Template markup uses ^ to denote a block quote, but Github markdown, which Mistune reflects, specifies a block
-    quote with the > character.  Rather than write a custom parser, templates should preprocess their text to replace
-    the former with the latter.  This preprocessing should take place before any manipulation by Mistune.
-
-    Given:
-        ^ This is a block quote.
-
-    Output:
-        > This is a block quote.
-    """
-
-    # TODO - Do I need to worry about the spaces?  Wasn't there a reason for that?
-    return re.sub(r'''(\s*)\^(\s*)''', r'''\1>\2''', md, flags=re.M)
-
-
 def insert_list_spaces(md: str) -> str:
     """
     Proper markdown for lists has a space after the number or bullet.  This is a preprocessing step to insert

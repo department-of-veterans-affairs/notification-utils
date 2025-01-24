@@ -4,7 +4,6 @@ from markupsafe import Markup
 from notifications_utils.formatters import (
     escape_html,
     formatted_list,
-    insert_block_quotes,
     insert_list_spaces,
     make_quotes_smart,
     nl2li,
@@ -1090,25 +1089,3 @@ def test_normalise_whitespace():
 )
 def test_insert_list_spaces(actual, expected):
     assert insert_list_spaces(actual) == expected
-
-
-@pytest.mark.parametrize(
-    'given, expected',
-    [
-        (
-            '^ This is a simple block quote.',
-            '> This is a simple block quote.',
-        ),
-        (
-            '^ This is a block quote.\n^ And so is this.',
-            '> This is a block quote.\n> And so is this.',
-        ),
-        (
-            '^ This is a block quote.\n^\n^\n^ - list item 1\n^ - list item 2',
-            '> This is a block quote.\n>\n>\n> - list item 1\n> - list item 2',
-        )
-    ],
-    ids=['simple', 'multiline', 'embedded_list'],
-)
-def test_insert_block_quotes(given, expected):
-    assert insert_block_quotes(given) == expected
