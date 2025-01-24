@@ -214,19 +214,22 @@ class Field:
 
         # Process line by line.  This is necessary correctly to handle block quotes.
         for line in self.sanitizer(self.content).split('\n'):
-            print(line)  # TODO
+            if not ('((' in line and '))' in line):
+                # This line has nothing to replace.
+                result += line + '\n'
+                continue
+
             # This assumes that execution occurs before the preprocessing step that
             # replaces ^ with >.
             is_inside_block_quote = line.lstrip().startswith('^')
-            print(is_inside_block_quote)  # TODO
 
             result += self.placeholder_pattern.sub(
                 # This argument is a function.
                 block_quote_replace_match if is_inside_block_quote else self.replace_match,
                 line
-            )
+            ).rstrip('^') + '\n'  # TODO
 
-        return result
+        return result.rstrip('\n')
 
 
 class NullValueForNonConditionalPlaceholderException(Exception):

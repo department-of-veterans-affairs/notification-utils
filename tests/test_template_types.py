@@ -1578,7 +1578,7 @@ def test_heading_only_template_renders(renderer, expected_content):
                 f'<p style="{PARAGRAPH_STYLE}"><strong>Form submitted</strong><br />\n'
                 'Disability Claim (VA Form 21-526EZ)</p>\n'
                 f'<p style="{PARAGRAPH_STYLE}"><strong>Additional forms included</strong></p>\n'
-                f'<ul style="{UNORDERED_LIST_STYLE}">\n'
+                f'<ul role="presentation" style="{UNORDERED_LIST_STYLE}">\n'
                 f'<li style="{LIST_ITEM_STYLE}">VA Form 21-4142</li>\n'
                 f'<li style="{LIST_ITEM_STYLE}">VA Form 21-0781</li>\n'
                 f'<li style="{LIST_ITEM_STYLE}">VA Form 21-8940</li>\n'
