@@ -212,7 +212,9 @@ class Field:
         result = ''
         block_quote_replace_match = partial(self.replace_match, is_inside_block_quote=True)
 
-        # Process line by line.  This is necessary correctly to handle block quotes.
+        # Process the content line by line.  This is necessary to handle block quotes with
+        # placeholders because the substituted value could be a list, which will occupy
+        # multiple lines.
         for line in self.sanitizer(self.content).split('\n'):
             if not ('((' in line and '))' in line):
                 # This line has nothing to replace.
