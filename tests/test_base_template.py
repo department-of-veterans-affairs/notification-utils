@@ -58,7 +58,7 @@ def test_matches_keys_to_placeholder_names():
     assert template.additional_data == {'Town'}
 
     template.values = None
-    assert template.missing_data == ['name']
+    assert template.missing_data == {'name'}
 
 
 @pytest.mark.parametrize('personalisation', [
@@ -71,7 +71,7 @@ def test_include_placeholder_in_missing_data_if_placeholder_is_conditional(perso
     template = Template({"content": "((has_name??hello!))"})
 
     template.values = personalisation
-    assert template.missing_data == ['has_name']
+    assert template.missing_data == {'has_name'}
 
 
 @pytest.mark.parametrize(

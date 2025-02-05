@@ -1617,15 +1617,17 @@ def test_unordered_list(bullet, template_type, expected, with_spaces):
 @pytest.mark.parametrize(
     ('content', 'subject', 'values', 'expected_missing'),
     [
-        ('content', 'subject', {}, []),
-        ('hello ((name))', 'subject', {'name': 'name'}, []),
-        ('hello', 'subject ((name))', {'name': 'name'}, []),
-        ('hello ((content_name))', 'subject ((subject_name))', {'content_name': 'name', 'subject_name': 'name'}, []),
-        ('hello ((name))', 'subject', {}, ['name']),
-        ('hello', 'subject ((name))', {}, ['name']),
-        ('hello ((content_name))', 'subject ((subject_name))', {'content_name': 'name'}, ['subject_name']),
-        ('hello ((content_name))', 'subject ((subject_name))', {'subject_name': 'name'}, ['content_name']),
-        ('hello ((content_name))', 'subject ((subject_name))', {}, ['content_name', 'subject_name']),
+        ('content', 'subject', {}, set()),
+        ('hello ((name))', 'subject', {'name': 'name'}, set()),
+        ('hello', 'subject ((name))', {'name': 'name'}, set()),
+        ('hello ((content_name))', 'subject ((subject_name))', {'content_name': 'name', 'subject_name': 'name'}, set()),
+        ('hello ((name))', 'subject', {}, {'name'}),
+        ('hello', 'subject ((name))', {}, {'name'}),
+        ('hello ((content_name))', 'subject ((subject_name))', {'content_name': 'name'}, {'subject_name'}),
+        ('hello ((content_name))', 'subject ((subject_name))', {'subject_name': 'name'}, {'content_name'}),
+        ('hello ((content_name))', 'subject ((subject_name))', {}, {'content_name', 'subject_name'}),
+        # No duplicate placeholder names
+        ('hello ((name))', 'subject ((name))', {}, {'name'}),
     ]
 )
 def test_with_subject_template_missing_data(content, subject, values, expected_missing):

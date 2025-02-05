@@ -124,8 +124,8 @@ class Template():
         return Field(self.content).placeholder_names
 
     @property
-    def missing_data(self):
-        return [name for name in Field(self.content).placeholder_names if self.values.get(name) is None]
+    def missing_data(self) -> set:
+        return set(name for name in Field(self.content).placeholder_names if self.values.get(name) is None)
 
     @property
     def additional_data(self):
@@ -279,14 +279,14 @@ class WithSubjectTemplate(Template):
         return Field(self._subject).placeholder_names | Field(self.content).placeholder_names
 
     @property
-    def missing_data(self):
+    def missing_data(self) -> set:
         # Get any missing data from the content.
-        _missing_data: list = super().missing_data
+        _missing_data: set = super().missing_data
 
-        # Extend the list with any missing data from the subject.
-        _missing_data.extend((
-            name for name in Field(self._subject).placeholder_names if self.values.get(name) is None
-        ))
+        # Extend the set with any missing data from the subject.
+        for name in Field(self._subject).placeholder_names:
+            if self.values.get(name) is None:
+                _missing_data.add(name)
 
         return _missing_data
 
