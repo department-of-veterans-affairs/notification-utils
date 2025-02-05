@@ -1612,3 +1612,22 @@ def test_unordered_list(bullet, template_type, expected, with_spaces):
         assert str(template_type({'content': content, 'subject': ''})) == expected
     else:
         assert expected in str(template_type({'content': content, 'subject': ''}))
+
+
+@pytest.mark.parametrize(
+    ('content', 'subject', 'values', 'expected_missing'),
+    [
+        ('content', 'subject', {}, []),
+        ('hello ((name))', 'subject', {'name': 'name'}, []),
+        ('hello', 'subject ((name))', {'name': 'name'}, []),
+        ('hello ((content_name))', 'subject ((subject_name))', {'content_name': 'name', 'subject_name': 'name'}, []),
+        ('hello ((name))', 'subject', {}, ['name']),
+        ('hello', 'subject ((name))', {}, ['name']),
+        ('hello ((content_name))', 'subject ((subject_name))', {'content_name': 'name'}, ['subject_name']),
+        ('hello ((content_name))', 'subject ((subject_name))', {'subject_name': 'name'}, ['content_name']),
+        ('hello ((content_name))', 'subject ((subject_name))', {}, ['content_name', 'subject_name']),
+    ]
+)
+def test_with_subject_template_missing_data(content, subject, values, expected_missing):
+    template = WithSubjectTemplate({"content": content, 'subject': subject}, values=values)
+    assert template.missing_data == expected_missing
