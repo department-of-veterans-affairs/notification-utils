@@ -35,7 +35,7 @@ setup(
         'MarkupSafe>=3.0.2',
         'mistune==3.0.2',  # Pinned: Will be addressed in #192
         'monotonic>=1.6',
-        'phonenumbers~=8.12.12',  # Pinned: Will be updated in #143
+        'phonenumbers~=8.13.54',
         'pypdf>= 5.1.0',
         'python-json-logger>=3.2.1',
         'pytz>=2024.2',
