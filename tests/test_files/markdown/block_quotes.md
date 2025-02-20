@@ -1,0 +1,52 @@
+> This is a block quote using Github markdown syntax.
+
+This is a multiline block quote with using Github markdown syntax.
+
+> do
+> re
+> mi
+
+This is a multiline block quote with an embedded list using Github markdown syntax.
+
+> Block quote start
+> + do
+> + re
+> + mi
+> This should not be part of the list.
+
+This is a multiline block quote with a nested multiline block quote using Github markdown syntax.
+
+> do
+> re
+> > mi
+> > fa
+> > so
+> la
+> ti
+
+^ This is a block quote using Notify markdown syntax.
+
+This is a multiline block quote with using Notify markdown syntax.
+
+^ do
+^ re
+^ mi
+
+This is a multiline block quote with an embedded list using Notify markdown syntax.
+
+^ Block quote start
+^ - do
+^ - re
+^ - mi
+^ This should not be part of the list.
+
+This is a multiline block quote with a nested multiline block quote using Notify markdown syntax.
+
+^ do
+^ re
+^ ^ mi
+^ ^ fa
+^ ^ so
+^ la
+^ ti
+
