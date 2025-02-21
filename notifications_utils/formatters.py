@@ -305,7 +305,7 @@ def get_action_link_image_url() -> str:
     return f'https://{img_env}-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png'
 
 
-def insert_action_link(html: str) -> str:
+def insert_action_link(markdown: str) -> str:
     """
     Finds an "action link," and replaces it with the desired format. This preprocessing should take place before
     any manipulation by Mistune.
@@ -323,7 +323,7 @@ def insert_action_link(html: str) -> str:
                    r'<b>\2</b></a>\n\n'
 
     #                               text        url
-    return re.sub(r'''(>|&gt;){2}\[([\w -]+)\]\((\S+)\)''', substitution, html)
+    return re.sub(r'''(>|&gt;){2}\[([\w -]+)\]\((\S+)\)''', substitution, markdown)
 
 
 def insert_block_quotes(md: str) -> str:
