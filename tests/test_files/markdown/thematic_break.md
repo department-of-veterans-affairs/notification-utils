@@ -1,7 +1,7 @@
-thematic break underscores above
+text above thematic break underscores
 ___
-thematic break underscores below
+text below thematic break underscores
 
-thematic break asterisks above
+text above thematic break asterisks
 ***
-thematic break asterisks below
+text below thematic break asterisks
