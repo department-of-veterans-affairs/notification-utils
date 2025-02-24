@@ -26,7 +26,7 @@ text before [image3]: https://www.example.com/test.tga
 text before ![alt text][image4] text after
 [image4]: https://www.example.com/test.png "title text"
 
-The reference is not immediately after the iamge.
+The reference is not immediately after the image.
 
 ![alt text][image5]
 ![alt text][image6]

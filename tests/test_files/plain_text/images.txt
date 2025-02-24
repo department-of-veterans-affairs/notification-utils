@@ -11,7 +11,7 @@ Reference images
 
 The reference is immediately after the image.
 
-The reference is not immediately after the iamge.
+The reference is not immediately after the image.
 
 This line separates the images from their references.
 
