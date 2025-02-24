@@ -20,3 +20,4 @@ VA Notify markdown is not gauranteed to support:
 
 - Ordered sublists.  Github markdown discusses ordered sublists [here](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#lists), but a close inspection of the rendered output reveals that ordered sublists are not actually nested.  (Unordered sublists are nested.)
 - Sublists nested more than once
+- Images and tables in markdown will be deleted and not present in the resulting HTML or plain text output.
