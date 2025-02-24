@@ -83,3 +83,5 @@ so
 la
 ti
 
+Don't convert n^2 to a block quote.
+
