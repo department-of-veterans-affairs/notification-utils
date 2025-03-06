@@ -1,0 +1,38 @@
+
+
+
+Block Quotes With Placeholders
+-----------------------------------------------------------------
+
+
+Github markdown syntax
+-----------------------------------------------------------------
+
+
+Your claims: one, two, three
+
+
+A
+
+
+B
+
+
+C
+
+
+Notify markdown syntax
+-----------------------------------------------------------------
+
+
+Your claims: one, two, three
+
+
+A
+
+
+B
+
+
+C
+

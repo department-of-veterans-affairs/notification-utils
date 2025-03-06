@@ -1,0 +1,33 @@
+
+
+
+Links With Placeholders
+-----------------------------------------------------------------
+
+
+Links that are the entire line
+-----------------------------------------------------------------
+here: https://www.youtube.com/watch?v=dQw4w9WgXcQ
+
+click: https://www.youtube.com/watch?v=dQw4w9WgXcQ
+
+click: https://www.youtube.com/watch?v=dQw4w9WgXcQ
+
+YouTube link: https://www.youtube.com/watch?v=dQw4w9WgXcQ
+
+
+Links with other text
+-----------------------------------------------------------------
+right here: https://www.youtube.com/watch?v=dQw4w9WgXcQ right now
+
+cat click: https://www.youtube.com/watch?v=dQw4w9WgXcQ dog
+
+peanut butter click: https://www.youtube.com/watch?v=dQw4w9WgXcQ jelly
+
+Behold! This: https://www.youtube.com/watch?v=dQw4w9WgXcQ is a YouTube link.
+
+
+Substitution in the middle of a link
+-----------------------------------------------------------------
+here: https://www.theonion.com
+
