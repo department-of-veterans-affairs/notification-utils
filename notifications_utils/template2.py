@@ -3,19 +3,19 @@ def render_notify_markdown(markdown: str, personalization: dict = {}, as_html: b
     Substitute personalization values into markdown, and return the markdown as HTML or plain text.
     """
 
-    # TODO - Perform substitutions in the markdown.  Raise ValueError for missing fields.
+    # TODO #213 - Perform substitutions in the markdown.  Raise ValueError for missing fields.
 
     if as_html:
-        # TODO - pass the markdown to the HTML renderer
+        # TODO #213 - pass the markdown to the HTML renderer
         pass
     else:
-        # TODO - pass the markdown to the plain text renderer
+        # TODO #213 - pass the markdown to the plain text renderer
         pass
 
     raise NotImplementedError
 
 
-# TODO - The signature and return type might change after #213, during integration with notifcation-api.
+# TODO - The signature and return type might change for #215 or later, during integration with notifcation-api.
 def render_email(
     html_content: str | None = None,
     plain_text_content: str | None = None,
@@ -33,7 +33,7 @@ def render_email(
     if html_content is None and plain_text_content is None:
         raise ValueError('You must supply one of these parameters.')
 
-    # TODO - Perform substitutions in the subject.  Raise ValueError for missing fields.
-    # TODO - Jinja2 template substitution
+    # TODO #215 - Perform substitutions in the subject.  Raise ValueError for missing fields.
+    # TODO #215 - Jinja2 template substitution
 
     raise NotImplementedError
