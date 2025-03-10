@@ -7,6 +7,7 @@ from notifications_utils.template2 import render_notify_markdown
 
 
 # Skip all tests in this module.
+# TODO #213 - Unskip by deleting this.
 pytest.skip('These features will be implemented for #213.', allow_module_level=True)
 
 
