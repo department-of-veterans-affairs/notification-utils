@@ -6,6 +6,8 @@ from markupsafe import Markup
 
 from notifications_utils.formatters import (
     BLOCK_QUOTE_STYLE,
+    H1_STYLE,
+    H2_STYLE,
     LINK_STYLE,
     LIST_ITEM_STYLE,
     ORDERED_LIST_STYLE,
@@ -63,10 +65,8 @@ def test_pass_through_renderer():
             ),
             {'color': 'brown'},
             (
-                '<h1 style="Margin: 0 0 16px 0; padding: 0; font-size: 32px; line-height: 38px; font-weight: bold; '
-                'color: #323A45;">foo</h1>\n'
-                '<h2 style="Margin: 0 0 14px 0; padding: 0; line-height: 26px; color: #323A45; '
-                'font-size: 24px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;">Bar</h2>\n'
+                f'<h1 style="{H1_STYLE}">foo</h1>\n'
+                f'<h2 style="{H2_STYLE}">Bar</h2>\n'
                 f'<p style="{PARAGRAPH_STYLE}">The quick brown fox</p>\n'
                 f'<p style="{PARAGRAPH_STYLE}"><a href="https://example.com">'
                 '<img alt="call to action img" '
@@ -1513,8 +1513,7 @@ def test_plain_text_email_whitespace():
             '-----------------------------------------------------------------\n'
         )),
         (HTMLEmailTemplate, (
-            '<h1 style="Margin: 0 0 16px 0; padding: 0; font-size: 32px; '
-            'line-height: 38px; font-weight: bold; color: #323A45;">'
+            f'<h1 style="{H1_STYLE}">'
             'Heading <a style="word-wrap: break-word; color: #004795;" '
             'target="_blank" href="https://example.com">link</a>'
             '</h1>\n'

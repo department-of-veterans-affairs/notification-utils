@@ -5,6 +5,12 @@ from notifications_utils.formatters import (
     escape_html,
     formatted_list,
     insert_list_spaces,
+    H1_STYLE,
+    H2_STYLE,
+    H3_STYLE,
+    H4_STYLE,
+    H5_STYLE,
+    H6_STYLE,
     make_quotes_smart,
     nl2li,
     normalise_whitespace,
@@ -232,8 +238,7 @@ def test_block_quote(markdown_function, expected):
         [
             notify_html_markdown,
             (
-                '<h1 style="Margin: 0 0 16px 0; padding: 0; font-size: 32px; '
-                'line-height: 38px; font-weight: bold; color: #323A45;">'
+                f'<h1 style="{H1_STYLE}">'
                 'heading'
                 '</h1>\n'
             )
@@ -259,8 +264,7 @@ def test_level_1_header(markdown_function, expected):
     (
         [
             notify_html_markdown,
-            '<h2 style="Margin: 0 0 14px 0; padding: 0; line-height: 26px; color: #323A45; '
-            'font-size: 24px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;">inset text</h2>\n'
+            f'<h2 style="{H2_STYLE}">inset text</h2>\n'
         ],
         [
             notify_markdown,
@@ -282,8 +286,7 @@ def test_level_2_header(markdown_function, expected):
     (
         [
             notify_html_markdown,
-            '<h3 style="Margin: 0 0 12px 0; padding: 0; line-height: 26px; color: #323A45; '
-            'font-size: 20px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;">inset text</h3>\n'
+            f'<h3 style="{H3_STYLE}">inset text</h3>\n'
         ],
         [
             notify_markdown,
@@ -298,6 +301,72 @@ def test_level_2_header(markdown_function, expected):
 )
 def test_level_3_header(markdown_function, expected):
     assert markdown_function('### inset text') == expected
+
+
+@pytest.mark.parametrize(
+    'markdown_function, expected',
+    (
+        [
+            notify_html_markdown,
+            f'<h4 style="{H4_STYLE}">inset text</h4>\n'
+        ],
+        [
+            notify_markdown,
+            (
+                '\n'
+                '\ninset text'
+                '\n-----------------------------------------------------------------\n'
+            ),
+        ],
+    ),
+    ids=['notify_html_markdown', 'notify_markdown']
+)
+def test_level_4_header(markdown_function, expected):
+    assert markdown_function('#### inset text') == expected
+
+
+@pytest.mark.parametrize(
+    'markdown_function, expected',
+    (
+        [
+            notify_html_markdown,
+            f'<h5 style="{H5_STYLE}">inset text</h5>\n'
+        ],
+        [
+            notify_markdown,
+            (
+                '\n'
+                '\ninset text'
+                '\n-----------------------------------------------------------------\n'
+            ),
+        ],
+    ),
+    ids=['notify_html_markdown', 'notify_markdown']
+)
+def test_level_5_header(markdown_function, expected):
+    assert markdown_function('##### inset text') == expected
+
+
+@pytest.mark.parametrize(
+    'markdown_function, expected',
+    (
+        [
+            notify_html_markdown,
+            f'<h6 style="{H6_STYLE}">inset text</h6>\n'
+        ],
+        [
+            notify_markdown,
+            (
+                '\n'
+                '\ninset text'
+                '\n-----------------------------------------------------------------\n'
+            ),
+        ],
+    ),
+    ids=['notify_html_markdown', 'notify_markdown']
+)
+def test_level_6_header(markdown_function, expected):
+    assert markdown_function('###### inset text') == expected
 
 
 @pytest.mark.parametrize(

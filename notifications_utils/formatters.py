@@ -17,10 +17,22 @@ BLOCK_QUOTE_STYLE = 'background: #F1F1F1; ' \
                     'font-family: Helvetica, Arial, sans-serif; ' \
                     'font-size: 16px; line-height: 25px;'
 COLUMN_WIDTH = 65
+H1_STYLE = 'Margin: 0 0 16px 0; padding: 0; font-size: 32px; line-height: 38px; ' \
+           'font-weight: bold; color: #323A45;'
+H2_STYLE = 'Margin: 0 0 14px 0; padding: 0; font-size: 24px; line-height: 26px; ' \
+           'font-weight: bold; color: #323A45; font-family: Helvetica, Arial, sans-serif;'
+H3_STYLE = 'Margin: 0 0 12px 0; padding: 0; font-size: 20px; line-height: 26px; ' \
+           'font-weight: bold; color: #323A45; font-family: Helvetica, Arial, sans-serif;'
+H4_STYLE = 'Margin: 0 0 10px 0; padding: 0; font-size: 18px; line-height: 26px; ' \
+           'font-weight: bold; color: #323A45; font-family: Helvetica, Arial, sans-serif;'
+H5_STYLE = 'Margin: 0 0 8px 0; padding: 0; font-size: 16px; line-height: 24px; ' \
+           'font-weight: bold; color: #323A45; font-family: Helvetica, Arial, sans-serif;'
+H6_STYLE = 'Margin: 0 0 6px 0; padding: 0; font-size: 14px; line-height: 22px; ' \
+           'font-weight: bold; color: #323A45; font-family: Helvetica, Arial, sans-serif;'
 LINK_STYLE = 'word-wrap: break-word; color: #004795;'
+LIST_ITEM_STYLE = 'Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; line-height: 25px; color: #323A45;'
 ORDERED_LIST_STYLE = 'Margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: decimal; ' \
                      'font-family: Helvetica, Arial, sans-serif;'
-LIST_ITEM_STYLE = 'Margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; line-height: 25px; color: #323A45;'
 PARAGRAPH_STYLE = 'Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;'
 THEMATIC_BREAK_STYLE = 'border: 0; height: 1px; background: #BFC1C3; Margin: 30px 0 30px 0;'
 UNORDERED_LIST_STYLE = 'Margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: disc; ' \
@@ -415,25 +427,23 @@ def replace_symbols_with_placeholder_parens(value: str) -> str:
 
 
 class NotifyHTMLRenderer(HTMLRenderer):
-    def action_link(self, text, url):
-        raise NotImplementedError('MADE IT HERE')
-
     def block_quote(self, text):
         value = super().block_quote(text)
         return value[:11] + f' style="{BLOCK_QUOTE_STYLE}"' + value[11:]
 
     def heading(self, text, level, **attrs):
         if level == 1:
-            style = 'Margin: 0 0 16px 0; padding: 0; font-size: 32px; ' \
-                    'line-height: 38px; font-weight: bold; color: #323A45;'
+            style = H1_STYLE
         elif level == 2:
-            style = 'Margin: 0 0 14px 0; padding: 0; line-height: 26px; color: #323A45; ' \
-                    'font-size: 24px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;'
+            style = H2_STYLE
         elif level == 3:
-            style = 'Margin: 0 0 12px 0; padding: 0; line-height: 26px; color: #323A45; ' \
-                    'font-size: 20px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;'
-        else:
-            return self.paragraph(text)
+            style = H3_STYLE
+        elif level == 4:
+            style = H4_STYLE
+        elif level == 5:
+            style = H5_STYLE
+        elif level == 6:
+            style = H6_STYLE
 
         value = super().heading(text, level, **attrs)
         return value[:3] + f' style="{style}"' + value[3:]
@@ -498,14 +508,8 @@ class NotifyMarkdownRenderer(MarkdownRenderer):
         return '\n\n' + super().block_quote(token, state)[2:]
 
     def heading(self, token, state):
-        level = token['attrs']['level']
-
-        if level > 3:
-            token['type'] = 'paragraph'
-            return self.paragraph(token, state)
-
         value = super().heading(token, state)
-        indentation = 3 if level == 1 else 2
+        indentation = 3 if token['attrs']['level'] == 1 else 2
         return ('\n' * indentation) + value.strip('#\n ') + '\n' + ('-' * COLUMN_WIDTH) + '\n'
 
     def image(self, token, state):
