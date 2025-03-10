@@ -30,13 +30,13 @@ def test_render_notify_markdown(filename: str, as_html: bool):
     """
 
     # Read the input markdown file.
-    with open(f'/tests/test_files/markdown/{filename}') as f:
+    with open(f'tests/test_files/markdown/{filename}') as f:
         md = f.read()
 
     if as_html:
-        expected_filename = f'/tests/test_files/html/{filename[:-2]}html'
+        expected_filename = f'tests/test_files/html/{filename[:-2]}html'
     else:
-        expected_filename = f'/tests/test_files/plain_text/{filename[:-2]}txt'
+        expected_filename = f'tests/test_files/plain_text/{filename[:-2]}txt'
 
     # Read the expected HTML or plain text file.
     with open(expected_filename) as f:
@@ -73,8 +73,8 @@ class TestRenderNotifyMarkdownLinksPlaceholders:
     """
 
     @pytest.fixture(scope='class')
-    def md() -> str:
-        with open('/tests/test_files/markdown/placeholders/links_placeholders.md') as f:
+    def md(self) -> str:
+        with open('tests/test_files/markdown/placeholders/links_placeholders.md') as f:
             return f.read()
 
     @pytest.mark.parametrize(
@@ -107,7 +107,7 @@ class TestRenderNotifyMarkdownLinksPlaceholders:
         )
     )
     @pytest.mark.parametrize('as_html', (True, False))
-    def test_placeholders(as_html, personalization, suffix, md):
+    def test_placeholders(self, as_html, personalization, suffix, md):
         """
         Substitute the given personalization, render the template, and compare the output with
         the expected output.  All spaces in URLs should be URL safe encoded so the presentation
@@ -115,9 +115,9 @@ class TestRenderNotifyMarkdownLinksPlaceholders:
         """
 
         if as_html:
-            expected_filename = f'/tests/test_files/html/placeholders/links_placeholders_{suffix}.html'
+            expected_filename = f'tests/test_files/html/placeholders/links_placeholders_{suffix}.html'
         else:
-            expected_filename = f'/tests/test_files/plain_text/placeholders/links_placeholders_{suffix}.txt'
+            expected_filename = f'tests/test_files/plain_text/placeholders/links_placeholders_{suffix}.txt'
 
         with open(expected_filename) as f:
             expected = f.read()
@@ -131,8 +131,8 @@ class TestRenderNotifyMarkdownActionLinksPlaceholders:
     """
 
     @pytest.fixture(scope='class')
-    def md() -> str:
-        with open('/tests/test_files/markdown/placeholders/action_links_placeholders.md') as f:
+    def md(self) -> str:
+        with open('tests/test_files/markdown/placeholders/action_links_placeholders.md') as f:
             return f.read()
 
     @pytest.mark.parametrize(
@@ -163,7 +163,7 @@ class TestRenderNotifyMarkdownActionLinksPlaceholders:
         )
     )
     @pytest.mark.parametrize('as_html', (True, False))
-    def test_placeholders(as_html, personalization, suffix, md):
+    def test_placeholders(self, as_html, personalization, suffix, md):
         """
         Substitute the given personalization, render the template, and compare the output with
         the expected output.  All spaces in URLs should be URL safe encoded so the presentation
@@ -171,9 +171,9 @@ class TestRenderNotifyMarkdownActionLinksPlaceholders:
         """
 
         if as_html:
-            expected_filename = f'/tests/test_files/html/placeholders/action_links_placeholders_{suffix}.html'
+            expected_filename = f'tests/test_files/html/placeholders/action_links_placeholders_{suffix}.html'
         else:
-            expected_filename = f'/tests/test_files/plain_text/placeholders/action_links_placeholders_{suffix}.txt'
+            expected_filename = f'tests/test_files/plain_text/placeholders/action_links_placeholders_{suffix}.txt'
 
         with open(expected_filename) as f:
             expected = f.read()
@@ -187,8 +187,8 @@ class TestRenderNotifyMarkdownBlockQuotesPlaceholders:
     """
 
     @pytest.fixture(scope='class')
-    def md() -> str:
-        with open('/tests/test_files/markdown/placeholders/block_quotes_placeholders.md') as f:
+    def md(self) -> str:
+        with open('tests/test_files/markdown/placeholders/block_quotes_placeholders.md') as f:
             return f.read()
 
     @pytest.mark.parametrize(
@@ -221,16 +221,16 @@ class TestRenderNotifyMarkdownBlockQuotesPlaceholders:
         )
     )
     @pytest.mark.parametrize('as_html', (True, False))
-    def test_placeholders(as_html, personalization, suffix, md):
+    def test_placeholders(self, as_html, personalization, suffix, md):
         """
         Substitute the given personalization, render the template, and compare the output with
         the expected output.
         """
 
         if as_html:
-            expected_filename = f'/tests/test_files/html/placeholders/block_quotes_placeholders_{suffix}.html'
+            expected_filename = f'tests/test_files/html/placeholders/block_quotes_placeholders_{suffix}.html'
         else:
-            expected_filename = f'/tests/test_files/plain_text/placeholders/block_quotes_placeholders_{suffix}.txt'
+            expected_filename = f'tests/test_files/plain_text/placeholders/block_quotes_placeholders_{suffix}.txt'
 
         with open(expected_filename) as f:
             expected = f.read()
