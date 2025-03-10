@@ -63,9 +63,9 @@ def test_pass_through_renderer():
             ),
             {'color': 'brown'},
             (
-                '<h1 style="Margin: 0 0 20px 0; padding: 0; font-size: 32px; line-height: 35px; font-weight: bold; '
+                '<h1 style="Margin: 0 0 16px 0; padding: 0; font-size: 32px; line-height: 38px; font-weight: bold; '
                 'color: #323A45;">foo</h1>\n'
-                '<h2 style="Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #323A45; '
+                '<h2 style="Margin: 0 0 14px 0; padding: 0; line-height: 26px; color: #323A45; '
                 'font-size: 24px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;">Bar</h2>\n'
                 f'<p style="{PARAGRAPH_STYLE}">The quick brown fox</p>\n'
                 f'<p style="{PARAGRAPH_STYLE}"><a href="https://example.com">'
@@ -1513,8 +1513,8 @@ def test_plain_text_email_whitespace():
             '-----------------------------------------------------------------\n'
         )),
         (HTMLEmailTemplate, (
-            '<h1 style="Margin: 0 0 20px 0; padding: 0; font-size: 32px; '
-            'line-height: 35px; font-weight: bold; color: #323A45;">'
+            '<h1 style="Margin: 0 0 16px 0; padding: 0; font-size: 32px; '
+            'line-height: 38px; font-weight: bold; color: #323A45;">'
             'Heading <a style="word-wrap: break-word; color: #004795;" '
             'target="_blank" href="https://example.com">link</a>'
             '</h1>\n'

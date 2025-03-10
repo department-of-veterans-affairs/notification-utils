@@ -424,14 +424,14 @@ class NotifyHTMLRenderer(HTMLRenderer):
 
     def heading(self, text, level, **attrs):
         if level == 1:
-            style = 'Margin: 0 0 20px 0; padding: 0; font-size: 32px; ' \
-                    'line-height: 35px; font-weight: bold; color: #323A45;'
+            style = 'Margin: 0 0 16px 0; padding: 0; font-size: 32px; ' \
+                    'line-height: 38px; font-weight: bold; color: #323A45;'
         elif level == 2:
-            style = 'Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #323A45; ' \
+            style = 'Margin: 0 0 14px 0; padding: 0; line-height: 26px; color: #323A45; ' \
                     'font-size: 24px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;'
         elif level == 3:
-            style = 'Margin: 0 0 15px 0; padding: 0; line-height: 26px; color: #323A45; ' \
-                    'font-size: 20.8px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;'
+            style = 'Margin: 0 0 12px 0; padding: 0; line-height: 26px; color: #323A45; ' \
+                    'font-size: 20px; font-weight: bold; font-family: Helvetica, Arial, sans-serif;'
         else:
             return self.paragraph(text)
 
