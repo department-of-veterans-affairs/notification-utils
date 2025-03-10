@@ -1,4 +1,4 @@
-def render_notify_markdown(markdown: str, personalization: dict = {}, as_html: bool = True) -> str:
+def render_notify_markdown(markdown: str, personalization: dict | None = None, as_html: bool = True) -> str:
     """
     Substitute personalization values into markdown, and return the markdown as HTML or plain text.
     """
@@ -19,7 +19,7 @@ def render_notify_markdown(markdown: str, personalization: dict = {}, as_html: b
 def render_email(
     html_content: str | None = None,
     plain_text_content: str | None = None,
-    subject_personalization: dict = {}
+    subject_personalization: dict | None = None
 ) -> tuple[str | None, str | None]:
     """
     In addition to the content body, e-mail notifications might have personalization values in the
