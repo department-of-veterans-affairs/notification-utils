@@ -3,12 +3,11 @@ from typing import Generator
 
 import pytest
 
-from notifications_utils.template2 import render_notify_markdown
-
-
-# Skip all tests in this module.
-# TODO #213 - Unskip by deleting this.
-pytest.skip('These features will be implemented for #213.', allow_module_level=True)
+from notifications_utils.formatters import (
+    insert_action_link,
+    notify_markdown,
+    notify_html_markdown,
+)
 
 
 def generate_markdown_test_files() -> Generator[str, None, None]:
@@ -22,52 +21,80 @@ def generate_markdown_test_files() -> Generator[str, None, None]:
             yield f.name
 
 
-@pytest.mark.parametrize('as_html', (True, False))
 @pytest.mark.parametrize('filename', generate_markdown_test_files())
-def test_render_notify_markdown(filename: str, as_html: bool):
+def test_markdown_to_plain_text(filename: str):
     """
-    Compare rendered Notify markdown with the expected output.  This tests all the
+    Compare rendered Notify markdown with the expected plain text output.  This tests
     templates that do not have placeholders.
     """
+
+    if filename in ('images.md', 'lists.md'):
+        pytest.xfail('This is known to be broken.')
+    elif filename == 'action_links.md':
+        pytest.skip('Actions links require pre-processing and are tested elsewhere.')
 
     # Read the input markdown file.
     with open(f'tests/test_files/markdown/{filename}') as f:
         md = f.read()
 
-    if as_html:
-        expected_filename = f'tests/test_files/html/{filename[:-2]}html'
-    else:
-        expected_filename = f'tests/test_files/plain_text/{filename[:-2]}txt'
-
-    # Read the expected HTML or plain text file.
-    with open(expected_filename) as f:
+    # Read the expected plain text file.
+    with open(f'tests/test_files/plain_text/{filename[:-2]}txt') as f:
         expected = f.read()
 
-    assert render_notify_markdown(md, as_html=as_html) == expected
+    assert notify_markdown(md) == expected
 
 
-def test_render_notify_markdown_missing_personalization():
+@pytest.mark.parametrize('filename', generate_markdown_test_files())
+def test_markdown_to_html(filename: str):
     """
-    Calling render_notify_markdown without all of the personalizations should raise
-    ValueError.
-    """
-
-    with pytest.raises(ValueError, match='missing required personalization'):
-        render_notify_markdown('This is ((test)) markdown.')
-
-
-def test_render_notify_markdown_extra_personalization():
-    """
-    Calling render_notify_markdown with more than the required personalizations should
-    not raise an exception.  This is also a simple happy path test.
+    Compare rendered Notify markdown with the expected HTML output.  This tests
+    templates that do not have placeholders.
     """
 
-    md = 'This is ((test)) markdown.'
-    plain_text = 'This is some markdown.\n'
+    if filename in ('images.md', 'lists.md'):
+        pytest.xfail('This is known to be broken.')
+    elif filename == 'action_links.md':
+        pytest.skip('Actions links require pre-processing and are tested elsewhere.')
 
-    assert render_notify_markdown(md, {'test': 'some', 'extra': 'extra'}, False) == plain_text
+    # Read the input markdown file.
+    with open(f'tests/test_files/markdown/{filename}') as f:
+        md = f.read()
+
+    # Read the expected HTML file.
+    with open(f'tests/test_files/html_current/{filename[:-2]}html') as f:
+        expected = f.read()
+
+    assert notify_html_markdown(md) == expected
 
 
+class TestRenderNotifyMarkdownWithPreprocessing:
+    """
+    These tests mirror the preprocessing behavior of template.py and formatters.py for markdown
+    that otherwise would not be recognizable to Mistune.
+    """
+
+    @pytest.fixture(scope='class')
+    def action_links_md_preprocessed(self) -> str:
+        with open('tests/test_files/markdown/action_links.md') as f:
+            return insert_action_link(f.read())
+
+    def test_action_links_html(self, action_links_md_preprocessed: str):
+        # Read the expected HTML file.
+        with open('tests/test_files/html_current/action_links.html') as f:
+            expected = f.read()
+
+        assert notify_html_markdown(action_links_md_preprocessed) == expected
+
+    @pytest.mark.xfail(reason='Action links are not expected to work correctly with plain text.')
+    def test_action_links_plain_text(self, action_links_md_preprocessed: str):
+        # Read the expected plain text file.
+        with open('tests/test_files/plain_text/action_links.txt') as f:
+            expected = f.read()
+
+        assert notify_markdown(action_links_md_preprocessed) == expected
+
+
+@pytest.mark.skip
 class TestRenderNotifyMarkdownLinksPlaceholders:
     """
     links_placeholders.md has these personalizations: url, url_fragment, url_text, and yt_video_id.
@@ -108,7 +135,7 @@ class TestRenderNotifyMarkdownLinksPlaceholders:
         )
     )
     @pytest.mark.parametrize('as_html', (True, False))
-    def test_placeholders(self, as_html: bool, personalization: dict, suffix: str, md: str):
+    def test_placeholders(self, as_html, personalization, suffix, md):
         """
         Substitute the given personalization, render the template, and compare the output with
         the expected output.  All spaces in URLs should be URL safe encoded so the presentation
@@ -116,16 +143,18 @@ class TestRenderNotifyMarkdownLinksPlaceholders:
         """
 
         if as_html:
-            expected_filename = f'tests/test_files/html/placeholders/links_placeholders_{suffix}.html'
+            expected_filename = f'tests/test_files/html_current/placeholders/links_placeholders_{suffix}.html'
         else:
             expected_filename = f'tests/test_files/plain_text/placeholders/links_placeholders_{suffix}.txt'
 
         with open(expected_filename) as f:
             expected = f.read()
 
-        assert render_notify_markdown(md, personalization, as_html) == expected
+        # assert render_notify_markdown(md, personalization, as_html) == expected
+        raise NotImplementedError
 
 
+@pytest.mark.skip
 class TestRenderNotifyMarkdownActionLinksPlaceholders:
     """
     action_links_placeholders.md has these personalizations: url, url_text, and yt_video_id.
@@ -164,7 +193,7 @@ class TestRenderNotifyMarkdownActionLinksPlaceholders:
         )
     )
     @pytest.mark.parametrize('as_html', (True, False))
-    def test_placeholders(self, as_html: bool, personalization: dict, suffix: str, md: str):
+    def test_placeholders(self, as_html, personalization, suffix, md):
         """
         Substitute the given personalization, render the template, and compare the output with
         the expected output.  All spaces in URLs should be URL safe encoded so the presentation
@@ -172,16 +201,18 @@ class TestRenderNotifyMarkdownActionLinksPlaceholders:
         """
 
         if as_html:
-            expected_filename = f'tests/test_files/html/placeholders/action_links_placeholders_{suffix}.html'
+            expected_filename = f'tests/test_files/html_current/placeholders/action_links_placeholders_{suffix}.html'
         else:
             expected_filename = f'tests/test_files/plain_text/placeholders/action_links_placeholders_{suffix}.txt'
 
         with open(expected_filename) as f:
             expected = f.read()
 
-        assert render_notify_markdown(md, personalization, as_html) == expected
+        # assert render_notify_markdown(md, personalization, as_html) == expected
+        raise NotImplementedError
 
 
+@pytest.mark.skip
 class TestRenderNotifyMarkdownBlockQuotesPlaceholders:
     """
     block_quotes_placeholders.md has these personalizations: bottom, claims, nested, and top.
@@ -222,18 +253,19 @@ class TestRenderNotifyMarkdownBlockQuotesPlaceholders:
         )
     )
     @pytest.mark.parametrize('as_html', (True, False))
-    def test_placeholders(self, as_html: bool, personalization: dict, suffix: str, md: str):
+    def test_placeholders(self, as_html, personalization, suffix, md):
         """
         Substitute the given personalization, render the template, and compare the output with
         the expected output.
         """
 
         if as_html:
-            expected_filename = f'tests/test_files/html/placeholders/block_quotes_placeholders_{suffix}.html'
+            expected_filename = f'tests/test_files/html_current/placeholders/block_quotes_placeholders_{suffix}.html'
         else:
             expected_filename = f'tests/test_files/plain_text/placeholders/block_quotes_placeholders_{suffix}.txt'
 
         with open(expected_filename) as f:
             expected = f.read()
 
-        assert render_notify_markdown(md, personalization, as_html) == expected
+        # assert render_notify_markdown(md, personalization, as_html) == expected
+        raise NotImplementedError
