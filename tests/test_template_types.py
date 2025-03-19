@@ -200,9 +200,9 @@ def test_pass_through_renderer():
         (
             (
                 '^ This is the beginning of the blockquote content.\n'
-                '^^ This is a nested block quote.\n'
-                '^^ Important information might be contained here with a call to action.\n'
-                '^^ >>[Please click here to continue](https://www.example.com)\n'
+                '^ ^ This is a nested block quote.\n'
+                '^ ^ Important information might be contained here with a call to action.\n'
+                '^ ^ >>[Please click here to continue](https://www.example.com)\n'
                 '^ Additional instructions or information might follow after the action link.'
             ),
             {},
