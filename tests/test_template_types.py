@@ -12,7 +12,8 @@ from notifications_utils.formatters import (
     LIST_ITEM_STYLE,
     ORDERED_LIST_STYLE,
     PARAGRAPH_STYLE,
-    UNORDERED_LIST_STYLE
+    UNORDERED_LIST_STYLE,
+    BLOCK_QUOTE_STYLE
 )
 from notifications_utils.template import (
     Template,
@@ -175,6 +176,26 @@ def test_pass_through_renderer():
                 f'<p style="{PARAGRAPH_STYLE}">! Text with a '
                 '<a style="word-wrap: break-word; color: #004795;" target="_blank" href="#">regular link</a></p>\n'
             )
+        ),
+        (
+            (
+                '^ This is the beginning of the blockquote content.\n'
+                '^ Important information might be contained here with a call to action.\n'
+                '^ >>[Please click here to continue](https://www.example.com)\n'
+                '^ Additional instructions or information might follow after the action link.'
+            ),
+            {},
+            (
+                f'<blockquote style="{BLOCK_QUOTE_STYLE}">'
+                f'<p style="{PARAGRAPH_STYLE}">This is the beginning of the blockquote content.</p>\n'
+                f'<p style="{PARAGRAPH_STYLE}">Important information might be contained here with a call to action.</p>\n'
+                f'<a href="https://www.example.com">'
+                '<img alt="call to action img" '
+                'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'style="vertical-align: middle;"> <b>Please click here to continue</b></a></p>\n'
+                f'<p style="{PARAGRAPH_STYLE}">Additional instructions or information might follow after the action link.</p>\n'
+                f'</blockquote>\n'
+            )
         )
     ],
     ids=[
@@ -188,9 +209,11 @@ def test_pass_through_renderer():
         'action link and text with ">>"',
         'action link after parts',
         'two of the same action link',
+        'blockquote with action link',
     ]
 )
 def test_get_html_email_body_with_action_links(content, values, expected):
+    print(get_html_email_body(content, values))
     assert get_html_email_body(content, values) == expected
 
 
