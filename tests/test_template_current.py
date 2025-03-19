@@ -5,6 +5,7 @@ import pytest
 
 from notifications_utils.formatters import (
     insert_action_link,
+    insert_block_quotes,
     notify_markdown,
     notify_html_markdown,
 )
@@ -18,6 +19,12 @@ def generate_markdown_test_files() -> Generator[str, None, None]:
 
     for f in scandir('tests/test_files/markdown/'):
         if f.is_file():
+            if f.name in ('action_links.md', 'block_quotes.md', 'block_quotes_action_link.md'):
+                # These inputs are tested separately from the tests that use this generator
+                # function because the markdown first requires a preprocessing step.  See the
+                # TestRenderNotifyMarkdownWithPreprocessing test class below.
+                continue
+
             yield f.name
 
 
@@ -25,13 +32,11 @@ def generate_markdown_test_files() -> Generator[str, None, None]:
 def test_markdown_to_plain_text(filename: str):
     """
     Compare rendered Notify markdown with the expected plain text output.  This tests
-    templates that do not have placeholders.
+    templates that do not have placeholders and do not require preprocessing.
     """
 
     if filename in ('images.md', 'lists.md'):
         pytest.xfail('This is known to be broken.')
-    elif filename == 'action_links.md':
-        pytest.skip('Actions links require pre-processing and are tested elsewhere.')
 
     # Read the input markdown file.
     with open(f'tests/test_files/markdown/{filename}') as f:
@@ -48,13 +53,11 @@ def test_markdown_to_plain_text(filename: str):
 def test_markdown_to_html(filename: str):
     """
     Compare rendered Notify markdown with the expected HTML output.  This tests
-    templates that do not have placeholders.
+    templates that do not have placeholders and do not require preprocessing.
     """
 
     if filename in ('images.md', 'lists.md'):
         pytest.xfail('This is known to be broken.')
-    elif filename == 'action_links.md':
-        pytest.skip('Actions links require pre-processing and are tested elsewhere.')
 
     # Read the input markdown file.
     with open(f'tests/test_files/markdown/{filename}') as f:
@@ -78,6 +81,20 @@ class TestRenderNotifyMarkdownWithPreprocessing:
         with open('tests/test_files/markdown/action_links.md') as f:
             return insert_action_link(f.read())
 
+    @pytest.fixture(scope='class')
+    def block_quotes_md_preprocessed(self) -> str:
+        with open('tests/test_files/markdown/block_quotes.md') as f:
+            return insert_block_quotes(f.read())
+
+    @pytest.fixture(scope='class')
+    def block_quotes_action_link_md(self) -> str:
+        with open('tests/test_files/markdown/block_quotes_action_link.md') as f:
+            return f.read()
+
+    ###############################
+    # Action links
+    ###############################
+
     def test_action_links_html(self, action_links_md_preprocessed: str):
         # Read the expected HTML file.
         with open('tests/test_files/html_current/action_links.html') as f:
@@ -85,13 +102,61 @@ class TestRenderNotifyMarkdownWithPreprocessing:
 
         assert notify_html_markdown(action_links_md_preprocessed) == expected
 
-    @pytest.mark.xfail(reason='Action links are not expected to work correctly with plain text.')
+    @pytest.mark.skip(reason='Action links are not implemented for plain text.')
     def test_action_links_plain_text(self, action_links_md_preprocessed: str):
         # Read the expected plain text file.
         with open('tests/test_files/plain_text/action_links.txt') as f:
             expected = f.read()
 
         assert notify_markdown(action_links_md_preprocessed) == expected
+
+    ###############################
+    # Block quotes
+    ###############################
+
+    @pytest.mark.xfail(reason='#203')
+    def test_block_quotes_html(self, block_quotes_md_preprocessed: str):
+        # Read the expected HTML file.
+        with open('tests/test_files/html_current/block_quotes.html') as f:
+            expected = f.read()
+
+        assert notify_html_markdown(block_quotes_md_preprocessed) == expected
+
+    @pytest.mark.xfail(reason='#203')
+    def test_block_quotes_plain_text(self, block_quotes_md_preprocessed: str):
+        # Read the expected plain text file.
+        with open('tests/test_files/plain_text/block_quotes.txt') as f:
+            expected = f.read()
+
+        assert notify_markdown(block_quotes_md_preprocessed) == expected
+
+    ###############################
+    # Block quotes with action link
+    ###############################
+
+    @pytest.mark.xfail(reason='#204')
+    def test_block_quotes_action_link_html(self, block_quotes_action_link_md: str):
+        # This order of operations mirrors the behavior in template.py::get_html_email_body.
+        md = insert_action_link(block_quotes_action_link_md)
+        md = insert_block_quotes(md)
+
+        # Read the expected HTML file.
+        with open('tests/test_files/html_current/block_quotes_action_link.html') as f:
+            expected = f.read()
+
+        assert notify_html_markdown(md) == expected
+
+    @pytest.mark.skip(reason='Action links are not implemented for plain text.')
+    def test_block_quotes_action_link_plain_text(self, block_quotes_action_link_md: str):
+        # This order of operations mirrors the behavior in template.py::PlainTextEmailTemplate.__str__.
+        # Note that the is no insertion of actions links yet.
+        md = insert_block_quotes(block_quotes_action_link_md)
+
+        # Read the expected plain text file.
+        with open('tests/test_files/plain_text/block_quotes_action_link.txt') as f:
+            expected = f.read()
+
+        assert notify_markdown(md) == expected
 
 
 @pytest.mark.skip
