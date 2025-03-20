@@ -1,6 +1,3 @@
-
-
-
 Links With Placeholders
 -----------------------------------------------------------------
 
@@ -16,6 +13,7 @@ click this: https%3A%2F%2Fwww.example.com%3Ft%3Dabc%20def
 YouTube link: https://www.youtube.com/watch?v=dQw4w%20%20%209WgXcQ
 
 
+
 Links with other text
 -----------------------------------------------------------------
 right here: https%3A%2F%2Fwww.example.com%3Ft%3Dabc%20def right now
@@ -25,6 +23,7 @@ cat click this: https://www.youtube.com/watch?v=dQw4w9WgXcQ dog
 peanut butter click this: https%3A%2F%2Fwww.example.com%3Ft%3Dabc%20def jelly
 
 Behold! This: https://www.youtube.com/watch?v=dQw4w%20%20%209WgXcQ is a YouTube link.
+
 
 
 Substitution in the middle of a link

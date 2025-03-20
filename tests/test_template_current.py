@@ -184,7 +184,7 @@ class TestRenderNotifyMarkdownLinksPlaceholders:
                 },
                 'simple',
             ),
-            (
+            pytest.param(
                 {
                     'url': 'https://www.example.com/watch?t=abc def',
                     'url_fragment': 'the onion',
@@ -192,6 +192,7 @@ class TestRenderNotifyMarkdownLinksPlaceholders:
                     'yt_video_id': 'dQw4w   9WgXcQ',
                 },
                 'spaces',
+                marks=pytest.mark.xfail(reason='#188')
             ),
         ),
         ids=(
@@ -209,9 +210,6 @@ class TestRenderNotifyMarkdownLinksPlaceholders:
         is correct.  It is the users' responsibility to ensure a link is valid.
         """
 
-        if as_html and suffix == 'spaces':
-            pytest.xfail('#188')
-
         if as_html:
             expected_filename = f'tests/test_files/html_current/placeholders/links_placeholders_{suffix}.html'
         else:
@@ -224,6 +222,7 @@ class TestRenderNotifyMarkdownLinksPlaceholders:
             assert get_html_email_body(md, personalization) == expected
         else:
             template = PlainTextEmailTemplate({'content': md, 'subject': ''}, personalization)
+            assert str(template) == expected
 
 
 class TestRenderNotifyMarkdownActionLinksPlaceholders:
@@ -271,7 +270,7 @@ class TestRenderNotifyMarkdownActionLinksPlaceholders:
         is correct.  It is the users' responsibility to ensure a link is valid.
         """
 
-        if as_html and suffix == 'spaces':
+        if not as_html or suffix == 'spaces':
             pytest.xfail('#188')
 
         if as_html:
@@ -286,8 +285,10 @@ class TestRenderNotifyMarkdownActionLinksPlaceholders:
             assert get_html_email_body(md, personalization) == expected
         else:
             template = PlainTextEmailTemplate({'content': md, 'subject': ''}, personalization)
+            assert str(template) == expected
 
 
+@pytest.mark.xfail(reason='#203')
 class TestRenderNotifyMarkdownBlockQuotesPlaceholders:
     """
     block_quotes_placeholders.md has these personalizations: bottom, claims, nested, and top.
@@ -335,9 +336,6 @@ class TestRenderNotifyMarkdownBlockQuotesPlaceholders:
         """
 
         if as_html:
-            pytest.xfail('#203')
-
-        if as_html:
             expected_filename = f'tests/test_files/html_current/placeholders/block_quotes_placeholders_{suffix}.html'
         else:
             expected_filename = f'tests/test_files/plain_text/placeholders/block_quotes_placeholders_{suffix}.txt'
@@ -349,3 +347,4 @@ class TestRenderNotifyMarkdownBlockQuotesPlaceholders:
             assert get_html_email_body(md, personalization) == expected
         else:
             template = PlainTextEmailTemplate({'content': md, 'subject': ''}, personalization)
+            assert str(template) == expected
