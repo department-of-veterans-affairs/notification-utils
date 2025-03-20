@@ -9,6 +9,7 @@ from notifications_utils.formatters import (
     notify_markdown,
     notify_html_markdown,
 )
+from notifications_utils.template import get_html_email_body, PlainTextEmailTemplate
 
 
 def generate_markdown_test_files() -> Generator[str, None, None]:
@@ -114,6 +115,8 @@ class TestRenderNotifyMarkdownWithPreprocessing:
     # Block quotes
     ###############################
 
+    # Notify uses the nonstandard "^" to denote a block quote.
+
     @pytest.mark.xfail(reason='#203')
     def test_block_quotes_html(self, block_quotes_md_preprocessed: str):
         # Read the expected HTML file.
@@ -159,7 +162,6 @@ class TestRenderNotifyMarkdownWithPreprocessing:
         assert notify_markdown(md) == expected
 
 
-@pytest.mark.skip
 class TestRenderNotifyMarkdownLinksPlaceholders:
     """
     links_placeholders.md has these personalizations: url, url_fragment, url_text, and yt_video_id.
@@ -207,6 +209,9 @@ class TestRenderNotifyMarkdownLinksPlaceholders:
         is correct.  It is the users' responsibility to ensure a link is valid.
         """
 
+        if as_html and suffix == 'spaces':
+            pytest.xfail('#188')
+
         if as_html:
             expected_filename = f'tests/test_files/html_current/placeholders/links_placeholders_{suffix}.html'
         else:
@@ -215,11 +220,12 @@ class TestRenderNotifyMarkdownLinksPlaceholders:
         with open(expected_filename) as f:
             expected = f.read()
 
-        # assert render_notify_markdown(md, personalization, as_html) == expected
-        raise NotImplementedError
+        if as_html:
+            assert get_html_email_body(md, personalization) == expected
+        else:
+            template = PlainTextEmailTemplate({'content': md, 'subject': ''}, personalization)
 
 
-@pytest.mark.skip
 class TestRenderNotifyMarkdownActionLinksPlaceholders:
     """
     action_links_placeholders.md has these personalizations: url, url_text, and yt_video_id.
@@ -265,6 +271,9 @@ class TestRenderNotifyMarkdownActionLinksPlaceholders:
         is correct.  It is the users' responsibility to ensure a link is valid.
         """
 
+        if as_html and suffix == 'spaces':
+            pytest.xfail('#188')
+
         if as_html:
             expected_filename = f'tests/test_files/html_current/placeholders/action_links_placeholders_{suffix}.html'
         else:
@@ -273,11 +282,12 @@ class TestRenderNotifyMarkdownActionLinksPlaceholders:
         with open(expected_filename) as f:
             expected = f.read()
 
-        # assert render_notify_markdown(md, personalization, as_html) == expected
-        raise NotImplementedError
+        if as_html:
+            assert get_html_email_body(md, personalization) == expected
+        else:
+            template = PlainTextEmailTemplate({'content': md, 'subject': ''}, personalization)
 
 
-@pytest.mark.skip
 class TestRenderNotifyMarkdownBlockQuotesPlaceholders:
     """
     block_quotes_placeholders.md has these personalizations: bottom, claims, nested, and top.
@@ -325,6 +335,9 @@ class TestRenderNotifyMarkdownBlockQuotesPlaceholders:
         """
 
         if as_html:
+            pytest.xfail('#203')
+
+        if as_html:
             expected_filename = f'tests/test_files/html_current/placeholders/block_quotes_placeholders_{suffix}.html'
         else:
             expected_filename = f'tests/test_files/plain_text/placeholders/block_quotes_placeholders_{suffix}.txt'
@@ -332,5 +345,7 @@ class TestRenderNotifyMarkdownBlockQuotesPlaceholders:
         with open(expected_filename) as f:
             expected = f.read()
 
-        # assert render_notify_markdown(md, personalization, as_html) == expected
-        raise NotImplementedError
+        if as_html:
+            assert get_html_email_body(md, personalization) == expected
+        else:
+            template = PlainTextEmailTemplate({'content': md, 'subject': ''}, personalization)
