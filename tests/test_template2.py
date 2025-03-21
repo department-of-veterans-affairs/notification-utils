@@ -108,7 +108,7 @@ class TestRenderNotifyMarkdownLinksPlaceholders:
         )
     )
     @pytest.mark.parametrize('as_html', (True, False))
-    def test_placeholders(self, as_html, personalization, suffix, md):
+    def test_placeholders(self, as_html: bool, personalization: dict, suffix: str, md: str):
         """
         Substitute the given personalization, render the template, and compare the output with
         the expected output.  All spaces in URLs should be URL safe encoded so the presentation
@@ -164,7 +164,7 @@ class TestRenderNotifyMarkdownActionLinksPlaceholders:
         )
     )
     @pytest.mark.parametrize('as_html', (True, False))
-    def test_placeholders(self, as_html, personalization, suffix, md):
+    def test_placeholders(self, as_html: bool, personalization: dict, suffix: str, md: str):
         """
         Substitute the given personalization, render the template, and compare the output with
         the expected output.  All spaces in URLs should be URL safe encoded so the presentation
@@ -222,7 +222,7 @@ class TestRenderNotifyMarkdownBlockQuotesPlaceholders:
         )
     )
     @pytest.mark.parametrize('as_html', (True, False))
-    def test_placeholders(self, as_html, personalization, suffix, md):
+    def test_placeholders(self, as_html: bool, personalization: dict, suffix: str, md: str):
         """
         Substitute the given personalization, render the template, and compare the output with
         the expected output.
