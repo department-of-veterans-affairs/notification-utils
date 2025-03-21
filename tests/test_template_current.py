@@ -137,7 +137,6 @@ class TestRenderNotifyMarkdownWithPreprocessing:
     # Block quotes with action link
     ###############################
 
-    @pytest.mark.xfail(reason='#204')
     def test_block_quotes_action_link_html(self, block_quotes_action_link_md: str):
         # This order of operations mirrors the behavior in template.py::get_html_email_body.
         md = insert_action_link(block_quotes_action_link_md)
