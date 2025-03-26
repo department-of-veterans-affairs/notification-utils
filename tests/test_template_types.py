@@ -42,161 +42,155 @@ def test_pass_through_renderer():
 @pytest.mark.parametrize(
     'content, values, expected',
     [
-        # (
-        #     'line one\nline two with ((name))\n\nnew paragraph',
-        #     {'name': 'bob'},
-        #     (
-        #         f'<p style="{PARAGRAPH_STYLE}">line one<br />\nline two with bob</p>\n'
-        #         f'<p style="{PARAGRAPH_STYLE}">new paragraph</p>\n'
-        #     ),
-        # ),
-        # (
-        #     '>>[action](https://example.com/foo?a=b)',
-        #     {},
-        #     (
-        #         f'<p style="{PARAGRAPH_STYLE}"><a href="https://example.com/foo?a=b">'
-        #         '<img alt="call to action img" '
-        #         'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-        #         'style="vertical-align: middle;"> <b>action</b></a></p>\n'
-        #     )
-        # ),
-        # (
-        #     (
-        #         '\n# foo\n'
-        #         '\n## Bar\n'
-        #         '\nThe quick ((color)) fox '
-        #         '\n>>[the action_link-of doom](https://example.com)'
-        #     ),
-        #     {'color': 'brown'},
-        #     (
-        #         f'<h1 style="{H1_STYLE}">foo</h1>\n'
-        #         f'<h2 style="{H2_STYLE}">Bar</h2>\n'
-        #         f'<p style="{PARAGRAPH_STYLE}">The quick brown fox</p>\n'
-        #         f'<p style="{PARAGRAPH_STYLE}"><a href="https://example.com">'
-        #         '<img alt="call to action img" '
-        #         'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-        #         'style="vertical-align: middle;"> <b>the action_link-of doom</b></a></p>\n'
-        #     ),
-        # ),
-        # (
-        #     'text before link\n\n>>[great link](http://example.com)\n\ntext after link',
-        #     {},
-        #     (
-        #         f'<p style="{PARAGRAPH_STYLE}">text before link</p>\n'
-        #         f'<p style="{PARAGRAPH_STYLE}"><a href="http://example.com">'
-        #         '<img alt="call to action img" '
-        #         'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-        #         'style="vertical-align: middle;"> <b>great link</b></a></p>\n'
-        #         f'<p style="{PARAGRAPH_STYLE}">text after link</p>\n'
-        #     )
-        # ),
-        # (
-        #     'action link: &gt;&gt;[Example](http://example.com)\nanother link: [test](https://example2.com)',
-        #     {},
-        #     (
-        #         f'<p style="{PARAGRAPH_STYLE}">action link:</p>\n'
-        #         f'<p style="{PARAGRAPH_STYLE}"><a href="http://example.com">'
-        #         '<img alt="call to action img" '
-        #         'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-        #         'style="vertical-align: middle;"> <b>Example</b></a></p>\n'
-        #         f'<p style="{PARAGRAPH_STYLE}">'
-        #         f'another link: <a style="{LINK_STYLE}" target="_blank" href="https://example2.com">test</a></p>\n'
-        #     )
-        # ),
-        # (
-        #     'action link: &gt;&gt;[grin](http://example.com) another action link: >>[test](https://example2.com)',
-        #     {},
-        #     (
-        #         f'<p style="{PARAGRAPH_STYLE}">action link:</p>\n'
-        #         f'<p style="{PARAGRAPH_STYLE}"><a href="http://example.com">'
-        #         '<img alt="call to action img" '
-        #         'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-        #         'style="vertical-align: middle;"> <b>grin</b></a></p>\n'
-        #         f'<p style="{PARAGRAPH_STYLE}">another action link:</p>\n'
-        #         f'<p style="{PARAGRAPH_STYLE}"><a href="https://example2.com">'
-        #         '<img alt="call to action img" '
-        #         'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-        #         'style="vertical-align: middle;"> <b>test</b></a></p>\n'
-        #     )
-        # ),
-        # (
-        #     'text before && link &gt;&gt;[Example](http://example.com) text after & link',
-        #     {},
-        #     (
-        #         f'<p style="{PARAGRAPH_STYLE}">text before &amp;&amp; link</p>\n'
-        #         f'<p style="{PARAGRAPH_STYLE}"><a href="http://example.com">'
-        #         '<img alt="call to action img" '
-        #         'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-        #         'style="vertical-align: middle;"> <b>Example</b></a></p>\n'
-        #         f'<p style="{PARAGRAPH_STYLE}">text after &amp; link</p>\n'
-        #     )
-        # ),
-        # (
-        #     'text before >> link &gt;&gt;[great action](http://example.com) text after >>link',
-        #     {},
-        #     (
-        #         f'<p style="{PARAGRAPH_STYLE}">text before &gt;&gt; link</p>\n'
-        #         f'<p style="{PARAGRAPH_STYLE}"><a href="http://example.com">'
-        #         '<img alt="call to action img" '
-        #         'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-        #         'style="vertical-align: middle;"> <b>great action</b></a></p>\n'
-        #         f'<p style="{PARAGRAPH_STYLE}">text after &gt;&gt;link</p>\n'
-        #     )
-        # ),
-        # (
-        #     'text >> then [item] and (things) then >>[action](link)',
-        #     {},
-        #     (
-        #         f'<p style="{PARAGRAPH_STYLE}">text &gt;&gt; then [item] and (things) then</p>\n'
-        #         f'<p style="{PARAGRAPH_STYLE}"><a href="link">'
-        #         '<img alt="call to action img" '
-        #         'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-        #         'style="vertical-align: middle;"> <b>action</b></a></p>\n'
-        #     )
-        # ),
-        # (
-        #     (
-        #         '>>[action link](#)'
-        #         '\n\ntesting the new >>[action link](#) thingy...'
-        #         '\n\n>>[click me](#)! Text with a [regular link](#)'
-        #     ),
-        #     {},
-        #     (
-        #         f'<p style="{PARAGRAPH_STYLE}"><a href="#">'
-        #         '<img alt="call to action img" '
-        #         'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-        #         'style="vertical-align: middle;"> <b>action link</b></a></p>\n'
-        #         f'<p style="{PARAGRAPH_STYLE}">testing the new</p>\n'
-        #         f'<p style="{PARAGRAPH_STYLE}"><a href="#">'
-        #         '<img alt="call to action img" '
-        #         'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-        #         'style="vertical-align: middle;"> <b>action link</b></a></p>\n'
-        #         f'<p style="{PARAGRAPH_STYLE}">thingy...</p>\n'
-        #         f'<p style="{PARAGRAPH_STYLE}"><a href="#">'
-        #         '<img alt="call to action img" '
-        #         'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-        #         'style="vertical-align: middle;"> <b>click me</b></a></p>\n'
-        #         f'<p style="{PARAGRAPH_STYLE}">! Text with a '
-        #         '<a style="word-wrap: break-word; color: #004795;" target="_blank" href="#">regular link</a></p>\n'
-        #     )
-        # ),
+        (
+            'line one\nline two with ((name))\n\nnew paragraph',
+            {'name': 'bob'},
+            (
+                f'<p style="{PARAGRAPH_STYLE}">line one<br />\nline two with bob</p>\n'
+                f'<p style="{PARAGRAPH_STYLE}">new paragraph</p>\n'
+            ),
+        ),
+        (
+            '>>[action](https://example.com/foo?a=b)',
+            {},
+            (
+                f'<p style="{PARAGRAPH_STYLE}"><a href="https://example.com/foo?a=b">'
+                '<img alt="call to action img" '
+                'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'style="vertical-align: middle;"> <b>action</b></a></p>\n'
+            )
+        ),
         (
             (
-                '^ This is the beginning of the blockquote content.\n'
-                '^ Important information might be contained here with a call to action.\n'
-                '^ >>[Please click here to continue](https://www.example.com)\n'
-                '^ Additional instructions or information might follow after the action link.'
+                '\n# foo\n'
+                '\n## Bar\n'
+                '\nThe quick ((color)) fox '
+                '\n>>[the action_link-of doom](https://example.com)'
+            ),
+            {'color': 'brown'},
+            (
+                f'<h1 style="{H1_STYLE}">foo</h1>\n'
+                f'<h2 style="{H2_STYLE}">Bar</h2>\n'
+                f'<p style="{PARAGRAPH_STYLE}">The quick brown fox</p>\n'
+                f'<p style="{PARAGRAPH_STYLE}"><a href="https://example.com">'
+                '<img alt="call to action img" '
+                'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'style="vertical-align: middle;"> <b>the action_link-of doom</b></a></p>\n'
+            ),
+        ),
+        (
+            'text before link\n\n>>[great link](http://example.com)\n\ntext after link',
+            {},
+            (
+                f'<p style="{PARAGRAPH_STYLE}">text before link</p>\n'
+                f'<p style="{PARAGRAPH_STYLE}"><a href="http://example.com">'
+                '<img alt="call to action img" '
+                'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'style="vertical-align: middle;"> <b>great link</b></a></p>\n'
+                f'<p style="{PARAGRAPH_STYLE}">text after link</p>\n'
+            )
+        ),
+        (
+            'action link: &gt;&gt;[Example](http://example.com)\nanother link: [test](https://example2.com)',
+            {},
+            (
+                f'<p style="{PARAGRAPH_STYLE}">action link:</p>\n'
+                f'<p style="{PARAGRAPH_STYLE}"><a href="http://example.com">'
+                '<img alt="call to action img" '
+                'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'style="vertical-align: middle;"> <b>Example</b></a></p>\n'
+                f'<p style="{PARAGRAPH_STYLE}">'
+                f'another link: <a style="{LINK_STYLE}" target="_blank" href="https://example2.com">test</a></p>\n'
+            )
+        ),
+        (
+            'action link: &gt;&gt;[grin](http://example.com) another action link: >>[test](https://example2.com)',
+            {},
+            (
+                f'<p style="{PARAGRAPH_STYLE}">action link:</p>\n'
+                f'<p style="{PARAGRAPH_STYLE}"><a href="http://example.com">'
+                '<img alt="call to action img" '
+                'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'style="vertical-align: middle;"> <b>grin</b></a></p>\n'
+                f'<p style="{PARAGRAPH_STYLE}">another action link:</p>\n'
+                f'<p style="{PARAGRAPH_STYLE}"><a href="https://example2.com">'
+                '<img alt="call to action img" '
+                'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'style="vertical-align: middle;"> <b>test</b></a></p>\n'
+            )
+        ),
+        (
+            'text before && link &gt;&gt;[Example](http://example.com) text after & link',
+            {},
+            (
+                f'<p style="{PARAGRAPH_STYLE}">text before &amp;&amp; link</p>\n'
+                f'<p style="{PARAGRAPH_STYLE}"><a href="http://example.com">'
+                '<img alt="call to action img" '
+                'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'style="vertical-align: middle;"> <b>Example</b></a></p>\n'
+                f'<p style="{PARAGRAPH_STYLE}">text after &amp; link</p>\n'
+            )
+        ),
+        (
+            'text before >> link &gt;&gt;[great action](http://example.com) text after >>link',
+            {},
+            (
+                f'<p style="{PARAGRAPH_STYLE}">text before &gt;&gt; link</p>\n'
+                f'<p style="{PARAGRAPH_STYLE}"><a href="http://example.com">'
+                '<img alt="call to action img" '
+                'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'style="vertical-align: middle;"> <b>great action</b></a></p>\n'
+                f'<p style="{PARAGRAPH_STYLE}">text after &gt;&gt;link</p>\n'
+            )
+        ),
+        (
+            'text >> then [item] and (things) then >>[action](link)',
+            {},
+            (
+                f'<p style="{PARAGRAPH_STYLE}">text &gt;&gt; then [item] and (things) then</p>\n'
+                f'<p style="{PARAGRAPH_STYLE}"><a href="link">'
+                '<img alt="call to action img" '
+                'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'style="vertical-align: middle;"> <b>action</b></a></p>\n'
+            )
+        ),
+        (
+            (
+                '>>[action link](#)'
+                '\n\ntesting the new >>[action link](#) thingy...'
+                '\n\n>>[click me](#)! Text with a [regular link](#)'
             ),
             {},
             (
-                f'<blockquote style="{BLOCK_QUOTE_STYLE}">'
-                f'<p style="{PARAGRAPH_STYLE}">This is the beginning of the blockquote content.</p>\n'
-                f'<p style="{PARAGRAPH_STYLE}">Important information might be contained here with a call to action.</p>\n'
-                f'<a href="https://www.example.com">'
+                f'<p style="{PARAGRAPH_STYLE}"><a href="#">'
                 '<img alt="call to action img" '
                 'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'style="vertical-align: middle;"> <b>Please click here to continue</b></a></p>\n'
-                f'<p style="{PARAGRAPH_STYLE}">Additional instructions or information might follow after the action link.</p>\n'
+                'style="vertical-align: middle;"> <b>action link</b></a></p>\n'
+                f'<p style="{PARAGRAPH_STYLE}">testing the new</p>\n'
+                f'<p style="{PARAGRAPH_STYLE}"><a href="#">'
+                '<img alt="call to action img" '
+                'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'style="vertical-align: middle;"> <b>action link</b></a></p>\n'
+                f'<p style="{PARAGRAPH_STYLE}">thingy...</p>\n'
+                f'<p style="{PARAGRAPH_STYLE}"><a href="#">'
+                '<img alt="call to action img" '
+                'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                'style="vertical-align: middle;"> <b>click me</b></a></p>\n'
+                f'<p style="{PARAGRAPH_STYLE}">! Text with a '
+                '<a style="word-wrap: break-word; color: #004795;" target="_blank" href="#">regular link</a></p>\n'
+            )
+        ),
+        (
+            (
+                '^ >>[action link](https://www.example.com)\n'
+            ),
+            {},
+            (
+                f'<blockquote style="{BLOCK_QUOTE_STYLE}">\n'
+                f'<p style="{PARAGRAPH_STYLE}">'
+                '<a href="https://www.example.com"><img alt="call to action img" '
+                f'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" style="{ACTION_LINK_IMAGE_STYLE}"> '
+                '<b>action link</b></a></p>\n'
                 f'</blockquote>\n'
             )
         ), 
@@ -218,7 +212,7 @@ def test_pass_through_renderer():
                 f'<a href="https://www.example.com">'
                 '<img alt="call to action img" '
                 'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'style="vertical-align: middle;"> <b>Please click here to continue</b></a></p>\n'
+                'style="vertical-align: middle;"> <b>Please click here to continue</b></a><br />\n'
                 f'</blockquote>\n'
                 f'<p style="{PARAGRAPH_STYLE}">Additional instructions or information might follow after the action link.</p>\n'
                 f'</blockquote>\n'
@@ -226,23 +220,21 @@ def test_pass_through_renderer():
         )
     ],
     ids=[
-        # 'no link, newline in text',
-        # 'action link',
-        # 'action link with text',
-        # 'action link on newline',
-        # 'action and regular link',
-        # 'action links x2',
-        # 'action link and text with "&&"',
-        # 'action link and text with ">>"',
-        # 'action link after parts',
-        # 'two of the same action link',
+        'no link, newline in text',
+        'action link',
+        'action link with text',
+        'action link on newline',
+        'action and regular link',
+        'action links x2',
+        'action link and text with "&&"',
+        'action link and text with ">>"',
+        'action link after parts',
+        'two of the same action link',
         'blockquote with action link',
         'nested blockquote with action link',
     ]
 )
 def test_get_html_email_body_with_action_links(content, values, expected):
-    print(get_html_email_body(content, values))
-    breakpoint()
     assert get_html_email_body(content, values) == expected
 
 
@@ -258,16 +250,12 @@ def test_get_html_email_body_with_action_links(content, values, expected):
             ),
             {},
             (
-                f'<blockquote style="{BLOCK_QUOTE_STYLE}">'
-                f'<p style="{PARAGRAPH_STYLE}">This is the beginning of the blockquote content.</p>\n'
-                f'<p style="{PARAGRAPH_STYLE}">Important information might be contained here with a call to action.'
-
+                '^ This is the beginning of the blockquote content.\n'
+                '^ Important information might be contained here with a call to action.\n'
                 f'\n\n<a href="https://www.example.com">'
                 f'<img alt="call to action img" src="{get_action_link_image_url()}" style="{ACTION_LINK_IMAGE_STYLE}"> '
                 f'<b>Please click here to continue</b></a>\n\n'
-
-                f'Additional instructions or information might follow after the action link.</p>\n'
-                f'</blockquote>\n'
+                '^ Additional instructions or information might follow after the action link.'
             )
         ), 
         (
@@ -280,20 +268,14 @@ def test_get_html_email_body_with_action_links(content, values, expected):
             ),
             {},
             (
-                f'<blockquote style="{BLOCK_QUOTE_STYLE}">'
-                f'<p style="{PARAGRAPH_STYLE}">This is the beginning of the blockquote content.</p>\n'
-                f'<blockquote style="{BLOCK_QUOTE_STYLE}">'
-                f'<p style="{PARAGRAPH_STYLE}">This is a nested block quote.</p>\n'
-                f'<p style="{PARAGRAPH_STYLE}">Important information might be contained here with a call to action.'
-
+                '^ This is the beginning of the blockquote content.\n'
+                '^ ^ This is a nested block quote.\n'
+                '^ ^ Important information might be contained here with a call to action.\n'
                 f'\n\n<a href="https://www.example.com">'
                 f'<img alt="call to action img" src="{get_action_link_image_url()}" style="{ACTION_LINK_IMAGE_STYLE}"> '
                 f'<b>Please click here to continue</b></a>\n\n'
-                
                 f'</p>\n'
-                f'</blockquote>\n'
-                f'<p style="{PARAGRAPH_STYLE}">Additional instructions or information might follow after the action link.</p>\n'
-                f'</blockquote>\n'
+                '^ Additional instructions or information might follow after the action link.'
             )
         )
     ],
