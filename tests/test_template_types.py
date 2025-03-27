@@ -71,7 +71,7 @@ def test_pass_through_renderer():
             (
                 f'<h1 style="{H1_STYLE}">foo</h1>\n'
                 f'<h2 style="{H2_STYLE}">Bar</h2>\n'
-                f'<p style="{PARAGRAPH_STYLE}">The quick brown fox</p>\n'
+                f'<p style="{PARAGRAPH_STYLE}">The quick brown fox<br />\n'
                 f'<p style="{PARAGRAPH_STYLE}"><a href="https://example.com">'
                 '<img alt="call to action img" '
                 'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
@@ -252,9 +252,9 @@ def test_get_html_email_body_with_action_links(content, values, expected):
             (
                 '^ This is the beginning of the blockquote content.\n'
                 '^ Important information might be contained here with a call to action.\n'
-                f'\n\n<a href="https://www.example.com">'
+                f'^ <a href="https://www.example.com">'
                 f'<img alt="call to action img" src="{get_action_link_image_url()}" style="{ACTION_LINK_IMAGE_STYLE}"> '
-                f'<b>Please click here to continue</b></a>\n\n'
+                f'<b>Please click here to continue</b></a>\n'
                 '^ Additional instructions or information might follow after the action link.'
             )
         ), 
@@ -271,10 +271,9 @@ def test_get_html_email_body_with_action_links(content, values, expected):
                 '^ This is the beginning of the blockquote content.\n'
                 '^ ^ This is a nested block quote.\n'
                 '^ ^ Important information might be contained here with a call to action.\n'
-                f'\n\n<a href="https://www.example.com">'
+                f'^ ^ <a href="https://www.example.com">'
                 f'<img alt="call to action img" src="{get_action_link_image_url()}" style="{ACTION_LINK_IMAGE_STYLE}"> '
-                f'<b>Please click here to continue</b></a>\n\n'
-                f'</p>\n'
+                f'<b>Please click here to continue</b></a>\n'
                 '^ Additional instructions or information might follow after the action link.'
             )
         )
