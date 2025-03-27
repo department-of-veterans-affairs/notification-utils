@@ -330,9 +330,9 @@ def insert_action_link(markdown: str) -> str:
     """
 
     img_src = get_action_link_image_url()
-    substitution = r'<a href="\3">' \
+    substitution = r'<br><a href="\3">' \
                    fr'<img alt="call to action img" src="{img_src}" style="{ACTION_LINK_IMAGE_STYLE}"> ' \
-                   r'<b>\2</b></a>'
+                   r'<b>\2</b></a></br>'
 
     #                               text        url
     return re.sub(r'''(>|&gt;){2}\[([\w -]+)\]\((\S+)\)''', substitution, markdown)
