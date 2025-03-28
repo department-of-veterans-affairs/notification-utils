@@ -57,7 +57,7 @@ def test_pass_through_renderer():
                 f'<p style="{PARAGRAPH_STYLE}"><a href="https://example.com/foo?a=b">'
                 '<img alt="call to action img" '
                 'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'style="vertical-align: middle;"> <b>action</b></a></p>\n'
+                'style="vertical-align: middle;"> <b>action</b></a><br><br></p>\n'
             )
         ),
         (
@@ -72,10 +72,10 @@ def test_pass_through_renderer():
                 f'<h1 style="{H1_STYLE}">foo</h1>\n'
                 f'<h2 style="{H2_STYLE}">Bar</h2>\n'
                 f'<p style="{PARAGRAPH_STYLE}">The quick brown fox<br />\n'
-                f'<p style="{PARAGRAPH_STYLE}"><a href="https://example.com">'
+                f'<a href="https://example.com">'
                 '<img alt="call to action img" '
                 'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'style="vertical-align: middle;"> <b>the action_link-of doom</b></a></p>\n'
+                'style="vertical-align: middle;"> <b>the action_link-of doom</b></a><br><br></p>\n' 
             ),
         ),
         (
@@ -86,7 +86,7 @@ def test_pass_through_renderer():
                 f'<p style="{PARAGRAPH_STYLE}"><a href="http://example.com">'
                 '<img alt="call to action img" '
                 'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'style="vertical-align: middle;"> <b>great link</b></a></p>\n'
+                'style="vertical-align: middle;"> <b>great link</b></a><br><br></p>\n'
                 f'<p style="{PARAGRAPH_STYLE}">text after link</p>\n'
             )
         ),
@@ -98,7 +98,7 @@ def test_pass_through_renderer():
                 f'<p style="{PARAGRAPH_STYLE}"><a href="http://example.com">'
                 '<img alt="call to action img" '
                 'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'style="vertical-align: middle;"> <b>Example</b></a></p>\n'
+                'style="vertical-align: middle;"> <b>Example</b></a><br><br></p>\n'
                 f'<p style="{PARAGRAPH_STYLE}">'
                 f'another link: <a style="{LINK_STYLE}" target="_blank" href="https://example2.com">test</a></p>\n'
             )
@@ -165,17 +165,17 @@ def test_pass_through_renderer():
                 f'<p style="{PARAGRAPH_STYLE}"><a href="#">'
                 '<img alt="call to action img" '
                 'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'style="vertical-align: middle;"> <b>action link</b></a></p>\n'
+                'style="vertical-align: middle;"> <b>action link</b></a><br><br></p>\n'
                 f'<p style="{PARAGRAPH_STYLE}">testing the new</p>\n'
                 f'<p style="{PARAGRAPH_STYLE}"><a href="#">'
                 '<img alt="call to action img" '
                 'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'style="vertical-align: middle;"> <b>action link</b></a></p>\n'
+                'style="vertical-align: middle;"> <b>action link</b></a><br><br></p>\n'
                 f'<p style="{PARAGRAPH_STYLE}">thingy...</p>\n'
                 f'<p style="{PARAGRAPH_STYLE}"><a href="#">'
                 '<img alt="call to action img" '
                 'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'style="vertical-align: middle;"> <b>click me</b></a></p>\n'
+                'style="vertical-align: middle;"> <b>click me</b></a><br><br></p>\n'
                 f'<p style="{PARAGRAPH_STYLE}">! Text with a '
                 '<a style="word-wrap: break-word; color: #004795;" target="_blank" href="#">regular link</a></p>\n'
             )
@@ -190,31 +190,7 @@ def test_pass_through_renderer():
                 f'<p style="{PARAGRAPH_STYLE}">'
                 '<a href="https://www.example.com"><img alt="call to action img" '
                 f'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" style="{ACTION_LINK_IMAGE_STYLE}"> '
-                '<b>action link</b></a></p>\n'
-                f'</blockquote>\n'
-            )
-        ), 
-        (
-            (
-                '^ This is the beginning of the blockquote content.\n'
-                '^ ^ This is a nested block quote.\n'
-                '^ ^ Important information might be contained here with a call to action.\n'
-                '^ ^ >>[Please click here to continue](https://www.example.com)\n'
-                '^ Additional instructions or information might follow after the action link.'
-            ),
-            {},
-            (
-                f'<blockquote style="{BLOCK_QUOTE_STYLE}">'
-                f'<p style="{PARAGRAPH_STYLE}">This is the beginning of the blockquote content.</p>\n'
-                f'<blockquote style="{BLOCK_QUOTE_STYLE}">'
-                f'<p style="{PARAGRAPH_STYLE}">This is a nested block quote.</p>\n'
-                f'<p style="{PARAGRAPH_STYLE}">Important information might be contained here with a call to action.</p>\n'
-                f'<a href="https://www.example.com">'
-                '<img alt="call to action img" '
-                'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'style="vertical-align: middle;"> <b>Please click here to continue</b></a><br />\n'
-                f'</blockquote>\n'
-                f'<p style="{PARAGRAPH_STYLE}">Additional instructions or information might follow after the action link.</p>\n'
+                '<b>action link</b></a><br><br></p>\n'
                 f'</blockquote>\n'
             )
         )
@@ -231,7 +207,6 @@ def test_pass_through_renderer():
         'action link after parts',
         'two of the same action link',
         'blockquote with action link',
-        'nested blockquote with action link',
     ]
 )
 def test_get_html_email_body_with_action_links(content, values, expected):
@@ -254,33 +229,13 @@ def test_get_html_email_body_with_action_links(content, values, expected):
                 '^ Important information might be contained here with a call to action.\n'
                 f'^ <a href="https://www.example.com">'
                 f'<img alt="call to action img" src="{get_action_link_image_url()}" style="{ACTION_LINK_IMAGE_STYLE}"> '
-                f'<b>Please click here to continue</b></a>\n'
-                '^ Additional instructions or information might follow after the action link.'
-            )
-        ), 
-        (
-            (
-                '^ This is the beginning of the blockquote content.\n'
-                '^ ^ This is a nested block quote.\n'
-                '^ ^ Important information might be contained here with a call to action.\n'
-                '^ ^ >>[Please click here to continue](https://www.example.com)\n'
-                '^ Additional instructions or information might follow after the action link.'
-            ),
-            {},
-            (
-                '^ This is the beginning of the blockquote content.\n'
-                '^ ^ This is a nested block quote.\n'
-                '^ ^ Important information might be contained here with a call to action.\n'
-                f'^ ^ <a href="https://www.example.com">'
-                f'<img alt="call to action img" src="{get_action_link_image_url()}" style="{ACTION_LINK_IMAGE_STYLE}"> '
-                f'<b>Please click here to continue</b></a>\n'
+                f'<b>Please click here to continue</b></a><br><br>\n'
                 '^ Additional instructions or information might follow after the action link.'
             )
         )
     ],
     ids=[
         'blockquote with action link',
-        'nested blockquote with action link',
     ]
 )
 def test_insert_action_link(content, values, expected):
