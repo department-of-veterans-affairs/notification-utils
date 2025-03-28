@@ -57,7 +57,7 @@ def test_pass_through_renderer():
                 f'<p style="{PARAGRAPH_STYLE}"><a href="https://example.com/foo?a=b">'
                 '<img alt="call to action img" '
                 'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'style="vertical-align: middle;"> <b>action</b></a><br><br></p>\n'
+                'style="vertical-align: middle;"> <b>action</b></a><br></p>\n'
             )
         ),
         (
@@ -75,7 +75,7 @@ def test_pass_through_renderer():
                 f'<a href="https://example.com">'
                 '<img alt="call to action img" '
                 'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'style="vertical-align: middle;"> <b>the action_link-of doom</b></a><br><br></p>\n' 
+                'style="vertical-align: middle;"> <b>the action_link-of doom</b></a><br></p>\n' 
             ),
         ),
         (
@@ -86,7 +86,7 @@ def test_pass_through_renderer():
                 f'<p style="{PARAGRAPH_STYLE}"><a href="http://example.com">'
                 '<img alt="call to action img" '
                 'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'style="vertical-align: middle;"> <b>great link</b></a><br><br></p>\n'
+                'style="vertical-align: middle;"> <b>great link</b></a><br></p>\n'
                 f'<p style="{PARAGRAPH_STYLE}">text after link</p>\n'
             )
         ),
@@ -98,7 +98,7 @@ def test_pass_through_renderer():
                 f'<p style="{PARAGRAPH_STYLE}"><a href="http://example.com">'
                 '<img alt="call to action img" '
                 'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'style="vertical-align: middle;"> <b>Example</b></a><br><br></p>\n'
+                'style="vertical-align: middle;"> <b>Example</b></a><br></p>\n'
                 f'<p style="{PARAGRAPH_STYLE}">'
                 f'another link: <a style="{LINK_STYLE}" target="_blank" href="https://example2.com">test</a></p>\n'
             )
@@ -139,7 +139,7 @@ def test_pass_through_renderer():
                 f'<p style="{PARAGRAPH_STYLE}"><a href="http://example.com">'
                 '<img alt="call to action img" '
                 'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'style="vertical-align: middle;"> <b>great action</b></a></p>\n'
+                'style="vertical-align: middle;"> <b>great action</b></a><br></p>\n'
                 f'<p style="{PARAGRAPH_STYLE}">text after &gt;&gt;link</p>\n'
             )
         ),
@@ -151,7 +151,7 @@ def test_pass_through_renderer():
                 f'<p style="{PARAGRAPH_STYLE}"><a href="link">'
                 '<img alt="call to action img" '
                 'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'style="vertical-align: middle;"> <b>action</b></a></p>\n'
+                'style="vertical-align: middle;"> <b>action</b></a><br></p>\n'
             )
         ),
         (
@@ -165,17 +165,17 @@ def test_pass_through_renderer():
                 f'<p style="{PARAGRAPH_STYLE}"><a href="#">'
                 '<img alt="call to action img" '
                 'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'style="vertical-align: middle;"> <b>action link</b></a><br><br></p>\n'
+                'style="vertical-align: middle;"> <b>action link</b></a><br></p>\n'
                 f'<p style="{PARAGRAPH_STYLE}">testing the new</p>\n'
                 f'<p style="{PARAGRAPH_STYLE}"><a href="#">'
                 '<img alt="call to action img" '
                 'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'style="vertical-align: middle;"> <b>action link</b></a><br><br></p>\n'
+                'style="vertical-align: middle;"> <b>action link</b></a><br></p>\n'
                 f'<p style="{PARAGRAPH_STYLE}">thingy...</p>\n'
                 f'<p style="{PARAGRAPH_STYLE}"><a href="#">'
                 '<img alt="call to action img" '
                 'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'style="vertical-align: middle;"> <b>click me</b></a><br><br></p>\n'
+                'style="vertical-align: middle;"> <b>click me</b></a><br></p>\n'
                 f'<p style="{PARAGRAPH_STYLE}">! Text with a '
                 '<a style="word-wrap: break-word; color: #004795;" target="_blank" href="#">regular link</a></p>\n'
             )
@@ -190,7 +190,7 @@ def test_pass_through_renderer():
                 f'<p style="{PARAGRAPH_STYLE}">'
                 '<a href="https://www.example.com"><img alt="call to action img" '
                 f'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" style="{ACTION_LINK_IMAGE_STYLE}"> '
-                '<b>action link</b></a><br><br></p>\n'
+                '<b>action link</b></a><br></p>\n'
                 f'</blockquote>\n'
             )
         )
