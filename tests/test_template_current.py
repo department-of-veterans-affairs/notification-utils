@@ -100,6 +100,7 @@ class TestRenderNotifyMarkdownWithPreprocessing:
         # Read the expected HTML file.
         with open('tests/test_files/html_current/action_links.html') as f:
             expected = f.read()
+
         assert notify_html_markdown(action_links_md_preprocessed) == expected
 
     @pytest.mark.skip(reason='Action links are not implemented for plain text.')
