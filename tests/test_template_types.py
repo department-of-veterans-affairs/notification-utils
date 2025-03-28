@@ -94,12 +94,11 @@ def test_pass_through_renderer():
             'action link: &gt;&gt;[Example](http://example.com)\nanother link: [test](https://example2.com)',
             {},
             (
-                f'<p style="{PARAGRAPH_STYLE}">action link:</p>\n'
-                f'<p style="{PARAGRAPH_STYLE}"><a href="http://example.com">'
+                f'<p style="{PARAGRAPH_STYLE}">action link:'
+                f'<a href="http://example.com">'
                 '<img alt="call to action img" '
                 'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'style="vertical-align: middle;"> <b>Example</b></a><br></p>\n'
-                f'<p style="{PARAGRAPH_STYLE}">'
+                'style="vertical-align: middle;"> <b>Example</b></a><br><br />\n'
                 f'another link: <a style="{LINK_STYLE}" target="_blank" href="https://example2.com">test</a></p>\n'
             )
         ),
@@ -107,16 +106,16 @@ def test_pass_through_renderer():
             'action link: &gt;&gt;[grin](http://example.com) another action link: >>[test](https://example2.com)',
             {},
             (
-                f'<p style="{PARAGRAPH_STYLE}">action link:</p>\n'
-                f'<p style="{PARAGRAPH_STYLE}"><a href="http://example.com">'
+                f'<p style="{PARAGRAPH_STYLE}">action link:\n'
+                '<a href="http://example.com">'
                 '<img alt="call to action img" '
                 'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'style="vertical-align: middle;"> <b>grin</b></a></p>\n'
+                'style="vertical-align: middle;"> <b>grin</b></a><br></p>\n'
                 f'<p style="{PARAGRAPH_STYLE}">another action link:</p>\n'
                 f'<p style="{PARAGRAPH_STYLE}"><a href="https://example2.com">'
                 '<img alt="call to action img" '
                 'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'style="vertical-align: middle;"> <b>test</b></a></p>\n'
+                'style="vertical-align: middle;"> <b>test</b></a><br></p>\n'
             )
         ),
         (
@@ -127,7 +126,7 @@ def test_pass_through_renderer():
                 f'<p style="{PARAGRAPH_STYLE}"><a href="http://example.com">'
                 '<img alt="call to action img" '
                 'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
-                'style="vertical-align: middle;"> <b>Example</b></a></p>\n'
+                'style="vertical-align: middle;"> <b>Example</b></a><br></p>\n'
                 f'<p style="{PARAGRAPH_STYLE}">text after &amp; link</p>\n'
             )
         ),
