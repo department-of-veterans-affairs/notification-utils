@@ -100,7 +100,6 @@ class TestRenderNotifyMarkdownWithPreprocessing:
         # Read the expected HTML file.
         with open('tests/test_files/html_current/action_links.html') as f:
             expected = f.read()
-
         assert notify_html_markdown(action_links_md_preprocessed) == expected
 
     @pytest.mark.skip(reason='Action links are not implemented for plain text.')
@@ -137,7 +136,6 @@ class TestRenderNotifyMarkdownWithPreprocessing:
     # Block quotes with action link
     ###############################
 
-    @pytest.mark.xfail(reason='#204')
     def test_block_quotes_action_link_html(self, block_quotes_action_link_md: str):
         # This order of operations mirrors the behavior in template.py::get_html_email_body.
         md = insert_action_link(block_quotes_action_link_md)
@@ -146,7 +144,6 @@ class TestRenderNotifyMarkdownWithPreprocessing:
         # Read the expected HTML file.
         with open('tests/test_files/html_current/block_quotes_action_link.html') as f:
             expected = f.read()
-
         assert notify_html_markdown(md) == expected
 
     @pytest.mark.skip(reason='Action links are not implemented for plain text.')

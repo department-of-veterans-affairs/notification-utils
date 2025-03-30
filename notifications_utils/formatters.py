@@ -317,25 +317,74 @@ def get_action_link_image_url() -> str:
     return f'https://{img_env}-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png'
 
 
+
 def insert_action_link(markdown: str) -> str:
     """
-    Finds an "action link," and replaces it with the desired format. This preprocessing should take place before
-    any manipulation by Mistune.
+    Finds an "action link" and replaces it with the desired format, including any extra text on the same line.
 
     Given:
-        >>[text](url)
+        >>[text](url) additional text
 
     Output:
-        \n\n<a href="url"><img alt="call to action img" src="..." style="..."> <b>text</b></a>\n\n
+        <a href="url"><img alt="call to action img" src="..." style="..."> <b>text</b></a> additional text
     """
-
     img_src = get_action_link_image_url()
-    substitution = r'\n\n<a href="\3">' \
-                   fr'<img alt="call to action img" src="{img_src}" style="{ACTION_LINK_IMAGE_STYLE}"> ' \
-                   r'<b>\2</b></a>\n\n'
 
-    #                               text        url
-    return re.sub(r'''(>|&gt;){2}\[([\w -]+)\]\((\S+)\)''', substitution, markdown)
+    def replacement(match):
+        text, url, extra_text = match.group(2), match.group(3), match.group(4).strip()
+
+        action_link = (f'<a href="{url}">'
+                       f'<img alt="call to action img" src="{img_src}" style="{ACTION_LINK_IMAGE_STYLE}"> '
+                       f'<b>{text}</b></a>')
+
+        if extra_text:
+            action_link += f'</p><p style="{PARAGRAPH_STYLE}">{extra_text}'
+
+        return action_link
+    
+    # Match action link and capture any trailing text on the same line
+    return re.sub(r'''(>|&gt;){2}\[([\w -]+)\]\((\S+)\)(.*)''', replacement, markdown)
+
+
+# Try to seperate out the text after action link 
+# def insert_action_link(markdown: str) -> str:
+#     """
+#     Finds an "action link" and replaces it with the desired format, including any extra text on the same line.
+
+#     Given:
+#         >>[text](url) additional text
+
+#     Output:
+#         <a href="url"><img alt="call to action img" src="..." style="..."> <b>text</b></a> additional text
+#     """
+#     img_src = get_action_link_image_url()
+#     substitution = (r'\n\n<a href="\3">'
+#                     fr'<img alt="call to action img" src="{img_src}" style="{ACTION_LINK_IMAGE_STYLE}"> '
+#                     fr'<b>\2</b></a></p><p style="{PARAGRAPH_STYLE}">\4\n\n')
+
+#     # Match action link and capture any trailing text on the same line
+#     return re.sub(r'''(>|&gt;){2}\[([\w -]+)\]\((\S+)\)(.*)''', substitution, markdown)
+
+# Try to remove the leading \n\n
+# def insert_action_link(markdown: str) -> str:
+#     """
+#     Finds an "action link," and replaces it with the desired format. This preprocessing should take place before
+#     any manipulation by Mistune.
+
+#     Given:
+#         >>[text](url)
+
+#     Output:
+#         <a href="url"><img alt="call to action img" src="..." style="..."> <b>text</b></a>
+#     """
+
+#     img_src = get_action_link_image_url()
+#     substitution = fr'<p style="{PARAGRAPH_STYLE}"><a href="\3">' \
+#                 fr'<img alt="call to action img" src="{img_src}" style="{ACTION_LINK_IMAGE_STYLE}"> ' \
+#                 r'<b>\2</b></a>'
+
+#     #                               text        url
+#     return re.sub(r'''(>|&gt;){2}\[([\w -]+)\]\((\S+)\)''', substitution, markdown)
 
 
 def insert_block_quotes(md: str) -> str:
