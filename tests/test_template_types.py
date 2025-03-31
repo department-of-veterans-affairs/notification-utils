@@ -56,6 +56,8 @@ def test_pass_through_renderer():
                 'style="vertical-align: middle;"> <b>action</b></a></p>\n'
             )
         ),
+        # action link with text
+        # 
         (
             (
                 '\n# foo\n'
@@ -191,6 +193,7 @@ def test_pass_through_renderer():
     ]
 )
 def test_get_html_email_body_with_action_links(content, values, expected):
+    # breakpoint()
     assert get_html_email_body(content, values) == expected
 
 

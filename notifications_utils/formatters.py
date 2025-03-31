@@ -333,7 +333,7 @@ def insert_action_link(markdown: str) -> str:
     def replacement(match):
         text, url, extra_text = match.group(2), match.group(3), match.group(4).strip()
 
-        action_link = (f'<a href="{url}">'
+        action_link = (f'<p style="{PARAGRAPH_STYLE}"> <a href="{url}">'
                        f'<img alt="call to action img" src="{img_src}" style="{ACTION_LINK_IMAGE_STYLE}"> '
                        f'<b>{text}</b></a>')
 
