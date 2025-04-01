@@ -339,10 +339,21 @@ def insert_action_link(markdown: str) -> str:
 
 
 def insert_action_link_block_quote(markdown: str) -> str:
+    """
+    Converts block quotes containing action links into formatted HTML links with an image.
+    If text after the action links exists, then the additional texts is moved to a new link
+    within a blockquote.
+
+    Args:
+        markdown (str): The markdown content.
+
+    Returns:
+        str: The modified markdown with action links within block quotes replaced by HTML links with images.
+    """
     img_src = get_action_link_image_url()
 
-    def replacement(match):
-        """Dynamically constructs the replacement string."""
+    def replacement(match: re.Match[str]) -> str:
+        """Dynamically constructs the replacement string for each match."""
         link_html = (
             f'<a href="{match.group(3)}">'
             f'<img alt="call to action img" src="{img_src}" style="{ACTION_LINK_IMAGE_STYLE}"> '
@@ -359,6 +370,15 @@ def insert_action_link_block_quote(markdown: str) -> str:
 
 
 def insert_block_quotes(md: str) -> str:
+    """
+    Converts lines starting with `^` or `>` into block quotes, processing action links when present.
+
+    Args:
+        md (str): The markdown content to process.
+
+    Returns:
+        str: The modified markdown with updated block quotes and processed action links.
+    """
     modified_md = md
 
     for match in re.finditer(r'^(?:\^|>)(?!>).*', md, flags=re.MULTILINE):
