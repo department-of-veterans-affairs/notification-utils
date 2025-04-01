@@ -360,7 +360,6 @@ def insert_action_link_block_quote(markdown: str) -> str:
 
 def insert_block_quotes(md: str) -> str:
     modified_md = md
-    block_quote_matches = list(re.finditer(r'^(?:\^|>)(?!>).*', modified_md, flags=re.MULTILINE))
 
     for match in block_quote_matches:
         modified_line = insert_action_link_block_quote(match.group())
