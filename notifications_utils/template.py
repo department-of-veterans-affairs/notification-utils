@@ -478,7 +478,6 @@ def get_html_email_body(
     ))
 
     field_with_block = insert_block_quotes(field)
-    
 
     return compose1(
         field_with_block,

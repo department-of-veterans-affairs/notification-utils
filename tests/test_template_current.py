@@ -141,7 +141,6 @@ class TestRenderNotifyMarkdownWithPreprocessing:
         # This order of operations mirrors the behavior in template.py::get_html_email_body.
         md = insert_block_quotes(block_quotes_action_link_md)
         md = insert_action_link(md)
-        
         # Read the expected HTML file.
         with open('tests/test_files/html_current/block_quotes_action_link.html') as f:
             expected = f.read()

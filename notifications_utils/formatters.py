@@ -363,9 +363,10 @@ def insert_block_quotes(md: str) -> str:
 
     for match in re.finditer(r'^(?:\^|>)(?!>).*', md, flags=re.MULTILINE):
         modified_line = insert_action_link_block_quote(match.group())
-        modified_md = modified_md.replace(match.group(), modified_line, 1) 
+        modified_md = modified_md.replace(match.group(), modified_line, 1)
 
     return re.sub(r'''^(\s*)\^(\s*)''', r'''\1>\2''', modified_md, flags=re.M)
+
 
 def insert_list_spaces(md: str) -> str:
     """
