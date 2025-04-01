@@ -477,14 +477,16 @@ def get_html_email_body(
         preview_mode=preview_mode
     ))
 
+    field_with_block = insert_block_quotes(field)
+    
+
     return compose1(
-        field,
+        field_with_block,
         strip_unsupported_characters,
         add_trailing_newline,
         # before converting from markdown, strip out the "(())" for placeholders (preview mode or test emails)
         strip_parentheses_in_link_placeholders,
         insert_action_link,
-        insert_block_quotes,
         insert_list_spaces,
         notify_html_markdown,
         # after converting to html link, replace !!foo## with ((foo))
