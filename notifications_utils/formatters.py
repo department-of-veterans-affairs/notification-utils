@@ -344,11 +344,11 @@ def insert_action_link_block_quote(markdown: str) -> str:
     If text after the action links exists, then the additional texts is moved to a new link
     within a blockquote.
 
-    Args:
-        markdown (str): The markdown content.
+    Given:
+        markdown (str): ^ >> [text](url) additional text
 
     Returns:
-        str: The modified markdown with action links within block quotes replaced by HTML links with images.
+        str: <a href="url"><img alt="call to action img" src="..." style="..."> <b> additional text</b></a>
     """
     img_src = get_action_link_image_url()
 
@@ -373,11 +373,11 @@ def insert_block_quotes(md: str) -> str:
     """
     Converts lines starting with `^` or `>` into block quotes, processing action links when present.
 
-    Args:
-        md (str): The markdown content to process.
+    Given:
+        ^ This is a block quote OR ^ >> [text](url)
 
-    Returns:
-        str: The modified markdown with updated block quotes and processed action links.
+    Output:
+        > This is a block quote OR  > <a href="url"><img alt="call to action img" src="..." style="..."> <b>text</b></a>
     """
     modified_md = md
 
