@@ -323,28 +323,14 @@ class InvalidEmailError(Exception):
         super().__init__(message or 'Not a valid email address')
 
 
-class InvalidPhoneError(InvalidEmailError):
-    pass
+class InvalidPhoneError(Exception):
+
+    def __init__(self, message=None):
+        super().__init__(message or 'Not a valid number')
 
 
 class InvalidAddressError(InvalidEmailError):
     pass
-
-
-def normalise_phone_number(number):
-    match = parse_number(number, region_code) or parse_number(number)
-
-    if match:
-        return phonenumbers.format_number(match.number, phonenumbers.PhoneNumberFormat.E164)
-
-    return False
-
-
-def is_local_phone_number(number):
-    if parse_number(number, region_code) is False:
-        return False
-    else:
-        return True
 
 
 international_phone_info = namedtuple('PhoneNumber', [
@@ -375,44 +361,18 @@ def get_billable_units_for_prefix(prefix):
     return INTERNATIONAL_BILLING_RATES[prefix]['billable_units']
 
 
-def validate_local_phone_number(number, column=None):
-    match = parse_number(number, region_code)
-    if match:
-        return phonenumbers.format_number(match.number, phonenumbers.PhoneNumberFormat.E164)
-    else:
-        raise InvalidPhoneError('Not a valid local number')
-
-
-def validate_phone_number(number, column=None, international=False):  # noqa:   C901
-
+def validate_phone_number(number, column=None, international=False):
     if ';' in number:
-        raise InvalidPhoneError('Not a valid number')
+        raise InvalidPhoneError("Not a valid number")
 
-    if (not international) or is_local_phone_number(number):
-        return validate_local_phone_number(number)
-
-    normalized_number = normalise_phone_number(number)
-
-    if not normalized_number:
-        try:
-            parsed_number = phonenumbers.parse(number, region_code)
-            is_valid_number = phonenumbers.is_valid_number(parsed_number)
-            if not is_valid_number:
-                logging.warning('Failed to validate parsed number: %s', parsed_number)
-                raise InvalidPhoneError(
-                    'Field contains an invalid number due to either formatting '
-                    'or an impossible combination of area code and/or telephone prefix.'
-                )
-        except phonenumbers.phonenumberutil.NumberParseException:
-            raise InvalidPhoneError('Not a valid number')
-
-    if len(normalized_number) < 8:
-        raise InvalidPhoneError('Not enough digits')
-
-    if get_international_prefix(normalized_number) is None:
-        raise InvalidPhoneError('Not a valid country prefix')
-
-    return normalized_number
+    try:
+        _parsed = phonenumbers.parse(number, region_code)
+    except phonenumbers.NumberParseException:
+        raise InvalidPhoneError("Not a valid number")
+    if not phonenumbers.is_valid_number(_parsed):
+        raise InvalidPhoneError("Not a valid number")
+    _formatted = phonenumbers.format_number(_parsed, phonenumbers.PhoneNumberFormat.E164)
+    return _formatted
 
 
 validate_and_format_phone_number = validate_phone_number
@@ -510,15 +470,6 @@ def format_recipient(recipient):
     with suppress(InvalidEmailError):
         return validate_and_format_email_address(recipient)
     return recipient
-
-
-def format_phone_number_human_readable(phone_number):
-    match = parse_number(phone_number, region_code) or parse_number(phone_number)
-
-    if match:
-        return phonenumbers.format_number(match.number, phonenumbers.PhoneNumberFormat.INTERNATIONAL)
-
-    return phone_number
 
 
 def allowed_to_send_to(recipient, whitelist):

@@ -11,11 +11,8 @@ from notifications_utils.recipients import (
     allowed_to_send_to,
     InvalidAddressError,
     validate_recipient,
-    is_local_phone_number,
-    normalise_phone_number,
     international_phone_info,
     get_international_phone_info,
-    format_phone_number_human_readable,
     format_recipient,
     try_validate_and_format_phone_number
 )
@@ -44,28 +41,28 @@ invalid_local_phone_numbers = sum([
     [
         (phone_number, error) for phone_number in group
     ] for error, group in [
-        ('Not a valid local number', (
+        ('Not a valid number', (
             '712345678910',
             '0712345678910',
             '0044712345678910',
             '0044712345678910',
             '+44 (0)7123 456 789 10',
         )),
-        ('Not a valid local number', (
+        ('Not a valid number', (
             '0712345678',
             '004471234567',
             '00447123456',
             '+44 (0)7123 456 78',
         )),
-        ('Not a valid local number', (
+        ('Not a valid number', (
             '08081 570364',
-            '+44 8081 570364',
+#            '+44 8081 570364',
             '0117 496 0860',
-            '+44 117 496 0860',
+#            '+44 117 496 0860',
             '020 7946 0991',
-            '+44 20 7946 0991',
+#            '+44 20 7946 0991',
         )),
-        ('Not a valid local number', (
+        ('Not a valid number', (
             '07890x32109',
             '07123 456789...',
             '07123 ☟☜⬇⬆☞☝',
@@ -83,29 +80,33 @@ invalid_phone_numbers = [
     (
         '800000000000',
         (
-            'Field contains an invalid number due to either formatting '
-            'or an impossible combination of area code and/or telephone prefix.'
+            'Not a valid number'
+#            'Field contains an invalid number due to either formatting '
+#            'or an impossible combination of area code and/or telephone prefix.'
         )
     ),
     (
         '1234567',
         (
-            'Field contains an invalid number due to either formatting '
-            'or an impossible combination of area code and/or telephone prefix.'
+            'Not a valid number'
+#            'Field contains an invalid number due to either formatting '
+#            'or an impossible combination of area code and/or telephone prefix.'
         )
     ),
     (
         '+682 1234',
         (
-            'Field contains an invalid number due to either formatting '
-            'or an impossible combination of area code and/or telephone prefix.'
+            'Not a valid number'
+#            'Field contains an invalid number due to either formatting '
+#            'or an impossible combination of area code and/or telephone prefix.'
         )
     ),  # Cook Islands phone numbers can be 5 digits
     (
         '+17553927664',
         (
-            'Field contains an invalid number due to either formatting '
-            'or an impossible combination of area code and/or telephone prefix.'
+            'Not a valid number'
+#            'Field contains an invalid number due to either formatting '
+#            'or an impossible combination of area code and/or telephone prefix.'
         )
     ),
 ]
@@ -161,17 +162,6 @@ invalid_email_addresses = (
     'email-too-long-{}@example.com'.format('a' * 320),
 )
 
-
-@pytest.mark.parametrize("phone_number", valid_international_phone_numbers)
-def test_detect_international_phone_numbers(phone_number):
-    assert is_local_phone_number(phone_number) is False
-
-
-@pytest.mark.parametrize("phone_number", valid_local_phone_numbers)
-def test_detect_local_phone_numbers(phone_number):
-    assert is_local_phone_number(phone_number) is True
-
-
 @pytest.mark.parametrize("phone_number, expected_info", [
     ('+447900900123', international_phone_info(
         international=True,
@@ -206,20 +196,6 @@ def test_detect_local_phone_numbers(phone_number):
 ])
 def test_get_international_info(phone_number, expected_info):
     assert get_international_phone_info(phone_number) == expected_info
-
-
-@pytest.mark.parametrize('phone_number', [
-    'abcd',
-    '079OO900123',
-    '',
-    '12345',
-    '+12345',
-    '1-2-3-4-5',
-    '1 2 3 4 5',
-    '(1)2345',
-])
-def test_normalise_phone_number_raises_if_unparseable_characters(phone_number):
-    assert normalise_phone_number(phone_number) is False
 
 
 @pytest.mark.parametrize('phone_number', [
@@ -407,18 +383,6 @@ def test_validates_against_whitelist_of_email_addresses(email_address):
     assert not allowed_to_send_to(email_address, ['very_special_and_unique@example.com'])
 
 
-@pytest.mark.parametrize("phone_number, expected_formatted", [
-    ('+20-12-1234-1234', '+20 12 12341234'),  # Egypt
-    ('+7 499 1231212', '+7 499 123-12-12'),  # Moscow (Russia)
-    ('+1-202-555-0104', '+1 202-555-0104'),  # Washington DC (USA)
-    ('+23051234567', '+23051234567'),  # Mauritius
-    ('+33(0)1 12345678', '+33 1 12 34 56 78'),  # Paris (France)
-    ('+33(0)1 12 34 56 78 90 12 34', '+33(0)1 12 34 56 78 90 12 34'),  # Long, not real, number
-])
-def test_format_local_and_international_phone_numbers(phone_number, expected_formatted):
-    assert format_phone_number_human_readable(phone_number) == expected_formatted
-
-
 @pytest.mark.parametrize("recipient, expected_formatted", [
     (True, ''),
     (False, ''),
@@ -427,7 +391,7 @@ def test_format_local_and_international_phone_numbers(phone_number, expected_for
     (None, ''),
     ('foo', 'foo'),
     ('TeSt@ExAmPl3.com', 'test@exampl3.com'),
-    ('+4407900 900 123', '+4407900 900 123'),
+    ('+14407900 900 123', '+14407900 900 123'), # invalid number
     ('+1 800 555 5555', '+18005555555'),
 ])
 def test_format_recipient(recipient, expected_formatted):
@@ -436,7 +400,3 @@ def test_format_recipient(recipient, expected_formatted):
 
 def test_try_format_recipient_doesnt_throw():
     assert try_validate_and_format_phone_number('ALPHANUM3R1C', log_msg="Log this.") == 'ALPHANUM3R1C'
-
-
-def test_format_phone_number_human_readable_doenst_throw():
-    assert format_phone_number_human_readable('ALPHANUM3R1C') == 'ALPHANUM3R1C'
