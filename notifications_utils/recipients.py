@@ -371,6 +371,8 @@ def validate_phone_number(number, column=None, international=False):
         raise InvalidPhoneError("Not a valid number")
     if not phonenumbers.is_valid_number(_parsed):
         raise InvalidPhoneError("Not a valid number")
+    if not international and str(_parsed.country_code) != country_code:
+        raise InvalidPhoneError("Not a valid local number")
     _formatted = phonenumbers.format_number(_parsed, phonenumbers.PhoneNumberFormat.E164)
     return _formatted
 

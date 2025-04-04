@@ -56,11 +56,8 @@ invalid_local_phone_numbers = sum([
         )),
         ('Not a valid number', (
             '08081 570364',
-#            '+44 8081 570364',
             '0117 496 0860',
-#            '+44 117 496 0860',
             '020 7946 0991',
-#            '+44 20 7946 0991',
         )),
         ('Not a valid number', (
             '07890x32109',
@@ -81,32 +78,24 @@ invalid_phone_numbers = [
         '800000000000',
         (
             'Not a valid number'
-#            'Field contains an invalid number due to either formatting '
-#            'or an impossible combination of area code and/or telephone prefix.'
         )
     ),
     (
         '1234567',
         (
             'Not a valid number'
-#            'Field contains an invalid number due to either formatting '
-#            'or an impossible combination of area code and/or telephone prefix.'
         )
     ),
     (
         '+682 1234',
         (
             'Not a valid number'
-#            'Field contains an invalid number due to either formatting '
-#            'or an impossible combination of area code and/or telephone prefix.'
         )
     ),  # Cook Islands phone numbers can be 5 digits
     (
         '+17553927664',
         (
             'Not a valid number'
-#            'Field contains an invalid number due to either formatting '
-#            'or an impossible combination of area code and/or telephone prefix.'
         )
     ),
 ]
@@ -161,6 +150,7 @@ invalid_email_addresses = (
     'brackets(in)local@domain.com',
     'email-too-long-{}@example.com'.format('a' * 320),
 )
+
 
 @pytest.mark.parametrize("phone_number, expected_info", [
     ('+447900900123', international_phone_info(
@@ -391,7 +381,7 @@ def test_validates_against_whitelist_of_email_addresses(email_address):
     (None, ''),
     ('foo', 'foo'),
     ('TeSt@ExAmPl3.com', 'test@exampl3.com'),
-    ('+14407900 900 123', '+14407900 900 123'), # invalid number
+    ('+14407900 900 123', '+14407900 900 123'),  # invalid number
     ('+1 800 555 5555', '+18005555555'),
 ])
 def test_format_recipient(recipient, expected_formatted):
