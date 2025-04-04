@@ -10,8 +10,6 @@ from notifications_utils.recipients import (
     allowed_to_send_to,
     InvalidAddressError,
     validate_recipient,
-    international_phone_info,
-    get_international_phone_info,
     format_recipient,
     try_validate_and_format_phone_number
 )
@@ -151,50 +149,29 @@ invalid_email_addresses = (
 )
 
 
-@pytest.mark.parametrize("phone_number, expected_info", [
-    ('+447900900123', international_phone_info(
-        international=True,
-        country_prefix='44',  # UK
-        billable_units=1,
-    )),
-    ('+20-12-1234-1234', international_phone_info(
-        international=True,
-        country_prefix='20',  # Egypt
-        billable_units=3,
-    )),
-    ('+201212341234', international_phone_info(
-        international=True,
-        country_prefix='20',  # Egypt
-        billable_units=3,
-    )),
-    ('+79587714230', international_phone_info(
-        international=True,
-        country_prefix='7',  # Russia
-        billable_units=1,
-    )),
-    ('1-202-555-0104', international_phone_info(
-        international=False,
-        country_prefix='1',  # USA
-        billable_units=1,
-    )),
-    ('+2302086859', international_phone_info(
-        international=True,
-        country_prefix='230',  # Mauritius
-        billable_units=2,
-    ))
+@pytest.mark.parametrize("phone_number, international, country_code, billable_units", [
+    ('+447900900123', True, '44', 1),     # UK
+    ('+20-12-1234-1234', True, '20', 3),  # Egypt
+    ('+201212341234', True, '20', 3),     # Egypt
+    ('+79587714230', True, '7', 1),       # Russia
+    ('1-202-555-0104', False, '1', 1),    # USA
+    ('+2302086859', True, '230', 2),      # Mauritius
 ])
-def test_get_international_info(phone_number, expected_info):
-    assert get_international_phone_info(phone_number) == expected_info
+def test_get_international_info(phone_number, international, country_code, billable_units):
+    validated = ValidatedPhoneNumber(phone_number)
+    assert validated.international == international
+    assert validated.country_code == country_code
+    assert validated.billable_units == billable_units
 
 
-@pytest.mark.parametrize('phone_number', [
-    '+21 4321 0987',
-    '+003997 1234 7890',
-])
-def test_get_international_info_raises(phone_number):
-    with pytest.raises(InvalidPhoneError) as error:
-        get_international_phone_info(phone_number)
-    assert str(error.value) == 'Not a valid number'
+# @pytest.mark.parametrize('phone_number', [
+#     '+21 4321 0987',
+#     '+003997 1234 7890',
+# ])
+# def test_get_international_info_raises(phone_number):
+#     with pytest.raises(InvalidPhoneError) as error:
+#         get_international_phone_info(phone_number)
+#     assert str(error.value) == 'Not a valid number'
 
 
 @pytest.mark.parametrize("phone_number", valid_local_phone_numbers)

@@ -356,26 +356,22 @@ class ValidatedPhoneNumber:
     def formatted(self):
         return phonenumbers.format_number(self._parsed, phonenumbers.PhoneNumberFormat.E164)
 
+    @property
+    def international(self):
+        return self.country_code != country_code
 
-def get_international_phone_info(number):
+    @property
+    def country_code(self):
+        return str(self._parsed.country_code)
 
-    number = ValidatedPhoneNumber(number).formatted
-    prefix = get_international_prefix(number)
+    @property
+    def region_code(self):
+        return phonenumbers.region_code_for_number(self._parsed)
 
-    return international_phone_info(
-        international=(prefix != country_code),
-        country_prefix=prefix,
-        billable_units=get_billable_units_for_prefix(prefix)
-    )
-
-
-def get_international_prefix(number):
-    number = phonenumbers.parse(number, None)
-    return str(number.country_code)
-
-
-def get_billable_units_for_prefix(prefix):
-    return INTERNATIONAL_BILLING_RATES[prefix]['billable_units']
+    @property
+    def billable_units(self):
+        # TODO: KeyError?
+        return INTERNATIONAL_BILLING_RATES[self.country_code]['billable_units']
 
 
 def reject_vanity_number(number):
@@ -399,9 +395,6 @@ def validate_phone_number(number, column=None, international=False):
         raise InvalidPhoneError("Not a valid number")
     _formatted = phonenumbers.format_number(_parsed, phonenumbers.PhoneNumberFormat.E164)
     return _formatted
-
-
-# validate_and_format_phone_number = validate_phone_number
 
 
 def try_validate_and_format_phone_number(number, column=None, international=False, log_msg=None):
@@ -482,7 +475,7 @@ def validate_address(address_line, column):
 def validate_recipient(recipient, template_type, column=None, international_sms=False):
     return {
         'email': validate_email_address,
-        'sms': partial(validate_phone_number, international=international_sms),
+        'sms': partial(validate_phone_number, international=international_sms),  # TODO: FIX THIS!
         'letter': validate_address,
     }[template_type](recipient, column)
 
