@@ -486,19 +486,3 @@ def insert_or_append_to_dict(dict_, key, value):
             dict_[key] = [dict_[key], value]
     else:
         dict_.update({key: value})
-
-
-def parse_number(number, region=None):
-    matches = []
-    for match in phonenumbers.PhoneNumberMatcher(number, region):
-        matches.append(match)
-
-    if len(matches) > 0:
-        if region is not None:
-            if matches[0].number.country_code == int(country_code):
-                return matches[0]
-            else:
-                return False
-        return matches[0]
-    else:
-        return False
