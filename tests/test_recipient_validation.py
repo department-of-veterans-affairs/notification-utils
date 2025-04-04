@@ -164,16 +164,6 @@ def test_get_international_info(phone_number, international, country_code, billa
     assert validated.billable_units == billable_units
 
 
-# @pytest.mark.parametrize('phone_number', [
-#     '+21 4321 0987',
-#     '+003997 1234 7890',
-# ])
-# def test_get_international_info_raises(phone_number):
-#     with pytest.raises(InvalidPhoneError) as error:
-#         get_international_phone_info(phone_number)
-#     assert str(error.value) == 'Not a valid number'
-
-
 @pytest.mark.parametrize("phone_number", valid_local_phone_numbers)
 @pytest.mark.parametrize("validator", [
     partial(validate_recipient, template_type='sms'),

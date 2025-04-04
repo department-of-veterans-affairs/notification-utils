@@ -8,7 +8,7 @@ from io import StringIO
 from contextlib import suppress
 from functools import lru_cache, partial
 from itertools import islice
-from collections import OrderedDict, namedtuple
+from collections import OrderedDict
 from . import EMAIL_REGEX_PATTERN, hostname_part, tld_part
 from notifications_utils.formatters import strip_and_remove_obscure_whitespace, strip_whitespace
 from notifications_utils.template import Template
@@ -331,13 +331,6 @@ class InvalidPhoneError(Exception):
 
 class InvalidAddressError(InvalidEmailError):
     pass
-
-
-international_phone_info = namedtuple('PhoneNumber', [
-    'international',
-    'country_prefix',
-    'billable_units',
-])
 
 
 class ValidatedPhoneNumber:
