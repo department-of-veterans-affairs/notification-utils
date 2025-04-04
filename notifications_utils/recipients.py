@@ -340,9 +340,26 @@ international_phone_info = namedtuple('PhoneNumber', [
 ])
 
 
+class ValidatedPhoneNumber:
+
+    def __init__(self, raw_input: str):
+        reject_vanity_number(raw_input)
+
+        try:
+            self._parsed: phonenumbers.PhoneNumber = phonenumbers.parse(raw_input, region_code)
+        except phonenumbers.NumberParseException:
+            raise InvalidPhoneError("Not a valid number")
+        if not phonenumbers.is_valid_number(self._parsed):
+            raise InvalidPhoneError("Not a valid number")
+
+    @property
+    def formatted(self):
+        return phonenumbers.format_number(self._parsed, phonenumbers.PhoneNumberFormat.E164)
+
+
 def get_international_phone_info(number):
 
-    number = validate_phone_number(number, international=True)
+    number = ValidatedPhoneNumber(number).formatted
     prefix = get_international_prefix(number)
 
     return international_phone_info(
@@ -384,7 +401,7 @@ def validate_phone_number(number, column=None, international=False):
     return _formatted
 
 
-validate_and_format_phone_number = validate_phone_number
+# validate_and_format_phone_number = validate_phone_number
 
 
 def try_validate_and_format_phone_number(number, column=None, international=False, log_msg=None):
@@ -393,7 +410,7 @@ def try_validate_and_format_phone_number(number, column=None, international=Fals
     something in
     """
     try:
-        return validate_and_format_phone_number(number, column, international)
+        return ValidatedPhoneNumber(number).formatted
     except InvalidPhoneError as exc:
         if log_msg:
             logging.warning(log_msg)
@@ -475,7 +492,7 @@ def format_recipient(recipient):
     if not isinstance(recipient, str):
         return ''
     with suppress(InvalidPhoneError):
-        return validate_and_format_phone_number(recipient)
+        return ValidatedPhoneNumber(recipient).formatted
     with suppress(InvalidEmailError):
         return validate_and_format_email_address(recipient)
     return recipient
