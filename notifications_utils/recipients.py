@@ -371,11 +371,11 @@ def reject_vanity_number(number):
         raise InvalidPhoneError("Not a valid number")
 
 
-def validate_phone_number(phone_number: str, column=None, international=False):
-    reject_vanity_number(phone_number)
+def validate_phone_number(number, column=None, international=False):
+    reject_vanity_number(number)
 
     try:
-        _parsed = phonenumbers.parse(phone_number, region_code)
+        _parsed = phonenumbers.parse(number, region_code)
     except phonenumbers.NumberParseException:
         raise InvalidPhoneError("Not a valid number")
     if not phonenumbers.is_valid_number(_parsed):
