@@ -216,7 +216,17 @@ def test_phone_number_accepts_valid_values(validator, phone_number):
     '07";DROP TABLE;',
     '416-234-8976;416-235-8976',
 ])
-def test_phone_with_semicolon(phone):
+def test_phone_with_invalid_semicolon_usage(phone):
+    with pytest.raises(InvalidPhoneError) as e:
+        validate_phone_number(phone)
+    assert "Not a valid number" == str(e.value)
+
+
+@pytest.mark.parametrize('phone', [
+    '1800ABDEFGH',
+    '1-800-ABC-DEFG',
+])
+def test_phone_with_vanity_raises(phone):
     with pytest.raises(InvalidPhoneError) as e:
         validate_phone_number(phone)
     assert "Not a valid number" == str(e.value)

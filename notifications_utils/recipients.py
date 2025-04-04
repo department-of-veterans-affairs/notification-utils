@@ -361,9 +361,21 @@ def get_billable_units_for_prefix(prefix):
     return INTERNATIONAL_BILLING_RATES[prefix]['billable_units']
 
 
-def validate_phone_number(number, column=None, international=False):
+def reject_vanity_number(number):
+    if isinstance(number, str):
+        # strip extension markers
+        _number = re.sub(r'\s*(x|ext|extension)\s*\d+$', '', number, flags=re.IGNORECASE).strip()
+
+    # do not allow letters in phone number (vanity)
+    if re.search(r'[A-Za-z]', _number) is not None:
+        raise InvalidPhoneError("Not a valid number")
+
+
+def validate_phone_number(phone_number: str, column=None, international=False):
+    reject_vanity_number(phone_number)
+
     try:
-        _parsed = phonenumbers.parse(number, region_code)
+        _parsed = phonenumbers.parse(phone_number, region_code)
     except phonenumbers.NumberParseException:
         raise InvalidPhoneError("Not a valid number")
     if not phonenumbers.is_valid_number(_parsed):
