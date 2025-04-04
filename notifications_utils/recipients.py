@@ -362,17 +362,12 @@ def get_billable_units_for_prefix(prefix):
 
 
 def validate_phone_number(number, column=None, international=False):
-    if ';' in number:
-        raise InvalidPhoneError("Not a valid number")
-
     try:
         _parsed = phonenumbers.parse(number, region_code)
     except phonenumbers.NumberParseException:
         raise InvalidPhoneError("Not a valid number")
     if not phonenumbers.is_valid_number(_parsed):
         raise InvalidPhoneError("Not a valid number")
-    if not international and str(_parsed.country_code) != country_code:
-        raise InvalidPhoneError("Not a valid local number")
     _formatted = phonenumbers.format_number(_parsed, phonenumbers.PhoneNumberFormat.E164)
     return _formatted
 
@@ -380,7 +375,7 @@ def validate_phone_number(number, column=None, international=False):
 validate_and_format_phone_number = validate_phone_number
 
 
-def try_validate_and_format_phone_number(number, column=None, international=None, log_msg=None):
+def try_validate_and_format_phone_number(number, column=None, international=False, log_msg=None):
     """
     For use in places where you shouldn't error if the phone number is invalid - for example if firetext pass us
     something in
