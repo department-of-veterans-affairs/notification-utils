@@ -6,7 +6,7 @@ import phonenumbers
 import os
 from io import StringIO
 from contextlib import suppress
-from functools import lru_cache, partial
+from functools import lru_cache
 from itertools import islice
 from collections import OrderedDict
 from . import EMAIL_REGEX_PATTERN, hostname_part, tld_part
@@ -305,7 +305,6 @@ class RecipientCSV():
                     value,
                     self.template_type,
                     column=key,
-                    international_sms=self.international_sms
                 )
             except (InvalidEmailError, InvalidPhoneError, InvalidAddressError) as error:
                 return str(error)
@@ -377,20 +376,12 @@ def reject_vanity_number(number):
         raise InvalidPhoneError("Not a valid number")
 
 
-def validate_phone_number(number, column=None, international=False):
-    reject_vanity_number(number)
-
-    try:
-        _parsed = phonenumbers.parse(number, region_code)
-    except phonenumbers.NumberParseException:
-        raise InvalidPhoneError("Not a valid number")
-    if not phonenumbers.is_valid_number(_parsed):
-        raise InvalidPhoneError("Not a valid number")
-    _formatted = phonenumbers.format_number(_parsed, phonenumbers.PhoneNumberFormat.E164)
-    return _formatted
+def validate_phone_number(number, column=None):
+    """Wrapper function to retain compatability with validate_recipient."""
+    return ValidatedPhoneNumber(number).formatted
 
 
-def try_validate_and_format_phone_number(number, column=None, international=False, log_msg=None):
+def try_validate_and_format_phone_number(number, log_msg=None):
     """
     For use in places where you shouldn't error if the phone number is invalid - for example if firetext pass us
     something in
@@ -465,10 +456,10 @@ def validate_address(address_line, column):
     return address_line
 
 
-def validate_recipient(recipient, template_type, column=None, international_sms=False):
+def validate_recipient(recipient, template_type, column=None):
     return {
         'email': validate_email_address,
-        'sms': partial(validate_phone_number, international=international_sms),  # TODO: FIX THIS!
+        'sms': validate_phone_number,
         'letter': validate_address,
     }[template_type](recipient, column)
 
