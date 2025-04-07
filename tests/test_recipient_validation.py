@@ -149,19 +149,20 @@ invalid_email_addresses = (
 )
 
 
-@pytest.mark.parametrize("phone_number, international, country_code, billable_units", [
-    ('+447900900123', True, '44', 1),     # UK
-    ('+20-12-1234-1234', True, '20', 3),  # Egypt
-    ('+201212341234', True, '20', 3),     # Egypt
-    ('+79587714230', True, '7', 1),       # Russia
-    ('1-202-555-0104', False, '1', 1),    # USA
-    ('+2302086859', True, '230', 2),      # Mauritius
+@pytest.mark.parametrize("phone_number, international, country_code, region_code, billable_units", [
+    ('+447900900123', True, '44', 'GB', 1),     # UK
+    ('+20-12-1234-1234', True, '20', 'EG', 3),  # Egypt
+    ('+201212341234', True, '20', 'EG', 3),     # Egypt
+    ('+79587714230', True, '7', 'RU', 1),       # Russia
+    ('1-202-555-0104', False, '1', 'US', 1),    # USA
+    ('+2302086859', True, '230', 'MU', 2),      # Mauritius
 ])
-def test_get_international_info(phone_number, international, country_code, billable_units):
+def test_get_international_info(phone_number, international, country_code, region_code, billable_units):
     validated = ValidatedPhoneNumber(phone_number)
     assert validated.international == international
     assert validated.country_code == country_code
     assert validated.billable_units == billable_units
+    assert validated.region_code == region_code
 
 
 @pytest.mark.parametrize("phone_number", valid_local_phone_numbers)

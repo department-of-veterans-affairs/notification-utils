@@ -333,50 +333,51 @@ class InvalidAddressError(InvalidEmailError):
 
 
 class ValidatedPhoneNumber:
-
-    def __init__(self, raw_input: str):
-        reject_vanity_number(raw_input)
-
+    def __init__(self, number: str):
         try:
-            self._parsed: phonenumbers.PhoneNumber = phonenumbers.parse(raw_input, region_code)
-        except phonenumbers.NumberParseException:
+            _reject_vanity_number(number)
+            self._parsed: phonenumbers.PhoneNumber = phonenumbers.parse(number, region_code)
+        except (TypeError, phonenumbers.NumberParseException):
             raise InvalidPhoneError("Not a valid number")
         if not phonenumbers.is_valid_number(self._parsed):
             raise InvalidPhoneError("Not a valid number")
 
     @property
-    def formatted(self):
+    def formatted(self) -> str:
+        """Phone number as E164 formatted string."""
         return phonenumbers.format_number(self._parsed, phonenumbers.PhoneNumberFormat.E164)
 
     @property
-    def international(self):
+    def international(self) -> bool:
+        """Is phone number international."""
         return self.country_code != country_code
 
     @property
-    def country_code(self):
+    def country_code(self) -> str:
+        """Country code of phone number as a string."""
         return str(self._parsed.country_code)
 
     @property
-    def region_code(self):
+    def region_code(self) -> str:
+        """Region code of phone number."""
         return phonenumbers.region_code_for_number(self._parsed)
 
     @property
-    def billable_units(self):
-        # TODO: KeyError?
+    def billable_units(self) -> int:
+        """Billable units for phone number referenced using country code."""
         return INTERNATIONAL_BILLING_RATES[self.country_code]['billable_units']
 
 
-def reject_vanity_number(number):
-    if isinstance(number, str):
-        # strip extension markers
-        _number = re.sub(r'\s*(x|ext|extension)\s*\d+$', '', number, flags=re.IGNORECASE).strip()
+def _reject_vanity_number(number: str) -> None:
+    """Raise InvalidPhoneError is number string has alpha characters."""
+    _number = re.sub(r'\s*(x|ext|extension)\s*\d+$', '', number, flags=re.IGNORECASE).strip()
 
     # do not allow letters in phone number (vanity)
     if re.search(r'[A-Za-z]', _number) is not None:
         raise InvalidPhoneError("Not a valid number")
 
 
-def validate_phone_number(number, column=None):
+def validate_phone_number(number, column=None) -> str:
     """Wrapper function to retain compatability with validate_recipient."""
     return ValidatedPhoneNumber(number).formatted
 
