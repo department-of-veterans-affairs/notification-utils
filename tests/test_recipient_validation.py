@@ -71,30 +71,10 @@ invalid_phone_numbers = [
     ('+21 4321 0987', 'Not a valid number'),
     ('+003997 1234 7890', 'Not a valid number'),
     ('ALPHANUM3R1C', 'Not a valid number'),
-    (
-        '800000000000',
-        (
-            'Not a valid number'
-        )
-    ),
-    (
-        '1234567',
-        (
-            'Not a valid number'
-        )
-    ),
-    (
-        '+682 1234',
-        (
-            'Not a valid number'
-        )
-    ),  # Cook Islands phone numbers can be 5 digits
-    (
-        '+17553927664',
-        (
-            'Not a valid number'
-        )
-    ),
+    ('800000000000', 'Not a valid number'),
+    ('1234567', 'Not a valid number'),
+    ('+682 1234', 'Not a valid number'),  # Cook Islands phone numbers can be 5 digits
+    ('+17553927664', 'Not a valid number'),
 ]
 
 
