@@ -61,16 +61,15 @@ invalid_local_phone_numbers = sum([
             '07123 456789...',
             '07123 ☟☜⬇⬆☞☝',
             '07123☟☜⬇⬆☞☝',
-            '+44 07ab cde fgh',
         ))
     ]
 ], [])
 
 
 invalid_phone_numbers = [
-    ('+21 4321 0987', 'Not a valid number'),
-    ('+003997 1234 7890', 'Not a valid number'),
-    ('ALPHANUM3R1C', 'Not a valid number'),
+    ('+21 4321 0987', 'Not a possible number'),
+    ('+003997 1234 7890', 'Not a possible number'),
+    ('ALPHANUM3R1C', 'Phone numbers must not contain letters'),
     ('800000000000', 'Not a valid number'),
     ('1234567', 'Not a valid number'),
     ('+682 1234', 'Not a valid number'),  # Cook Islands phone numbers can be 5 digits
@@ -137,7 +136,13 @@ invalid_email_addresses = (
     ('1-202-555-0104', False, '1', 'US', 1),    # USA
     ('+2302086859', True, '230', 'MU', 2),      # Mauritius
 ])
-def test_get_international_info(phone_number, international, country_code, region_code, billable_units):
+def test_get_international_info(
+    phone_number: str,
+    international: bool,
+    country_code: str,
+    region_code: str,
+    billable_units: int,
+):
     validated = ValidatedPhoneNumber(phone_number)
     assert validated.international == international
     assert validated.country_code == country_code
@@ -157,14 +162,14 @@ def test_phone_number_accepts_valid_values(validator, phone_number):
         pytest.fail('Unexpected InvalidPhoneError')
 
 
-@pytest.mark.parametrize('phone', [
-    '07";DROP TABLE;',
-    '416-234-8976;416-235-8976',
+@pytest.mark.parametrize('phone, error_msg', [
+    ('07";DROP TABLE;', 'Phone numbers must not contain letters'),
+    ('416-234-8976;416-235-8976', 'Not a possible number'),
 ])
-def test_phone_with_invalid_semicolon_usage(phone):
+def test_phone_with_invalid_semicolon_usage(phone, error_msg):
     with pytest.raises(InvalidPhoneError) as e:
         ValidatedPhoneNumber(phone)
-    assert "Not a valid number" == str(e.value)
+    assert error_msg == str(e.value)
 
 
 @pytest.mark.parametrize('phone', [
@@ -174,7 +179,7 @@ def test_phone_with_invalid_semicolon_usage(phone):
 def test_phone_with_vanity_raises(phone):
     with pytest.raises(InvalidPhoneError) as e:
         ValidatedPhoneNumber(phone)
-    assert "Not a valid number" == str(e.value)
+    assert "Phone numbers must not contain letters" == str(e.value)
 
 
 @pytest.mark.parametrize("phone_number", valid_phone_numbers)

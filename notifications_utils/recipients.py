@@ -334,11 +334,12 @@ class InvalidAddressError(InvalidEmailError):
 
 class ValidatedPhoneNumber:
     def __init__(self, number: str):
+        # raises InvalidPhoneNumber if letters present
+        _reject_vanity_number(number)
         try:
-            _reject_vanity_number(number)
             self._parsed: phonenumbers.PhoneNumber = phonenumbers.parse(number, region_code)
         except (TypeError, phonenumbers.NumberParseException):
-            raise InvalidPhoneError('Not a valid number')
+            raise InvalidPhoneError('Not a possible number')
         if not phonenumbers.is_valid_number(self._parsed):
             raise InvalidPhoneError('Not a valid number')
 
@@ -374,7 +375,7 @@ def _reject_vanity_number(number: str) -> None:
 
     # do not allow letters in phone number (vanity)
     if re.search(r'[A-Za-z]', _number) is not None:
-        raise InvalidPhoneError('Not a valid number')
+        raise InvalidPhoneError('Phone numbers must not contain letters')
 
 
 def validate_phone_number(number, column=None) -> str:
