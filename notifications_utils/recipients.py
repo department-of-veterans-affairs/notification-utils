@@ -18,8 +18,8 @@ from notifications_utils.international_billing_rates import (
 )
 
 
-country_code = os.getenv("PHONE_COUNTRY_CODE", "1")
-region_code = os.getenv("PHONE_REGION_CODE", "US")
+DEFAULT_COUNTRY_CODE = os.getenv("PHONE_COUNTRY_CODE", "1")
+DEFAULT_REGION_CODE = os.getenv("PHONE_REGION_CODE", "US")
 
 first_column_headings = {
     'email': ['email address'],
@@ -337,7 +337,7 @@ class ValidatedPhoneNumber:
         # raises InvalidPhoneNumber if letters present
         _reject_vanity_number(number)
         try:
-            self._parsed: phonenumbers.PhoneNumber = phonenumbers.parse(number, region_code)
+            self._parsed: phonenumbers.PhoneNumber = phonenumbers.parse(number, DEFAULT_REGION_CODE)
         except (TypeError, phonenumbers.NumberParseException):
             raise InvalidPhoneError('Not a possible number')
         if not phonenumbers.is_valid_number(self._parsed):
@@ -351,7 +351,7 @@ class ValidatedPhoneNumber:
     @property
     def international(self) -> bool:
         """Is phone number international."""
-        return self.country_code != country_code
+        return self.country_code != DEFAULT_COUNTRY_CODE
 
     @property
     def country_code(self) -> str:
