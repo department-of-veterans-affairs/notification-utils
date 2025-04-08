@@ -338,9 +338,9 @@ class ValidatedPhoneNumber:
             _reject_vanity_number(number)
             self._parsed: phonenumbers.PhoneNumber = phonenumbers.parse(number, region_code)
         except (TypeError, phonenumbers.NumberParseException):
-            raise InvalidPhoneError("Not a valid number")
+            raise InvalidPhoneError('Not a valid number')
         if not phonenumbers.is_valid_number(self._parsed):
-            raise InvalidPhoneError("Not a valid number")
+            raise InvalidPhoneError('Not a valid number')
 
     @property
     def formatted(self) -> str:
@@ -374,7 +374,7 @@ def _reject_vanity_number(number: str) -> None:
 
     # do not allow letters in phone number (vanity)
     if re.search(r'[A-Za-z]', _number) is not None:
-        raise InvalidPhoneError("Not a valid number")
+        raise InvalidPhoneError('Not a valid number')
 
 
 def validate_phone_number(number, column=None) -> str:
