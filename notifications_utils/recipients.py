@@ -340,6 +340,8 @@ class ValidatedPhoneNumber:
             self._parsed: phonenumbers.PhoneNumber = phonenumbers.parse(number, DEFAULT_REGION_CODE)
         except (TypeError, phonenumbers.NumberParseException):
             raise InvalidPhoneError('Not a possible number')
+        if str(self._parsed.country_code) not in INTERNATIONAL_BILLING_RATES:
+            raise InvalidPhoneError('Not a valid country code')
         if not phonenumbers.is_valid_number(self._parsed):
             raise InvalidPhoneError('Not a valid number')
 
@@ -365,7 +367,10 @@ class ValidatedPhoneNumber:
 
     @property
     def billable_units(self) -> int:
-        """Billable units for phone number referenced using country code."""
+        """Billable units for phone number referenced using country code.
+
+        Validated number country codes are always present in INTERNATIONAL_BILLING_RATES
+        """
         return INTERNATIONAL_BILLING_RATES[self.country_code]['billable_units']
 
 

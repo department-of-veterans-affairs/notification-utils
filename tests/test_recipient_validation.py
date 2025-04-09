@@ -67,7 +67,7 @@ invalid_local_phone_numbers = sum([
 
 
 invalid_phone_numbers = [
-    ('+21 4321 0987', 'Not a possible number'),
+    ('+21 4321 0987', 'Not a possible number'),  # Invalid country code
     ('+003997 1234 7890', 'Not a possible number'),
     ('ALPHANUM3R1C', 'Phone numbers must not contain letters'),
     ('800000000000', 'Not a valid number'),
