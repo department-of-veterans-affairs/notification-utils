@@ -341,7 +341,7 @@ class ValidatedPhoneNumber:
         except (TypeError, phonenumbers.NumberParseException):
             raise InvalidPhoneError('Not a possible number')
         if str(self._parsed.country_code) not in INTERNATIONAL_BILLING_RATES:
-            raise InvalidPhoneError('Not a valid country code')
+            raise InvalidPhoneError('Not a valid country prefix')
         if not phonenumbers.is_valid_number(self._parsed):
             raise InvalidPhoneError('Not a valid number')
 
