@@ -340,6 +340,8 @@ class ValidatedPhoneNumber:
             raise InvalidPhoneError('Not a possible number')
         if self.region_code == NON_GEOGRAPHIC_REGION_CODE:
             # Country prefix/code maps to a non-geographic region like shared-cost or a satellite phone
+            # Note that phonenumbers returns '001' to indicate the non-geographic regions.
+            # This is the exception to all other region codes which are a two letter string like 'US' or 'CA'
             raise InvalidPhoneError('Not a valid country prefix')
         if not phonenumbers.is_valid_number(self._parsed):
             raise InvalidPhoneError('Not a valid number')
