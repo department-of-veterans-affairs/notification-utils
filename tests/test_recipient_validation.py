@@ -16,9 +16,12 @@ from notifications_utils.recipients import (
 
 
 valid_local_phone_numbers = [
-    '6502532222',
-    '+16502532222',
-    '+1 650-253-2222',
+    '6502532222',  # local 10-digit
+    '+16502532222',  # local E.164
+    '+1 650-253-2222',  # hyphenated
+    '+1 650.253.2222',  # periods
+    '+1 (650) 253-2222',  # mixed format
+    '+1 [650] 253-2222',  # mixed format
     '650-253-2222',
     '16502532222',
     '1 6502532222',
@@ -26,8 +29,21 @@ valid_local_phone_numbers = [
 
 
 valid_international_phone_numbers = [
-    '+79587714230',  # Russia
-    '+2302086859',  # Mauritius,
+    '+639171234567',  # Philippines E.164
+    '+63 917 123 4567',  # Philippines with spaces
+    '+63(917)1234567',  # Philippines with parentheses
+    '+63[917]1234567',  # Philippines with brackets
+    '+63-917-123-4567',  # Philippines with hyphens
+    '+63.917.123.4567',  # Philippines with periods
+    '+63 (917) 123-4567',  # Philippines with mixed format
+    '+44 (0)20 7946-0958',  # London with optional 0
+    '+49 (0)30.1234.5678',  # Berlin with periods instead of dashes
+    '+33 [0]1 44 55 66 77',  # Paris with brackets and spaces
+    '+81-(0)3-1234-5678',  # Tokyo with mixed dash and parentheses
+    '+61 (0)2 9876 5432',  # Sydney with lots of spaces
+    '+82.10.1234.5678',  # So. Korea with periods
+    '+20 (0)12-3456-7890',  # Egypt with hyphen and parentheses
+    '+55 (11) 91234-5678',  # São Paulo with parenthesis
 ]
 
 
@@ -67,14 +83,15 @@ invalid_local_phone_numbers = sum([
 
 
 invalid_phone_numbers = [
-    ('+21 4321 0987', 'Not a possible number'),  # Invalid country prefix, does not parse
-    ('+681 4321 0987', 'Not a valid country prefix'),  # Invalid country prefix, parses
+    ('+21 4321 0987', 'Not a possible number'),
+    ('+681 4321 0987', 'Not a valid number'),
     ('+003997 1234 7890', 'Not a possible number'),
     ('ALPHANUM3R1C', 'Phone numbers must not contain letters'),
     ('800000000000', 'Not a valid number'),
     ('1234567', 'Not a valid number'),
     ('+682 1234', 'Not a valid number'),  # Cook Islands phone numbers can be 5 digits
     ('+17553927664', 'Not a valid number'),
+    ('+80888888888', 'Not a valid country prefix'),  # Non-Geographic
 ]
 
 
@@ -131,11 +148,13 @@ invalid_email_addresses = (
 
 @pytest.mark.parametrize("phone_number, international, country_code, region_code, billable_units", [
     ('+447900900123', True, '44', 'GB', 1),     # UK
-    ('+20-12-1234-1234', True, '20', 'EG', 3),  # Egypt
-    ('+201212341234', True, '20', 'EG', 3),     # Egypt
+    ('+20-12-1234-1234', True, '20', 'EG', 1),  # Egypt
+    ('+201212341234', True, '20', 'EG', 1),     # Egypt
     ('+79587714230', True, '7', 'RU', 1),       # Russia
     ('1-202-555-0104', False, '1', 'US', 1),    # USA
-    ('+2302086859', True, '230', 'MU', 2),      # Mauritius
+    ('+1613-238-5335', True, '1', 'CA', 1),     # Canada
+    ('+1(242) 322-1181', True, '1', 'BS', 1),
+    ('+2302086859', True, '230', 'MU', 1),      # Mauritius
 ])
 def test_get_international_info(
     phone_number: str,

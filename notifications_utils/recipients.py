@@ -3,6 +3,7 @@ import re
 import sys
 import csv
 import phonenumbers
+from phonenumbers.phonenumberutil import region_code_for_number
 import os
 from io import StringIO
 from contextlib import suppress
@@ -13,13 +14,10 @@ from . import EMAIL_REGEX_PATTERN, hostname_part, tld_part
 from notifications_utils.formatters import strip_and_remove_obscure_whitespace, strip_whitespace
 from notifications_utils.template import Template
 from notifications_utils.columns import Columns, Row, Cell
-from notifications_utils.international_billing_rates import (
-    INTERNATIONAL_BILLING_RATES,
-)
-
 
 DEFAULT_COUNTRY_CODE = os.getenv("PHONE_COUNTRY_CODE", "1")
 DEFAULT_REGION_CODE = os.getenv("PHONE_REGION_CODE", "US")
+NON_GEOGRAPHIC_REGION_CODE = '001'
 
 first_column_headings = {
     'email': ['email address'],
@@ -340,7 +338,8 @@ class ValidatedPhoneNumber:
             self._parsed: phonenumbers.PhoneNumber = phonenumbers.parse(number, DEFAULT_REGION_CODE)
         except (TypeError, phonenumbers.NumberParseException):
             raise InvalidPhoneError('Not a possible number')
-        if str(self._parsed.country_code) not in INTERNATIONAL_BILLING_RATES:
+        if self.region_code == NON_GEOGRAPHIC_REGION_CODE:
+            # Country prefix/code maps to a non-geographic region like shared-cost or a satellite phone
             raise InvalidPhoneError('Not a valid country prefix')
         if not phonenumbers.is_valid_number(self._parsed):
             raise InvalidPhoneError('Not a valid number')
@@ -353,7 +352,7 @@ class ValidatedPhoneNumber:
     @property
     def international(self) -> bool:
         """Is phone number international."""
-        return self.country_code != DEFAULT_COUNTRY_CODE
+        return self.region_code != DEFAULT_REGION_CODE
 
     @property
     def country_code(self) -> str:
@@ -363,15 +362,20 @@ class ValidatedPhoneNumber:
     @property
     def region_code(self) -> str:
         """Region code of phone number."""
-        return phonenumbers.region_code_for_number(self._parsed)
+        return region_code_for_number(self._parsed)
 
     @property
     def billable_units(self) -> int:
         """Billable units for phone number referenced using country code.
 
-        Validated number country codes are always present in INTERNATIONAL_BILLING_RATES
+        Previously looked up by combination of country code and NSN and in the billing rates and used as a multiplier.
+        Billing rates yaml file is incomplete and/or out of date.
+
+        INTERNATIONAL_BILLING_RATES[billing_prefix]['billable_units']
+
+        Note: AWS returns a total_cost_millicents so returning a hardcoded 1.
         """
-        return INTERNATIONAL_BILLING_RATES[self.country_code]['billable_units']
+        return 1
 
 
 def _reject_vanity_number(number: str) -> None:
@@ -390,15 +394,16 @@ def validate_phone_number(number, column=None) -> str:
 
 def try_validate_and_format_phone_number(number, log_msg=None):
     """
-    For use in places where you shouldn't error if the phone number is invalid - for example if firetext pass us
-    something in
+    For use in places where you shouldn't error if the phone number is invalid
+      - for example if firetext pass us something in
+
+    Note: Caller is responsible for adding qualifiers to the log message
     """
     try:
         return ValidatedPhoneNumber(number).formatted
-    except InvalidPhoneError as exc:
+    except InvalidPhoneError:
         if log_msg:
-            logging.warning(log_msg)
-            logging.exception(exc)
+            logging.exception(log_msg)
         return number
 
 
