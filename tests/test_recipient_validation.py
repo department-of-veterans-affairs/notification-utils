@@ -224,6 +224,9 @@ def test_valid_local_phone_number_can_be_formatted_consistently(phone_number):
     ('1-202-555-0104', '+12025550104'),
     ('+12025550104', '+12025550104'),
     ('+2302086859', '+2302086859'),
+    ('+230(208)6859', '+2302086859'),
+    ('+44 (0)20 7946-0958', '+442079460958'),  # London, optional zero
+    ('+33 [0]1 44 55 66 77', '+33144556677'),  # Paris, optional zero
 ])
 def test_valid_international_phone_number_can_be_formatted_consistently(phone_number, expected_formatted):
     assert ValidatedPhoneNumber(phone_number).formatted == expected_formatted
@@ -356,7 +359,7 @@ def test_validates_against_whitelist_of_email_addresses(email_address):
     (None, ''),
     ('foo', 'foo'),
     ('TeSt@ExAmPl3.com', 'test@exampl3.com'),
-    ('+14407900 900 123', '+14407900 900 123'),  # invalid number
+    ('+14407900 900 123', '+14407900 900 123'),  # invalid number, returned as-is
     ('+1 800 555 5555', '+18005555555'),
 ])
 def test_format_recipient(recipient, expected_formatted):
