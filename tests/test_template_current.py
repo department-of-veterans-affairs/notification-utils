@@ -117,7 +117,7 @@ class TestRenderNotifyMarkdownWithPreprocessing:
 
     # Notify uses the nonstandard "^" to denote a block quote.
 
-    @pytest.mark.xfail(reason='#203')
+
     def test_block_quotes_html(self, block_quotes_md_preprocessed: str):
         # Read the expected HTML file.
         with open('tests/test_files/html_current/block_quotes.html') as f:
@@ -125,7 +125,7 @@ class TestRenderNotifyMarkdownWithPreprocessing:
 
         assert notify_html_markdown(block_quotes_md_preprocessed) == expected
 
-    @pytest.mark.xfail(reason='#203')
+
     def test_block_quotes_plain_text(self, block_quotes_md_preprocessed: str):
         # Read the expected plain text file.
         with open('tests/test_files/plain_text/block_quotes.txt') as f:
@@ -285,7 +285,6 @@ class TestRenderNotifyMarkdownActionLinksPlaceholders:
             assert str(template) == expected
 
 
-@pytest.mark.xfail(reason='#203')
 class TestRenderNotifyMarkdownBlockQuotesPlaceholders:
     """
     block_quotes_placeholders.md has these personalizations: bottom, claims, nested, and top.
