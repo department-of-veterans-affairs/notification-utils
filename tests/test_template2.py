@@ -16,6 +16,7 @@ def generate_markdown_test_files() -> Generator[str, None, None]:
     yield 'emphasis.md'
     yield 'images.md'
     yield 'tables.md'
+    yield 'thematic_break.md'
 
     # TODO - This code will be restored during tickets that follow #213.
     # for f in scandir('tests/test_files/markdown/'):
