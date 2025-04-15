@@ -12,6 +12,7 @@ def generate_markdown_test_files() -> Generator[str, None, None]:
     Do not yield subdirectories or their files.
     """
 
+    # TODO - When all inputs are expected to pass, remove these individual yields, and restore the subsequent loop.
     yield 'headers.md'
     yield 'emphasis.md'
     yield 'images.md'
