@@ -4,6 +4,6 @@
 
 ![alt text](https://www.example.com/test.jpg "title text")
 
-text before ![alt text](https://www.example.com/test.jpeg) text after
+text before inline image ![alt text](https://www.example.com/test.jpeg) text after inline image
 
-text before ![alt text](https://www.example.com/test.webm "title text") text after
+text before inline image with title text ![alt text](https://www.example.com/test.webm "title text") text after inline image with title text

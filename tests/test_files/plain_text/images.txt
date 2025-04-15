@@ -7,6 +7,6 @@ Images should be removed
 
 
 
-text before  text after
+text before inline image  text after inline image
 
-text before  text after
+text before inline image with title text  text after inline image with title text
