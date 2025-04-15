@@ -1,18 +1,18 @@
+from notifications_utils.formatters import notify_markdown
+from notifications_utils.formatters2 import notify_html_markdown
+
+
 def render_notify_markdown(markdown: str, personalization: dict | None = None, as_html: bool = True) -> str:
     """
     Substitute personalization values into markdown, and return the markdown as HTML or plain text.
     """
 
-    # TODO #213 - Perform substitutions in the markdown.  Raise ValueError for missing fields.
+    # TODO - Perform substitutions in the markdown.  Raise ValueError for missing fields.
 
     if as_html:
-        # TODO #213 - pass the markdown to the HTML renderer
-        pass
+        return notify_html_markdown(markdown)
     else:
-        # TODO #213 - pass the markdown to the plain text renderer
-        pass
-
-    raise NotImplementedError
+        return notify_markdown(markdown)
 
 
 # TODO - The signature and return type might change for #215 or later, during integration with notifcation-api.

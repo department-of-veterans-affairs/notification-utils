@@ -5,16 +5,8 @@ Images should be removed
 -----------------------------------------------------------------
 
 
-Inline images
------------------------------------------------------------------
 
 
-Reference images
------------------------------------------------------------------
+text before  text after
 
-The reference is immediately after the image.
-
-The reference is not immediately after the image.
-
-This line separates the images from their references.
-
+text before  text after

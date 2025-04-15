@@ -1,14 +1,9 @@
-from os import scandir
+# from os import scandir
 from typing import Generator
 
 import pytest
 
 from notifications_utils.template2 import render_notify_markdown
-
-
-# Skip all tests in this module.
-# TODO #213 - Unskip by deleting this.
-pytest.skip('These features will be implemented for #213.', allow_module_level=True)
 
 
 def generate_markdown_test_files() -> Generator[str, None, None]:
@@ -17,9 +12,15 @@ def generate_markdown_test_files() -> Generator[str, None, None]:
     Do not yield subdirectories or their files.
     """
 
-    for f in scandir('tests/test_files/markdown/'):
-        if f.is_file():
-            yield f.name
+    yield 'headers.md'
+    yield 'emphasis.md'
+    yield 'images.md'
+    yield 'tables.md'
+
+    # TODO - This code will be restored during tickets that follow #213.
+    # for f in scandir('tests/test_files/markdown/'):
+    #     if f.is_file():
+    #         yield f.name
 
 
 @pytest.mark.parametrize('as_html', (True, False))
@@ -46,6 +47,7 @@ def test_render_notify_markdown(filename: str, as_html: bool):
     assert render_notify_markdown(md, as_html=as_html) == expected
 
 
+@pytest.mark.skip(reason='not implemented')
 def test_render_notify_markdown_missing_personalization():
     """
     Calling render_notify_markdown without all of the personalizations should raise
@@ -56,6 +58,7 @@ def test_render_notify_markdown_missing_personalization():
         render_notify_markdown('This is ((test)) markdown.')
 
 
+@pytest.mark.skip(reason='not implemented')
 def test_render_notify_markdown_extra_personalization():
     """
     Calling render_notify_markdown with more than the required personalizations should
@@ -68,6 +71,7 @@ def test_render_notify_markdown_extra_personalization():
     assert render_notify_markdown(md, {'test': 'some', 'extra': 'extra'}, False) == plain_text
 
 
+@pytest.mark.skip(reason='not implemented')
 class TestRenderNotifyMarkdownLinksPlaceholders:
     """
     links_placeholders.md has these personalizations: url, url_fragment, url_text, and yt_video_id.
@@ -126,6 +130,7 @@ class TestRenderNotifyMarkdownLinksPlaceholders:
         assert render_notify_markdown(md, personalization, as_html) == expected
 
 
+@pytest.mark.skip(reason='not implemented')
 class TestRenderNotifyMarkdownActionLinksPlaceholders:
     """
     action_links_placeholders.md has these personalizations: url, url_text, and yt_video_id.
@@ -182,6 +187,7 @@ class TestRenderNotifyMarkdownActionLinksPlaceholders:
         assert render_notify_markdown(md, personalization, as_html) == expected
 
 
+@pytest.mark.skip(reason='not implemented')
 class TestRenderNotifyMarkdownBlockQuotesPlaceholders:
     """
     block_quotes_placeholders.md has these personalizations: bottom, claims, nested, and top.
