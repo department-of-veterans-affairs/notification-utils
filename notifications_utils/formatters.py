@@ -317,34 +317,40 @@ def get_action_link_image_url() -> str:
     return f'https://{img_env}-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png'
 
 
-def escape_spaces_in_markdown_link(markdown: str) -> str:
+def escape_whitespace_in_markdown_link(markdown: str) -> str:
     """
-    Escapes spaces in the URL portion of Markdown links to prevent parsing issues.
+    Escapes all whitespace characters in the URL portion of Markdown links to prevent Markdown parsing issues.
 
-    This function is designed to pre-process Markdown text and ensure that links like:
-        [Label](https://example.com/with spaces)
-    are transformed to:
-        [Label](https://example.com/with%20spaces)
+    This function ensures links like:
+        [Label](https://example.com/with spaces\tand\nnewlines)
+    become:
+        [Label](https://example.com/with%20spaces%09and%0Anewlines)
 
     Notes:
-    - Only the URL portion is escaped.
-    - This function does not sanitize links for safety — only for Markdown compatibility.
-    - Not using urllib to avoid over-sanitizing.
+    - Only the URL portion is modified.
+    - Escapes: space, tab, newline, carriage return, vertical tab, form feed.
+    - Does not sanitize URLs for safety - only escapes whitespace to ensure Markdown compatibility.
+    - Avoids use of urllib to minimize over-escaping and maximize performance.
 
     Args:
-        markdown (str): Raw markdown content to process.
+        markdown (str): Raw markdown text containing links.
 
     Returns:
-        str: Markdown with spaces in link URLs escaped.
+        str: Markdown with whitespace in link URLs percent-encoded.
     """
-    def replacement(match: re.Match[str]) -> str:
-        """Escape spaces in url portion of markdown link."""
-        escaped_url = match.group(2).replace(' ', '%20')
+    def escape_whitespace(match: re.Match[str]) -> str:
+        label = match.group(1)
+        raw_url = match.group(2)
 
-        return f'[{match.group(1)}]({escaped_url})'
+        # Encode whitespace characters as a percent-encoded uppercase hex values
+        # (e.g., ' ' -> '%20')
+        escaped_url = re.sub(r'\s', lambda m: f'%{ord(m.group(0)):02X}', raw_url)
 
-    # using permissive but non-greedy URL pattern to handle placeholders properly
-    return re.sub(r'''\[([^\]]+)\]\((.+?)\)''', replacement, markdown)
+        return f'[{label}]({escaped_url})'
+
+    # Match Markdown-style links: [label](url)
+    # URL match is non-greedy to support URLs with parentheses or placeholders like ((tag))
+    return re.sub(r'\[([^\]]+)\]\((.+?)\)', escape_whitespace, markdown)
 
 
 def insert_action_link(markdown: str) -> str:
