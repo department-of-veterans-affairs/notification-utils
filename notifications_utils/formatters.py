@@ -8,6 +8,7 @@ import smartypants
 from markupsafe import Markup
 from mistune.renderers.html import HTMLRenderer
 from mistune.renderers.markdown import MarkdownRenderer
+import urllib
 from . import email_with_smart_quotes_regex
 from notifications_utils.sanitise_text import SanitiseSMS
 
@@ -315,6 +316,21 @@ def get_action_link_image_url() -> str:
 
     img_env = env_map.get(os.environ.get('NOTIFY_ENVIRONMENT'), 'dev')
     return f'https://{img_env}-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png'
+
+
+def sanitize_markdown_links(markdown: str) -> str:
+    """Sanitize markdown links to avoid breaking markdown processing"""
+    def replacement(match: re.Match[str]) -> str:
+        """
+        Use urllib to escape the link URL.
+        Primarily concerned with escaping whitespace.
+        Parenthesis are considered safe to avoid interfering with Field preview mode.
+        """
+        escaped_url = urllib.parse.quote(match.group(2), safe=':/#?&=%()')
+
+        return f'[{match.group(1)}]({escaped_url})'
+
+    return re.sub(r'''\[([\w -]+)\]\(([^)]+)\)''', replacement, markdown)
 
 
 def insert_action_link(markdown: str) -> str:

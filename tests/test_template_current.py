@@ -181,7 +181,7 @@ class TestRenderNotifyMarkdownLinksPlaceholders:
                 },
                 'simple',
             ),
-            pytest.param(
+            (
                 {
                     'url': 'https://www.example.com/watch?t=abc def',
                     'url_fragment': 'the onion',
@@ -189,7 +189,6 @@ class TestRenderNotifyMarkdownLinksPlaceholders:
                     'yt_video_id': 'dQw4w   9WgXcQ',
                 },
                 'spaces',
-                marks=pytest.mark.xfail(reason='#188')
             ),
         ),
         ids=(
@@ -267,8 +266,8 @@ class TestRenderNotifyMarkdownActionLinksPlaceholders:
         is correct.  It is the users' responsibility to ensure a link is valid.
         """
 
-        if not as_html or suffix == 'spaces':
-            pytest.xfail('#188')
+        if not as_html:
+            pytest.xfail('Action links are not implemented for plain text.')
 
         if as_html:
             expected_filename = f'tests/test_files/html_current/placeholders/action_links_placeholders_{suffix}.html'
