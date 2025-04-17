@@ -8,7 +8,6 @@ import smartypants
 from markupsafe import Markup
 from mistune.renderers.html import HTMLRenderer
 from mistune.renderers.markdown import MarkdownRenderer
-import urllib
 from . import email_with_smart_quotes_regex
 from notifications_utils.sanitise_text import SanitiseSMS
 
@@ -318,19 +317,33 @@ def get_action_link_image_url() -> str:
     return f'https://{img_env}-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png'
 
 
-def sanitize_markdown_links(markdown: str) -> str:
-    """Sanitize markdown links to avoid breaking markdown processing"""
+def escape_spaces_in_markdown_link(markdown: str) -> str:
+    """
+    Escapes spaces in the URL portion of Markdown links to prevent parsing issues.
+
+    This function is designed to pre-process Markdown text and ensure that links like:
+        [Label](https://example.com/with spaces)
+    are transformed to:
+        [Label](https://example.com/with%20spaces)
+
+    Notes:
+    - Only the URL portion is escaped.
+    - This function does not sanitize links for safety — only for Markdown compatibility.
+    - Not using urllib to avoid over-sanitizing.
+
+    Args:
+        markdown (str): Raw markdown content to process.
+
+    Returns:
+        str: Markdown with spaces in link URLs escaped.
+    """
     def replacement(match: re.Match[str]) -> str:
-        """
-        Use urllib to escape the link URL.
-        Primarily concerned with escaping whitespace.
-        Parenthesis are considered safe to avoid interfering with Field preview mode.
-        """
-        escaped_url = urllib.parse.quote(match.group(2), safe=':/#?&=%()')
+        """Escape spaces in url portion of markdown link."""
+        escaped_url = match.group(2).replace(' ', '%20')
 
         return f'[{match.group(1)}]({escaped_url})'
 
-    return re.sub(r'''\[([\w -]+)\]\(([^)]+)\)''', replacement, markdown)
+    return re.sub(r'''\[([^\]]+)\]\(((?:[^()]+|\([^)]+\))*)\)''', replacement, markdown)
 
 
 def insert_action_link(markdown: str) -> str:

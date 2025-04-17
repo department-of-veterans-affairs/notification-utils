@@ -264,6 +264,19 @@ def test_get_html_email_body_with_action_links(content, values, expected):
                 'link text</a></p>\n'
             )
         ),
+        (
+            (
+                'two links in same line, placeholders at end: [first link text](https://test_one.com/((foo bar))) '
+                '[second link text](https://test_two.com/((foo bar)))'
+            ),
+            (
+                f'<p style="{PARAGRAPH_STYLE}">two links in same line, placeholders at end: '
+                f'<a style="{LINK_STYLE}" target="_blank" href="https://test_one.com/((foo%20bar))">'
+                'first link text</a> '
+                f'<a style="{LINK_STYLE}" target="_blank" href="https://test_two.com/((foo%20bar))">'
+                'second link text</a></p>\n'
+            )
+        ),
     ],
     ids=[
         'formatting with placeholder',
@@ -275,6 +288,7 @@ def test_get_html_email_body_with_action_links(content, values, expected):
         'formatting with multiple placeholders in markdown link',
         'spaces within link, placeholder at end',
         'spaces within placeholder, placeholder at end',
+        'two links in same line, placeholders at end',
     ]
 )
 def test_get_html_email_body_preview_with_placeholder_in_markdown_link(content, expected):
