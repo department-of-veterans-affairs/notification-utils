@@ -256,6 +256,14 @@ def test_get_html_email_body_with_action_links(content, values, expected):
                 'link text</a></p>\n'
             )
         ),
+        (
+            'spaces within placeholder, placeholder at end: [link text](https://test.com/((foo bar)))',
+            (
+                f'<p style="{PARAGRAPH_STYLE}">spaces within placeholder, placeholder at end: '
+                f'<a style="{LINK_STYLE}" target="_blank" href="https://test.com/((foo%20bar))">'
+                'link text</a></p>\n'
+            )
+        ),
     ],
     ids=[
         'formatting with placeholder',
@@ -266,6 +274,7 @@ def test_get_html_email_body_with_action_links(content, values, expected):
         'formatting when placeholder is markdown link url',
         'formatting with multiple placeholders in markdown link',
         'spaces within link, placeholder at end',
+        'spaces within placeholder, placeholder at end',
     ]
 )
 def test_get_html_email_body_preview_with_placeholder_in_markdown_link(content, expected):
