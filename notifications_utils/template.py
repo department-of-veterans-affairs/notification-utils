@@ -26,6 +26,7 @@ from notifications_utils.formatters import (
     remove_whitespace_before_punctuation,
     replace_hyphens_with_en_dashes,
     replace_symbols_with_placeholder_parens,
+    escape_whitespace_in_markdown_link,
     sms_encode,
     strip_leading_whitespace,
     strip_parentheses_in_link_placeholders,
@@ -297,6 +298,7 @@ class PlainTextEmailTemplate(WithSubjectTemplate):
         field = str(Field(self.content, self.values, html='passthrough', markdown_lists=True))
         return compose1(
             field,
+            escape_whitespace_in_markdown_link,
             strip_unsupported_characters,
             add_trailing_newline,
             insert_block_quotes,
@@ -468,6 +470,10 @@ def is_unicode(content):
 def get_html_email_body(
     template_content, template_values, redact_missing_personalisation=False, preview_mode=False
 ) -> str:
+    if preview_mode:
+        # do early escaping to avoid interfereing with placeholders
+        template_content = escape_whitespace_in_markdown_link(template_content)
+
     field = str(Field(
         template_content,
         template_values,
@@ -476,6 +482,10 @@ def get_html_email_body(
         redact_missing_personalisation=redact_missing_personalisation,
         preview_mode=preview_mode
     ))
+
+    if not preview_mode:
+        # do late escaping to handle links that may have been substituted
+        field = escape_whitespace_in_markdown_link(field)
 
     field_with_block = insert_block_quotes(field)
 

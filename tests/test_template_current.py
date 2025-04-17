@@ -181,7 +181,7 @@ class TestRenderNotifyMarkdownLinksPlaceholders:
                 },
                 'simple',
             ),
-            pytest.param(
+            (
                 {
                     'url': 'https://www.example.com/watch?t=abc def',
                     'url_fragment': 'the onion',
@@ -189,7 +189,15 @@ class TestRenderNotifyMarkdownLinksPlaceholders:
                     'yt_video_id': 'dQw4w   9WgXcQ',
                 },
                 'spaces',
-                marks=pytest.mark.xfail(reason='#188')
+            ),
+            (
+                {
+                    'url': 'https://www.example.com/watch?t=abc\tdef',
+                    'url_fragment': 'the\tonion',
+                    'url_text': 'click this',
+                    'yt_video_id': 'dQw4w\t\t\t9WgXcQ',
+                },
+                'tabs',
             ),
         ),
         ids=(
@@ -197,6 +205,8 @@ class TestRenderNotifyMarkdownLinksPlaceholders:
             'simple',
             # Personalization has spaces.  URL safe encoding, when applicable.
             'spaces',
+            # Link personalization has tabs.  URL safe encoding, when applicable.
+            'tabs',
         )
     )
     @pytest.mark.parametrize('as_html', (True, False))
@@ -251,12 +261,22 @@ class TestRenderNotifyMarkdownActionLinksPlaceholders:
                 },
                 'spaces',
             ),
+            (
+                {
+                    'url': 'https://www.example.com/watch?t=abc\tdef',
+                    'url_text': 'click this',
+                    'yt_video_id': 'dQw4w\t\t\t9WgXcQ',
+                },
+                'tabs',
+            ),
         ),
         ids=(
             # No special characters or spaces.  Verbatim substitution.
             'simple',
             # Personalization has spaces.  URL safe encoding, when applicable.
             'spaces',
+            # Link personalization has tabs.  URL safe encoding, when applicable.
+            'tabs',
         )
     )
     @pytest.mark.parametrize('as_html', (True, False))
@@ -267,8 +287,8 @@ class TestRenderNotifyMarkdownActionLinksPlaceholders:
         is correct.  It is the users' responsibility to ensure a link is valid.
         """
 
-        if not as_html or suffix == 'spaces':
-            pytest.xfail('#188')
+        if not as_html:
+            pytest.xfail('Action links are not implemented for plain text.')
 
         if as_html:
             expected_filename = f'tests/test_files/html_current/placeholders/action_links_placeholders_{suffix}.html'
