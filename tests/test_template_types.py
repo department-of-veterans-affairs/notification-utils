@@ -252,7 +252,8 @@ def test_get_html_email_body_with_action_links(content, values, expected):
             'spaces within link, placeholder at end: [link text](https://test.com/watch this/((foo)))',
             (
                 f'<p style="{PARAGRAPH_STYLE}">spaces within link, placeholder at end: '
-                f'<a style="{LINK_STYLE}" target="_blank" href="https://test.com/watch%20this/((foo))">link text</a></p>\n'
+                f'<a style="{LINK_STYLE}" target="_blank" href="https://test.com/watch%20this/((foo))">'
+                'link text</a></p>\n'
             )
         ),
     ],

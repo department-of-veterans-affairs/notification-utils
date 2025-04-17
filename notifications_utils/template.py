@@ -486,7 +486,7 @@ def get_html_email_body(
     if not preview_mode:
         # do late sanitize to handle links that may have been substituted
         field = sanitize_markdown_links(field)
-    
+
     field_with_block = insert_block_quotes(field)
 
     return compose1(
