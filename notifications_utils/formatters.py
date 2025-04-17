@@ -343,7 +343,8 @@ def escape_spaces_in_markdown_link(markdown: str) -> str:
 
         return f'[{match.group(1)}]({escaped_url})'
 
-    return re.sub(r'''\[([^\]]+)\]\(((?:[^()]+|\([^)]+\))*)\)''', replacement, markdown)
+    # using permissive but non-greedy URL pattern to handle placeholders properly
+    return re.sub(r'''\[([^\]]+)\]\((.+?)\)''', replacement, markdown)
 
 
 def insert_action_link(markdown: str) -> str:
