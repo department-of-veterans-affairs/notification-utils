@@ -385,6 +385,8 @@ def insert_block_quotes(md: str) -> str:
         modified_line = insert_action_link_block_quote(match.group())
         modified_md = modified_md.replace(match.group(), modified_line, 1)
 
+    # TODO - clean up. This is to sub > >
+    modified_md = re.sub(r'''^(\s*)\^(\s*)\^(\s*)''', r'''\1>\2>\3''', modified_md, flags=re.M)
     return re.sub(r'''^(\s*)\^(\s*)''', r'''\1>\2''', modified_md, flags=re.M)
 
 
@@ -463,6 +465,8 @@ def replace_symbols_with_placeholder_parens(value: str) -> str:
 class NotifyHTMLRenderer(HTMLRenderer):
     def block_quote(self, text):
         value = super().block_quote(text)
+        #TODO the problem is here
+
         return value[:11] + f' style="{BLOCK_QUOTE_STYLE}"' + value[11:]
 
     def heading(self, text, level, **attrs):

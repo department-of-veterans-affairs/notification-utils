@@ -4,6 +4,8 @@ from typing import Generator
 import pytest
 
 from notifications_utils.formatters import (
+    BLOCK_QUOTE_STYLE,
+    PARAGRAPH_STYLE,
     insert_action_link,
     insert_block_quotes,
     notify_markdown,
@@ -70,6 +72,12 @@ def test_markdown_to_html(filename: str):
 
     assert notify_html_markdown(md) == expected
 
+def test_markdown_can_make_nested_blockquotes():
+    # TODO temporary test 
+    md = '^ ^ this is a nested line'
+    expected = f'<blockquote style="{BLOCK_QUOTE_STYLE}">\n<blockquote style="{BLOCK_QUOTE_STYLE}">\n<p style="{PARAGRAPH_STYLE}"this is a nested line</p>\n</blockquote>\n</blockquote>\n'
+
+    assert get_html_email_body(md, {}) == expected
 
 class TestRenderNotifyMarkdownWithPreprocessing:
     """
@@ -122,7 +130,6 @@ class TestRenderNotifyMarkdownWithPreprocessing:
         # Read the expected HTML file.
         with open('tests/test_files/html_current/block_quotes.html') as f:
             expected = f.read()
-
         assert notify_html_markdown(block_quotes_md_preprocessed) == expected
 
 
