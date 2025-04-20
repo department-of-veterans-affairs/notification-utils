@@ -13,6 +13,7 @@ from notifications_utils.formatters import (
     add_prefix,
     add_trailing_newline,
     autolink_sms, escape_html,
+    escape_whitespace_in_annotated_links,
     insert_action_link,
     insert_block_quotes,
     insert_list_spaces,
@@ -470,10 +471,6 @@ def is_unicode(content):
 def get_html_email_body(
     template_content, template_values, redact_missing_personalisation=False, preview_mode=False
 ) -> str:
-    if preview_mode:
-        # do early escaping to avoid interfereing with placeholders
-        template_content = escape_whitespace_in_markdown_link(template_content)
-
     field = str(Field(
         template_content,
         template_values,
@@ -484,10 +481,11 @@ def get_html_email_body(
     ))
 
     if not preview_mode:
-        # do late escaping to handle links that may have been substituted
         field = escape_whitespace_in_markdown_link(field)
+    else:
+        field = escape_whitespace_in_annotated_links(field)
 
-    field_with_block = insert_block_quotes(field)
+    field_with_block = insert_block_quotes(field, preview_mode=preview_mode)
 
     return compose1(
         field_with_block,

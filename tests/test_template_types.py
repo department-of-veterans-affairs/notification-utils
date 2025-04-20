@@ -5,6 +5,7 @@ import pytest
 from markupsafe import Markup
 
 from notifications_utils.formatters import (
+    ACTION_LINK_IMAGE_STYLE,
     BLOCK_QUOTE_STYLE,
     H1_STYLE,
     H2_STYLE,
@@ -249,32 +250,50 @@ def test_get_html_email_body_with_action_links(content, values, expected):
             )
         ),
         (
-            'spaces within link, placeholder at end: [link text](https://test.com/watch this/((foo)))',
+            'space in placeholder link, placeholder at end: [link ((foo bar)) text](https://test.com/((foo bar)))',
             (
-                f'<p style="{PARAGRAPH_STYLE}">spaces within link, placeholder at end: '
-                f'<a style="{LINK_STYLE}" target="_blank" href="https://test.com/watch%20this/((foo))">'
-                'link text</a></p>\n'
-            )
-        ),
-        (
-            'spaces within placeholder, placeholder at end: [link text](https://test.com/((foo bar)))',
-            (
-                f'<p style="{PARAGRAPH_STYLE}">spaces within placeholder, placeholder at end: '
+                f'<p style="{PARAGRAPH_STYLE}">space in placeholder link, placeholder at end: '
                 f'<a style="{LINK_STYLE}" target="_blank" href="https://test.com/((foo%20bar))">'
-                'link text</a></p>\n'
+                'link <span class=\'placeholder\'><mark>((foo bar))</mark></span> text</a></p>\n'
             )
         ),
         (
+            'tab in placeholder link, placeholder at end: [link ((foo bar)) text](https://test.com/((foo\tbar)))',
             (
-                'two links in same line, placeholders at end: [first link text](https://test_one.com/((foo bar))) '
-                '[second link text](https://test_two.com/((foo bar)))'
-            ),
+                f'<p style="{PARAGRAPH_STYLE}">tab in placeholder link, placeholder at end: '
+                f'<a style="{LINK_STYLE}" target="_blank" href="https://test.com/((foo%09bar))">'
+                'link <span class=\'placeholder\'><mark>((foo bar))</mark></span> text</a></p>\n'
+            )
+        ),
+        (
+            'spaces in placeholder link, placeholder at end: [link ((foo bar)) text](https://test.com/(( foo  bar )))',
             (
-                f'<p style="{PARAGRAPH_STYLE}">two links in same line, placeholders at end: '
-                f'<a style="{LINK_STYLE}" target="_blank" href="https://test_one.com/((foo%20bar))">'
-                'first link text</a> '
-                f'<a style="{LINK_STYLE}" target="_blank" href="https://test_two.com/((foo%20bar))">'
-                'second link text</a></p>\n'
+                f'<p style="{PARAGRAPH_STYLE}">spaces in placeholder link, placeholder at end: '
+                f'<a style="{LINK_STYLE}" target="_blank" href="https://test.com/((%20foo%20%20bar%20))">'
+                'link <span class=\'placeholder\'><mark>((foo bar))</mark></span> text</a></p>\n'
+            )
+        ),
+        (
+            '^ >>[link text](https://test.com((foo)))',
+            (
+                f'<blockquote style="{BLOCK_QUOTE_STYLE}">\n'
+                f'<p style="{PARAGRAPH_STYLE}"><a href="https://test.com((foo))">'
+                f'<img alt="call to action img" '
+                f'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                f'style="{ACTION_LINK_IMAGE_STYLE}"> <b>link text</b></a></p>\n'
+                f'</blockquote>\n'
+            )
+        ),
+        (
+            '^ >>[link ((foo bar)) text](https://test.com(( foo bar )))',
+            (
+                f'<blockquote style="{BLOCK_QUOTE_STYLE}">\n'
+                f'<p style="{PARAGRAPH_STYLE}"><a href="https://test.com((%20foo%20bar%20))">'
+                f'<img alt="call to action img" '
+                f'src="https://dev-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png" '
+                f'style="{ACTION_LINK_IMAGE_STYLE}">'
+                f' <b>link <span class=\'placeholder\'><mark>((foo bar))</mark></span> text</b></a></p>\n'
+                f'</blockquote>\n'
             )
         ),
     ],
@@ -286,9 +305,11 @@ def test_get_html_email_body_with_action_links(content, values, expected):
         'formatting with placeholder in markdown link url and text around placeholder',
         'formatting when placeholder is markdown link url',
         'formatting with multiple placeholders in markdown link',
-        'spaces within link, placeholder at end',
-        'spaces within placeholder, placeholder at end',
-        'two links in same line, placeholders at end',
+        'space in placeholder link, placeholder at end',
+        'tab in placeholder link, placeholder at end',
+        'spaces in placeholder link, placeholder at end',
+        'block quote placeholder action link, placeholder at end',
+        'block quote spaces in placeholder action link, placeholder at end',
     ]
 )
 def test_get_html_email_body_preview_with_placeholder_in_markdown_link(content, expected):
