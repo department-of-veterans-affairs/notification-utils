@@ -22,4 +22,4 @@ Behold! [This](https://www.youtube.com/watch?v=((yt_video_id))) is a YouTube lin
 
 ## Substitution in the middle of a link
 
-[here](https://www.((url_fragment)).com)
+[here](https://www.((url_fragment)).gov)

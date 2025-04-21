@@ -90,7 +90,7 @@ class TestRenderNotifyMarkdownLinksPlaceholders:
             (
                 {
                     'url': 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-                    'url_fragment': 'theonion',
+                    'url_fragment': 'va',
                     'url_text': 'click',
                     'yt_video_id': 'dQw4w9WgXcQ',
                 },
@@ -99,7 +99,7 @@ class TestRenderNotifyMarkdownLinksPlaceholders:
             (
                 {
                     'url': 'https://www.example.com/watch?t=abc def',
-                    'url_fragment': 'the onion',
+                    'url_fragment': 'the va',
                     'url_text': 'click this',
                     'yt_video_id': 'dQw4w   9WgXcQ',
                 },

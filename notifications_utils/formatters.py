@@ -330,6 +330,7 @@ def escape_whitespace_in_markdown_link(markdown: str) -> str:
     - Only the URL portion is modified.
     - Escapes: space, tab, newline, carriage return, vertical tab, form feed.
     - Does not sanitize URLs for safety - only escapes whitespace to ensure Markdown compatibility.
+    - This will also process image ![text][src] tags since the src portion can not have whitespace.
 
     Args:
         markdown (str): Raw markdown text containing links.
@@ -338,14 +339,17 @@ def escape_whitespace_in_markdown_link(markdown: str) -> str:
         str: Markdown with whitespace in link URLs percent-encoded.
     """
     def escape_whitespace(match: re.Match[str]) -> str:
-        raw_url = match.group(1)
+        link_text = match.group(1)
+        raw_url = match.group(2)
 
         # Encode whitespace characters as a percent-encoded uppercase hex values
         # (e.g., ' ' -> '%20')
-        return re.sub(r'\s', lambda m: f'%{ord(m.group(0)):02X}', raw_url)
+        escaped_url = re.sub(r'\s', lambda m: f'%{ord(m.group(0)):02X}', raw_url)
+
+        return f'[{link_text}]({escaped_url})'
 
     # Match Markdown-style links: [label](url)
-    return re.sub(r'(?<!!\[)(?<=\]\()(.+?)(?=\))', escape_whitespace, markdown)
+    return re.sub(r'\[([^\]]+)\]\((.+?)\)', escape_whitespace, markdown)
 
 
 def insert_action_link(markdown: str) -> str:

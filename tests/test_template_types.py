@@ -274,9 +274,21 @@ def test_get_html_email_body_with_action_links(content, values, expected):
             )
         ),
         (
-            'image tag should be stripped: ![alt text](https://test.com/((foo bar)))',
+            'image tag should be stripped: ![alt text](https://test.com/)',
             (
                 f'<p style="{PARAGRAPH_STYLE}">image tag should be stripped: </p>\n'
+            )
+        ),
+        (
+            'image tag with src space should be stripped: ![alt text](https://te st.com/)',
+            (
+                f'<p style="{PARAGRAPH_STYLE}">image tag with src space should be stripped: </p>\n'
+            )
+        ),
+        (
+            'image tag with space in placeholder should be stripped: ![alt text](https://((foo bar)).com/)',
+            (
+                f'<p style="{PARAGRAPH_STYLE}">image tag with space in placeholder should be stripped: </p>\n'
             )
         ),
         (
@@ -315,6 +327,8 @@ def test_get_html_email_body_with_action_links(content, values, expected):
         'tab in link placeholder',
         'multiple spaces in placeholder link, placeholder at end',
         'image tag should be stripped',
+        'image tag with src space should be stripped',
+        'image tag with space in placeholder should be stripped',
         'block quote action link, placeholder in link',
         'block quote spaces in placeholder action link and text',
     ]
