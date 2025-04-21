@@ -319,7 +319,8 @@ def get_action_link_image_url() -> str:
 
 def escape_whitespace_in_markdown_link(markdown: str) -> str:
     """
-    Escapes all whitespace characters in the URL portion of Markdown links to prevent Markdown parsing issues.
+    Escapes all whitespace characters in the URL portion of Markdown links and images.
+    This is to prevent Markdown parsing issues.
 
     This function ensures links like:
         [Label](https://example.com/with spaces\tand\nnewlines)
@@ -333,10 +334,10 @@ def escape_whitespace_in_markdown_link(markdown: str) -> str:
     - This will also process image ![text][src] tags since the src portion can not have whitespace.
 
     Args:
-        markdown (str): Raw markdown text containing links.
+        markdown (str): Raw markdown text containing links or images.
 
     Returns:
-        str: Markdown with whitespace in link URLs percent-encoded.
+        str: Markdown with whitespace in link/image URLs percent-encoded.
     """
     def escape_whitespace(match: re.Match[str]) -> str:
         link_text = match.group(1)
@@ -466,7 +467,7 @@ def insert_list_spaces(md: str) -> str:
 def strip_parentheses_in_link_placeholders(value: str) -> str:
     """
     Captures markdown links with placeholders in them and replaces the parentheses / placeholders with
-    !! at the start and ## at the end. This makes them easy to put back after the convertion to html.
+    !! at the start and ## at the end. This makes them easy to put back after the conversion to html.
 
     Example Conversions:
     `[link text](http://example.com/((placeholder))) -> [link text](http://example.com/!!placeholder##)`
