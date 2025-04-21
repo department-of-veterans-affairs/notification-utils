@@ -468,8 +468,9 @@ def strip_parentheses_in_link_placeholders(value: str) -> str:
     Captures markdown links with placeholders in them and replaces the parentheses / placeholders with
     !! at the start and ## at the end. This makes them easy to put back after the convertion to html.
 
-    Example Conversion:
+    Example Conversions:
     `[link text](http://example.com/((placeholder))) -> [link text](http://example.com/!!placeholder##)`
+    `[text](<span class="placeholder"><mark>((foo))</mark></span>) -> [text](!!foo##)
 
     Args:
         value (str): The email body to be processed
