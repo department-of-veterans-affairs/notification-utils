@@ -385,8 +385,10 @@ def insert_block_quotes(md: str) -> str:
         modified_line = insert_action_link_block_quote(match.group())
         modified_md = modified_md.replace(match.group(), modified_line, 1)
 
-    # TODO - clean up. This is to sub > >
+    # Replace any ^ ^ with > >
     modified_md = re.sub(r'''^(\s*)\^(\s*)\^(\s*)''', r'''\1>\2>\3''', modified_md, flags=re.M)
+
+    # Replace any singluar ^ with > 
     return re.sub(r'''^(\s*)\^(\s*)''', r'''\1>\2''', modified_md, flags=re.M)
 
 
