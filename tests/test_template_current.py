@@ -72,10 +72,18 @@ def test_markdown_to_html(filename: str):
 
     assert notify_html_markdown(md) == expected
 
-def test_markdown_can_make_nested_blockquotes():
-    # TODO temporary test 
-    md = '^ ^ this is a nested line'
-    expected = f'<blockquote style="{BLOCK_QUOTE_STYLE}">\n<blockquote style="{BLOCK_QUOTE_STYLE}">\n<p style="{PARAGRAPH_STYLE}"this is a nested line</p>\n</blockquote>\n</blockquote>\n'
+@pytest.mark.parametrize("md", [
+    "^ ^ this is a nested line",
+    "> > this is a nested line",
+])
+def test_markdown_can_make_nested_blockquotes(md):
+    expected = (
+        f'<blockquote style="{BLOCK_QUOTE_STYLE}">\n'
+        f'<blockquote style="{BLOCK_QUOTE_STYLE}">\n'
+        f'<p style="{PARAGRAPH_STYLE}">this is a nested line</p>\n'
+        f'</blockquote>\n'
+        f'</blockquote>\n'
+    )
 
     assert get_html_email_body(md, {}) == expected
 
@@ -93,6 +101,11 @@ class TestRenderNotifyMarkdownWithPreprocessing:
     @pytest.fixture(scope='class')
     def block_quotes_md_preprocessed(self) -> str:
         with open('tests/test_files/markdown/block_quotes.md') as f:
+            return insert_block_quotes(f.read())
+    
+    @pytest.fixture(scope='class')
+    def block_quotes_nested_md_preprocessed(self) -> str:
+        with open('tests/test_files/markdown/block_quotes_nested.md') as f:
             return insert_block_quotes(f.read())
 
     @pytest.fixture(scope='class')
@@ -130,7 +143,14 @@ class TestRenderNotifyMarkdownWithPreprocessing:
         # Read the expected HTML file.
         with open('tests/test_files/html_current/block_quotes.html') as f:
             expected = f.read()
+
         assert notify_html_markdown(block_quotes_md_preprocessed) == expected
+    
+    def test_nested_block_quotes_html(self, block_quotes_nested_md_preprocessed: str):
+        # Read the expected HTML file.
+        with open('tests/test_files/html_current/block_quotes_nested.html') as f:
+            expected = f.read()
+        assert notify_html_markdown(block_quotes_nested_md_preprocessed) == expected
 
 
     def test_block_quotes_plain_text(self, block_quotes_md_preprocessed: str):
@@ -151,12 +171,14 @@ class TestRenderNotifyMarkdownWithPreprocessing:
         # Read the expected HTML file.
         with open('tests/test_files/html_current/block_quotes_action_link.html') as f:
             expected = f.read()
+
         assert notify_html_markdown(md) == expected
 
     @pytest.mark.skip(reason='Action links are not implemented for plain text.')
     def test_block_quotes_action_link_plain_text(self, block_quotes_action_link_md: str):
         # This order of operations mirrors the behavior in template.py::PlainTextEmailTemplate.__str__.
         # Note that the is no insertion of actions links yet.
+
         md = insert_block_quotes(block_quotes_action_link_md)
 
         # Read the expected plain text file.
