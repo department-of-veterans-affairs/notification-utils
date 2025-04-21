@@ -372,7 +372,15 @@ def insert_action_link(markdown: str) -> str:
                    fr'<img alt="call to action img" src="{img_src}" style="{ACTION_LINK_IMAGE_STYLE}"> ' \
                    r'<b>\2</b></a>\n\n'
 
-    #                               text        url
+    # Match an action link, >>[text](url)
+    # (>|&gt;){2}
+    #   Match the opening >> of an action link
+    # \[([^\]]+)\]
+    #   Match the link text
+    #   This uses [^\]]+ since the text may contain placeholder markup
+    # \((\S+)\)
+    #   Match the URL of the link
+    #   Assumes whitespace has already been escaped
     return re.sub(r'''(>|&gt;){2}\[([^\]]+)\]\((\S+)\)''', substitution, markdown)
 
 
@@ -405,6 +413,17 @@ def insert_action_link_block_quote(markdown: str) -> str:
 
         return link_html
 
+    # Match an action link followed by optional text, >>[text](url)...
+    # (>|&gt;){2}
+    #   Match the opening >> of an action link
+    # \[([^\]]+)\]
+    #   Match the link text
+    #   This uses [^\]]+ since the text may contain placeholder markup
+    # \((\S+)\)
+    #   Match the URL of the link
+    #   Assumes whitespace has already been escaped
+    # (.*)?
+    #   Match any following text
     return re.sub(r'''(>|&gt;){2}\[([^\]]+)\]\((\S+)\)(.*)?''', replacement, markdown)
 
 
@@ -446,7 +465,7 @@ def insert_list_spaces(md: str) -> str:
 
 def strip_parentheses_in_link_placeholders(value: str) -> str:
     """
-    Captures markdown links with placeholders in them and replaces the parentheses around the placeholders with
+    Captures markdown links with placeholders in them and replaces the parentheses / placeholders with
     !! at the start and ## at the end. This makes them easy to put back after the convertion to html.
 
     Example Conversion:

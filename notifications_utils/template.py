@@ -479,15 +479,17 @@ def get_html_email_body(
         preview_mode=preview_mode
     ))
 
-    # before converting from markdown, strip out the "(())" for placeholders (preview mode or test emails)
-    field = strip_parentheses_in_link_placeholders(field)
-
-    field = escape_whitespace_in_markdown_link(field)
-
-    field_with_block = insert_block_quotes(field)
-
     return compose1(
-        field_with_block,
+        field,
+        # In normal mode, placeholders (e.g., ((foo))) are replaced with personalization.
+        # In preview mode, the placeholders in link and image URLS need to be removed.
+        # This is to avoid regex issues in whitespace escaping caused by nested parentheses.
+        # The parenthesis/placeholders are replaced with !! and ## symbols that do not conflict with the parenthesis.
+        # The temporary symbols are reverted back to parenthesis's after markdown processing.
+        strip_parentheses_in_link_placeholders,
+        # escape whitespace must come after strip parentheses
+        escape_whitespace_in_markdown_link,
+        insert_block_quotes,
         strip_unsupported_characters,
         add_trailing_newline,
         insert_action_link,
