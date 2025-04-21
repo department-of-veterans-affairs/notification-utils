@@ -353,25 +353,6 @@ def escape_whitespace_in_markdown_link(markdown: str) -> str:
     return re.sub(r'(?<!\!)\[(.*?)\]\((.*?)\)', escape_whitespace, markdown)
 
 
-def escape_whitespace_in_annotated_links(markdown: str) -> str:
-    """
-    Escapes whitespace characters *only* inside ((...)) blocks in Markdown link URLs (excluding images).
-    """
-    def escape_annotations(url: str) -> str:
-        def escape_match(m: re.Match[str]) -> str:
-            inner = m.group(1)
-            escaped = re.sub(r'\s', lambda ws: f'%{ord(ws.group(0)):02X}', inner)
-            return f'(({escaped}))'
-
-        return re.sub(r'\({2}(.*?)\){2}', escape_match, url)
-
-    def replacer(match: re.Match[str]) -> str:
-        label, url = match.group(1), match.group(2)
-        return f'[{label}]({escape_annotations(url)})'
-
-    return re.sub(r'(?<!\!)\[([^\]]+?)\]\(((?:[^()]+|\({2}[^\)]*\){2})+)\)', replacer, markdown)
-
-
 def insert_action_link(markdown: str) -> str:
     """
     Finds an "action link," and replaces it with the desired format. This preprocessing should take place before
@@ -393,7 +374,7 @@ def insert_action_link(markdown: str) -> str:
     return re.sub(r'''(>|&gt;){2}\[([\w -]+)\]\((\S+)\)''', substitution, markdown)
 
 
-def insert_action_link_block_quote(markdown: str, preview_mode: bool = False) -> str:
+def insert_action_link_block_quote(markdown: str) -> str:
     """
     Converts block quotes containing action links into formatted HTML links with an image.
     If text after the action links exists, then the additional texts is moved to a new link
@@ -410,15 +391,8 @@ def insert_action_link_block_quote(markdown: str, preview_mode: bool = False) ->
     def replacement(match: re.Match[str]) -> str:
         """Dynamically constructs the replacement string for each match."""
 
-        link_url = match.group(3)
-
-        if preview_mode:
-            link_url = re.sub(r'((<span class=[\'\"]placeholder[\'\"]><mark>)?\(\((?![\(]))', '!!', link_url)
-            # replace the closing parentheses with ##, include the closing span and mark tags if they exist
-            link_url = re.sub(r'(\)\)(<\/mark><\/span>)?)', '##', link_url)
-
         link_html = (
-            f'<a href="{link_url}">'
+            f'<a href="{match.group(3)}">'
             f'<img alt="call to action img" src="{img_src}" style="{ACTION_LINK_IMAGE_STYLE}"> '
             f'<b>{match.group(2)}</b></a>'
         )
@@ -429,10 +403,10 @@ def insert_action_link_block_quote(markdown: str, preview_mode: bool = False) ->
 
         return link_html
 
-    return re.sub(r'''(>|&gt;){2}\[([^\]]+?)\]\(((?:[^()]+|\({2}[^\)]*\){2})+)\)(.*)?''', replacement, markdown)
+    return re.sub(r'''(>|&gt;){2}\[([^\]]+)\]\((\S+)\)(.*)?''', replacement, markdown)
 
 
-def insert_block_quotes(md: str, preview_mode: bool = False) -> str:
+def insert_block_quotes(md: str) -> str:
     """
     Converts lines starting with `^` or `>` into block quotes, processing action links when present.
 
@@ -445,7 +419,7 @@ def insert_block_quotes(md: str, preview_mode: bool = False) -> str:
     modified_md = md
 
     for match in re.finditer(r'^(?:\^|>)(?!>).*', md, flags=re.MULTILINE):
-        modified_line = insert_action_link_block_quote(match.group(), preview_mode=preview_mode)
+        modified_line = insert_action_link_block_quote(match.group())
         modified_md = modified_md.replace(match.group(), modified_line, 1)
 
     return re.sub(r'''^(\s*)\^(\s*)''', r'''\1>\2''', modified_md, flags=re.M)

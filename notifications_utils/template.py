@@ -13,7 +13,6 @@ from notifications_utils.formatters import (
     add_prefix,
     add_trailing_newline,
     autolink_sms, escape_html,
-    escape_whitespace_in_annotated_links,
     insert_action_link,
     insert_block_quotes,
     insert_list_spaces,
@@ -480,19 +479,17 @@ def get_html_email_body(
         preview_mode=preview_mode
     ))
 
-    if not preview_mode:
-        field = escape_whitespace_in_markdown_link(field)
-    else:
-        field = escape_whitespace_in_annotated_links(field)
+    # before converting from markdown, strip out the "(())" for placeholders (preview mode or test emails)
+    field = strip_parentheses_in_link_placeholders(field)
 
-    field_with_block = insert_block_quotes(field, preview_mode=preview_mode)
+    field = escape_whitespace_in_markdown_link(field)
+
+    field_with_block = insert_block_quotes(field)
 
     return compose1(
         field_with_block,
         strip_unsupported_characters,
         add_trailing_newline,
-        # before converting from markdown, strip out the "(())" for placeholders (preview mode or test emails)
-        strip_parentheses_in_link_placeholders,
         insert_action_link,
         insert_list_spaces,
         notify_html_markdown,
