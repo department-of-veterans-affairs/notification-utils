@@ -250,27 +250,33 @@ def test_get_html_email_body_with_action_links(content, values, expected):
             )
         ),
         (
-            'space in placeholder link, placeholder at end: [link ((foo bar)) text](https://test.com/((foo bar)))',
+            'spaces in link and text placeholders: [link ((foo bar)) text](https://test.com/((foo bar)))',
             (
-                f'<p style="{PARAGRAPH_STYLE}">space in placeholder link, placeholder at end: '
+                f'<p style="{PARAGRAPH_STYLE}">spaces in link and text placeholders: '
                 f'<a style="{LINK_STYLE}" target="_blank" href="https://test.com/((foo%20bar))">'
                 'link <span class=\'placeholder\'><mark>((foo bar))</mark></span> text</a></p>\n'
             )
         ),
         (
-            'tab in placeholder link, placeholder at end: [link ((foo bar)) text](https://test.com/((foo\tbar)))',
+            'tab in link placeholder: [link text](https://test.com/((foo\tbar)))',
             (
-                f'<p style="{PARAGRAPH_STYLE}">tab in placeholder link, placeholder at end: '
+                f'<p style="{PARAGRAPH_STYLE}">tab in link placeholder: '
                 f'<a style="{LINK_STYLE}" target="_blank" href="https://test.com/((foo%09bar))">'
-                'link <span class=\'placeholder\'><mark>((foo bar))</mark></span> text</a></p>\n'
+                'link text</a></p>\n'
             )
         ),
         (
-            'spaces in placeholder link, placeholder at end: [link ((foo bar)) text](https://test.com/(( foo  bar )))',
+            'multiple spaces in placeholder link, placeholder at end: [link text](https://test.com/(( foo  bar )))',
             (
-                f'<p style="{PARAGRAPH_STYLE}">spaces in placeholder link, placeholder at end: '
+                f'<p style="{PARAGRAPH_STYLE}">multiple spaces in placeholder link, placeholder at end: '
                 f'<a style="{LINK_STYLE}" target="_blank" href="https://test.com/((%20foo%20%20bar%20))">'
-                'link <span class=\'placeholder\'><mark>((foo bar))</mark></span> text</a></p>\n'
+                'link text</a></p>\n'
+            )
+        ),
+        (
+            'image tag should be stripped: ![alt text](https://test.com/((foo bar)))',
+            (
+                f'<p style="{PARAGRAPH_STYLE}">image tag should be stripped: </p>\n'
             )
         ),
         (
@@ -305,11 +311,12 @@ def test_get_html_email_body_with_action_links(content, values, expected):
         'formatting with placeholder in markdown link url and text around placeholder',
         'formatting when placeholder is markdown link url',
         'formatting with multiple placeholders in markdown link',
-        'space in placeholder link, placeholder at end',
-        'tab in placeholder link, placeholder at end',
-        'spaces in placeholder link, placeholder at end',
-        'block quote placeholder action link, placeholder at end',
-        'block quote spaces in placeholder action link, placeholder at end',
+        'spaces in link and text placeholders',
+        'tab in link placeholder',
+        'multiple spaces in placeholder link, placeholder at end',
+        'image tag should be stripped',
+        'block quote action link, placeholder in link',
+        'block quote spaces in placeholder action link and text',
     ]
 )
 def test_get_html_email_body_preview_with_placeholder_in_markdown_link(content, expected):

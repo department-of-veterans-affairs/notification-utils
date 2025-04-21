@@ -330,7 +330,6 @@ def escape_whitespace_in_markdown_link(markdown: str) -> str:
     - Only the URL portion is modified.
     - Escapes: space, tab, newline, carriage return, vertical tab, form feed.
     - Does not sanitize URLs for safety - only escapes whitespace to ensure Markdown compatibility.
-    - Avoids use of urllib to minimize over-escaping and maximize performance.
 
     Args:
         markdown (str): Raw markdown text containing links.
@@ -339,18 +338,14 @@ def escape_whitespace_in_markdown_link(markdown: str) -> str:
         str: Markdown with whitespace in link URLs percent-encoded.
     """
     def escape_whitespace(match: re.Match[str]) -> str:
-        label = match.group(1)
-        raw_url = match.group(2)
+        raw_url = match.group(1)
 
         # Encode whitespace characters as a percent-encoded uppercase hex values
         # (e.g., ' ' -> '%20')
-        escaped_url = re.sub(r'\s', lambda m: f'%{ord(m.group(0)):02X}', raw_url)
-
-        return f'[{label}]({escaped_url})'
+        return re.sub(r'\s', lambda m: f'%{ord(m.group(0)):02X}', raw_url)
 
     # Match Markdown-style links: [label](url)
-    # URL match is non-greedy to support URLs with parentheses or placeholders like ((tag))
-    return re.sub(r'(?<!\!)\[(.*?)\]\((.*?)\)', escape_whitespace, markdown)
+    return re.sub(r'(?<!!\[)(?<=\]\()(.+?)(?=\))', escape_whitespace, markdown)
 
 
 def insert_action_link(markdown: str) -> str:
@@ -363,6 +358,9 @@ def insert_action_link(markdown: str) -> str:
 
     Output:
         \n\n<a href="url"><img alt="call to action img" src="..." style="..."> <b>text</b></a>\n\n
+
+    Note:
+        Text portion may contain placeholder markup for preview mode or test emails
     """
 
     img_src = get_action_link_image_url()
@@ -371,7 +369,7 @@ def insert_action_link(markdown: str) -> str:
                    r'<b>\2</b></a>\n\n'
 
     #                               text        url
-    return re.sub(r'''(>|&gt;){2}\[([\w -]+)\]\((\S+)\)''', substitution, markdown)
+    return re.sub(r'''(>|&gt;){2}\[([^\]]+)\]\((\S+)\)''', substitution, markdown)
 
 
 def insert_action_link_block_quote(markdown: str) -> str:
