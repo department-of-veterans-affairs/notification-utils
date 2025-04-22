@@ -26,7 +26,7 @@ from notifications_utils.formatters import (
     remove_whitespace_before_punctuation,
     replace_hyphens_with_en_dashes,
     replace_symbols_with_placeholder_parens,
-    escape_whitespace_in_markdown_link,
+    percent_encode_whitespace_in_markdown_urls,
     sms_encode,
     strip_leading_whitespace,
     strip_parentheses_in_link_placeholders,
@@ -298,7 +298,7 @@ class PlainTextEmailTemplate(WithSubjectTemplate):
         field = str(Field(self.content, self.values, html='passthrough', markdown_lists=True))
         return compose1(
             field,
-            escape_whitespace_in_markdown_link,
+            percent_encode_whitespace_in_markdown_urls,
             strip_unsupported_characters,
             add_trailing_newline,
             insert_block_quotes,
@@ -481,21 +481,22 @@ def get_html_email_body(
 
     return compose1(
         field,
-        # In normal mode, placeholders (e.g., ((foo))) are replaced with personalization.
-        # In preview mode, the placeholders in link and image URLS need to be removed.
-        # This is to avoid regex issues in whitespace escaping caused by nested parentheses.
-        # The parenthesis/placeholders are replaced with !! and ## symbols that do not conflict with the parenthesis.
-        # The temporary symbols are reverted back to parenthesis's after markdown processing.
+        # In normal mode, placeholders (e.g., ((foo))) are replaced with personalized values.
+        # In preview mode (e.g., test emails), placeholders in link and image URLs are temporarily replaced
+        # to avoid issues during percent-encoding caused by nested parentheses.
+        # These are rewritten as !!placeholder## to avoid breaking the regex.
+        # The original placeholders are restored after Markdown is rendered to HTML.
         strip_parentheses_in_link_placeholders,
-        # escape whitespace must come after strip parentheses
-        escape_whitespace_in_markdown_link,
+        # Percent-encodes all whitespace characters in Markdown link and image URLs.
+        # This must occur AFTER placeholders are stripped to avoid regex failures.
+        percent_encode_whitespace_in_markdown_urls,
         insert_block_quotes,
         strip_unsupported_characters,
         add_trailing_newline,
         insert_action_link,
         insert_list_spaces,
         notify_html_markdown,
-        # after converting to html link, replace !!foo## with ((foo))
+        # Restore !!placeholder## back to ((placeholder)) after Markdown is converted to HTML.
         replace_symbols_with_placeholder_parens,
         do_nice_typography,
     )

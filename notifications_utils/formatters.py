@@ -317,40 +317,38 @@ def get_action_link_image_url() -> str:
     return f'https://{img_env}-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-action-link.png'
 
 
-def escape_whitespace_in_markdown_link(markdown: str) -> str:
+def percent_encode_whitespace_in_markdown_urls(markdown: str) -> str:
     """
-    Escapes all whitespace characters in the URL portion of Markdown links and images.
-    This is to prevent Markdown parsing issues.
+    Percent-encodes all whitespace characters in the URL portion of Markdown links and images.
 
-    This function ensures links like:
-        [Label](https://example.com/with spaces\tand\nnewlines)
-    become:
-        [Label](https://example.com/with%20spaces%09and%0Anewlines)
+    This prevents Markdown rendering issues caused by unencoded whitespace in URLs. For example:
+        [Label](https://example.com/with spaces\ttabs and\nnewlines)
+    becomes:
+        [Label](https://example.com/with%20spaces%09tabs%20and%0Anewlines)
 
     Notes:
-    - Only the URL portion is modified.
-    - Escapes: space, tab, newline, carriage return, vertical tab, form feed.
-    - Does not sanitize URLs for safety - only escapes whitespace to ensure Markdown compatibility.
-    - This will also process image ![text][src] tags since the src portion can not have whitespace.
+    - Only the URL portion is modified; the link or image label remains unchanged.
+    - Whitespace characters encoded: space, tab, newline, carriage return, vertical tab, and form feed.
+    - This does not sanitize URLs for safety—only ensures they are properly encoded for Markdown rendering.
+    - Image tags (e.g., ![Alt](url)) are also handled, as image URLs must not contain raw whitespace.
 
     Args:
-        markdown (str): Raw markdown text containing links or images.
+        markdown (str): Markdown string potentially containing links or images.
 
     Returns:
         str: Markdown with whitespace in link/image URLs percent-encoded.
     """
-    def escape_whitespace(match: re.Match[str]) -> str:
-        link_text = match.group(1)
+    def encode_whitespace(match: re.Match[str]) -> str:
+        label = match.group(1)
         raw_url = match.group(2)
 
-        # Encode whitespace characters as a percent-encoded uppercase hex values
-        # (e.g., ' ' -> '%20')
-        escaped_url = re.sub(r'\s', lambda m: f'%{ord(m.group(0)):02X}', raw_url)
+        # Replace each whitespace character in the URL with its percent-encoded form
+        encoded_url = re.sub(r'\s', lambda m: f'%{ord(m.group(0)):02X}', raw_url)
 
-        return f'[{link_text}]({escaped_url})'
+        return f'[{label}]({encoded_url})'
 
-    # Match Markdown-style links: [label](url)
-    return re.sub(r'\[([^\]]+)\]\((.+?)\)', escape_whitespace, markdown)
+    # Match standard Markdown links or images: [label](url) or ![alt](src)
+    return re.sub(r'\[([^\]]+)\]\((.+?)\)', encode_whitespace, markdown)
 
 
 def insert_action_link(markdown: str) -> str:
@@ -373,16 +371,18 @@ def insert_action_link(markdown: str) -> str:
                    fr'<img alt="call to action img" src="{img_src}" style="{ACTION_LINK_IMAGE_STYLE}"> ' \
                    r'<b>\2</b></a>\n\n'
 
-    # Match an action link, >>[text](url)
-    # (>|&gt;){2}
-    #   Match the opening >> of an action link
-    # \[([^\]]+)\]
-    #   Match the link text
-    #   This uses [^\]]+ since the text may contain placeholder markup
-    # \((\S+)\)
-    #   Match the URL of the link
-    #   Assumes whitespace has already been escaped
-    return re.sub(r'''(>|&gt;){2}\[([^\]]+)\]\((\S+)\)''', substitution, markdown)
+    action_link_pattern = re.compile(
+        # Matches a Markdown-style action link: >>[text](url)
+        # Example: >>[Action](https://example.com)
+        r'(>|&gt;){2}'   # match exactly two '>' symbols, either literal '>' or HTML-encoded '&gt;'
+        r'\['            # opening square bracket for link text
+        r'([^\]]+)'      # capture group: link text (allows any character except ']')
+        r'\]'            # closing square bracket
+        r'\('            # opening parenthesis for URL
+        r'(\S+)'         # capture group: URL (non-whitespace characters only; assumes pre-encoded)
+        r'\)'            # closing parenthesis
+    )
+    return re.sub(action_link_pattern, substitution, markdown)
 
 
 def insert_action_link_block_quote(markdown: str) -> str:
@@ -414,18 +414,19 @@ def insert_action_link_block_quote(markdown: str) -> str:
 
         return link_html
 
-    # Match an action link followed by optional text, >>[text](url)...
-    # (>|&gt;){2}
-    #   Match the opening >> of an action link
-    # \[([^\]]+)\]
-    #   Match the link text
-    #   This uses [^\]]+ since the text may contain placeholder markup
-    # \((\S+)\)
-    #   Match the URL of the link
-    #   Assumes whitespace has already been escaped
-    # (.*)?
-    #   Match any following text
-    return re.sub(r'''(>|&gt;){2}\[([^\]]+)\]\((\S+)\)(.*)?''', replacement, markdown)
+    action_link_with_text_pattern = re.compile(
+        # Matches a Markdown-style action link followed by optional text
+        # Example: >>[Action](https://example.com) for more details
+        r'(>|&gt;){2}'   # match exactly two '>' symbols, either literal '>' or HTML-encoded '&gt;'
+        r'\['            # opening square bracket for link text
+        r'([^\]]+)'      # capture group: link text (any characters except ']')
+        r'\]'            # closing square bracket
+        r'\('            # opening parenthesis for URL
+        r'(\S+)'         # capture group: URL (non-whitespace; assumes pre-encoded)
+        r'\)'            # closing parenthesis
+        r'(.*)?'         # optional capture group: any trailing text after the link
+    )
+    return re.sub(action_link_with_text_pattern, replacement, markdown)
 
 
 def insert_block_quotes(md: str) -> str:
@@ -466,29 +467,58 @@ def insert_list_spaces(md: str) -> str:
 
 def strip_parentheses_in_link_placeholders(value: str) -> str:
     """
-    Captures markdown links with placeholders in them and replaces the parentheses / placeholders with
-    !! at the start and ## at the end. This makes them easy to put back after the conversion to html.
+    Replaces double-parenthesis-style placeholders within the URL portion of Markdown links
+    and images with a simplified marker format: '!!' as a prefix and '##' as a suffix.
 
-    Example Conversions:
-    `[link text](http://example.com/((placeholder))) -> [link text](http://example.com/!!placeholder##)`
-    `[text](<span class="placeholder"><mark>((foo))</mark></span>) -> [text](!!foo##)
+    This transformation prevents issues during Markdown-to-HTML rendering caused by nested
+    parentheses or embedded HTML inside the link or image target. The placeholder markers
+    (e.g., !!placeholder##) can later be restored if needed.
+
+    This applies to both:
+    - Standard Markdown links: [label](URL)
+    - Markdown images: ![alt text](URL)
+
+    Example conversions:
+
+        [link text](http://example.com/((foo)))
+    becomes:
+        [link text](http://example.com/!!foo##)
+
+        [link text](http://example.com/<span class="placeholder"><mark>((foo))</mark></span>)
+    becomes:
+        [link text](http://example.com/!!foo##)
+
+        ![image](http://assets.example.com/((bar)))
+    becomes:
+        ![image](http://assets.example.com/!!bar##)
 
     Args:
-        value (str): The email body to be processed
+        value (str): The input text containing Markdown-formatted links or images with placeholders.
 
     Returns:
-        str: The email body with the placeholders in markdown links with parentheses replaced with !! and ##
+        str: The text with placeholders in Markdown link/image URLs rewritten using !! and ## markers.
     """
     markdown_link_pattern = re.compile(r'\]\((.*?\({2}.*?\){2}.*?)+?\)')
 
-    # find all markdown links with placeholders in them and replace the parentheses and html tags with !! and ##
+    # Find all Markdown links and image URLs with placeholders and rewrite them
     for item in re.finditer(markdown_link_pattern, value):
         link = item.group(0)
-        # replace the opening parentheses with !!, include the opening span and mark tags if they exist
-        modified_link = re.sub(r'((<span class=[\'\"]placeholder[\'\"]><mark>)?\(\((?![\(]))', '!!', link)
-        # replace the closing parentheses with ##, include the closing span and mark tags if they exist
-        modified_link = re.sub(r'(\)\)(<\/mark><\/span>)?)', '##', modified_link)
 
+        # Replace the opening placeholder marker (with optional HTML) with '!!'
+        modified_link = re.sub(
+            r'((<span class=[\'\"]placeholder[\'\"]><mark>)?\(\((?![\(]))',
+            '!!',
+            link
+        )
+
+        # Replace the closing placeholder marker (with optional HTML) with '##'
+        modified_link = re.sub(
+            r'(\)\)(<\/mark><\/span>)?)',
+            '##',
+            modified_link
+        )
+
+        # Substitute the original link or image reference with the modified version
         value = value.replace(link, modified_link)
 
     return value
