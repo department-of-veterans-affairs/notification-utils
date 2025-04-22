@@ -471,8 +471,8 @@ def strip_parentheses_in_link_placeholders(value: str) -> str:
     and images with a simplified marker format: '!!' as a prefix and '##' as a suffix.
 
     This transformation prevents issues during Markdown-to-HTML rendering caused by nested
-    parentheses or embedded HTML inside the link or image target. The placeholder markers
-    (e.g., !!placeholder##) can later be restored if needed.
+    parenthesis or embedded HTML inside the link or image target. The placeholder markers
+    (e.g., !!placeholder##) can later be restored to double parenthesis if needed.
 
     This applies to both:
     - Standard Markdown links: [label](URL)
