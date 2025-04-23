@@ -445,6 +445,17 @@ def insert_block_quotes(md: str) -> str:
         modified_line = insert_action_link_block_quote(match.group())
         modified_md = modified_md.replace(match.group(), modified_line, 1)
 
+    
+    # Replace any ^ ^ with > >
+    modified_md = re.sub(r'''^(\s*)\^(\s*)\^(\s*)''', r'''\1>\2>\3''', modified_md, flags=re.M)
+
+    nested_blocks = re.finditer(r'(^> >.*(?:\n> >.*)*)', modified_md, flags=re.MULTILINE)
+    for block in nested_blocks:
+        nested_content = block.group()
+        processed_nested_content = re.sub(r'^> >', '>', nested_content, flags=re.MULTILINE)
+        html_content = notify_html_markdown(processed_nested_content)
+        modified_md = modified_md.replace(nested_content, html_content)
+    # Replace any ^  with > 
     return re.sub(r'''^(\s*)\^(\s*)''', r'''\1>\2''', modified_md, flags=re.M)
 
 
