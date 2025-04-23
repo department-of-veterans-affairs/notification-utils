@@ -393,9 +393,8 @@ def insert_block_quotes(md: str) -> str:
     for block in nested_blocks:
         nested_content = block.group()
         processed_nested_content = re.sub(r'^> >', '>', nested_content, flags=re.MULTILINE)
-        html_content = mistune.html(processed_nested_content)
+        html_content = notify_html_markdown(processed_nested_content)
         modified_md = modified_md.replace(nested_content, html_content)
-
     # Replace any ^  with > 
     return re.sub(r'''^(\s*)\^(\s*)''', r'''\1>\2''', modified_md, flags=re.M)
 
