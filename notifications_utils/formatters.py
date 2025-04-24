@@ -384,20 +384,30 @@ def insert_block_quotes(md: str) -> str:
     for match in re.finditer(r'^(?:\^|>)(?!>).*', md, flags=re.MULTILINE):
         modified_line = insert_action_link_block_quote(match.group())
         modified_md = modified_md.replace(match.group(), modified_line, 1)
-
     
     # Replace any ^ ^ with > >
     modified_md = re.sub(r'''^(\s*)\^(\s*)\^(\s*)''', r'''\1>\2>\3''', modified_md, flags=re.M)
+    print('BEFORE iteration, modified_md:', modified_md)
 
     nested_blocks = re.finditer(r'(^> >.*(?:\n> >.*)*)', modified_md, flags=re.MULTILINE)
+    nested_block_quote_content = []
     for block in nested_blocks:
         nested_content = block.group()
-        processed_nested_content = re.sub(r'^> >', '>', nested_content, flags=re.MULTILINE)
-        html_content = notify_html_markdown(processed_nested_content).rstrip('\n\n')
-        modified_md = modified_md.replace(nested_content, html_content)
+        print('DURING iteration, nested_content:', nested_content)
+        processed_nested_content = re.sub(r'^> >', 'NESTED_BLOCKQUOTE', nested_content, flags=re.MULTILINE)
+        print('DURING iteration, processed_nested_content:', processed_nested_content)
+        nested_block_quote_content.append(processed_nested_content)
+        print('DURING iteration, nested_block_quote_content: ', nested_block_quote_content)
+
+        modified_md = modified_md.replace(nested_content, processed_nested_content)
+        print('DURING iteration, modified_md: ', modified_md)
+
+    print('AFTER iteration, modified_md: ', modified_md)
 
     # Replace any ^  with > 
-    return re.sub(r'''^(\s*)\^(\s*)''', r'''\1>\2''', modified_md, flags=re.M)
+    final_md = re.sub(r'''^(\s*)\^(\s*)''', r'''\1>\2''', modified_md, flags=re.M)
+    print('AFTER iteration, final_md: ', final_md)
+    return final_md, nested_block_quote_content
 
 
 def insert_list_spaces(md: str) -> str:

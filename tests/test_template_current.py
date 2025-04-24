@@ -150,6 +150,9 @@ class TestRenderNotifyMarkdownWithPreprocessing:
         # Read the expected HTML file.
         with open('tests/test_files/html_current/block_quotes_nested.html') as f:
             expected = f.read()
+
+        print('TEST actual output:', notify_html_markdown(block_quotes_nested_md_preprocessed))
+        print('TEST expected output:', expected)
         assert notify_html_markdown(block_quotes_nested_md_preprocessed) == expected
 
 

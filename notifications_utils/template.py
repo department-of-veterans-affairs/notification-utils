@@ -476,10 +476,9 @@ def get_html_email_body(
         redact_missing_personalisation=redact_missing_personalisation,
         preview_mode=preview_mode
     ))
-
-    field_with_block = insert_block_quotes(field)
-
-    return compose1(
+  
+    field_with_block, nested_block_quote_content  = insert_block_quotes(field)
+    output = compose1(
         field_with_block,
         strip_unsupported_characters,
         add_trailing_newline,
@@ -492,6 +491,12 @@ def get_html_email_body(
         replace_symbols_with_placeholder_parens,
         do_nice_typography,
     )
+    if nested_block_quote_content: 
+        return output 
+        # TODO perform post processing  on output
+        # feed postprocessed html to method that subs out the NESTED_BLOCKQUOTE values
+
+    return output
 
 
 def do_nice_typography(value):
