@@ -194,6 +194,38 @@ def test_get_html_email_body_with_action_links(content, values, expected):
     assert get_html_email_body(content, values) == expected
 
 
+def test_get_html_email_body_with_nested_block_quotes(): 
+    content = (
+        "This is a multiline block quote with a nested multiline block quote using Notify markdown syntax.\n\n"
+        "^ do\n"
+        "^ re\n"
+        "^ ^ mi\n"
+        "^ ^ fa\n"
+        "^ ^ so\n"
+        "^ la\n"
+        "^ ti"
+    )
+
+    value = {}
+
+    expected = (
+        '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">This is a multiline block quote with a nested multiline block quote using Notify markdown syntax.</p>\n'
+        '<blockquote style="background: #F1F1F1; padding: 24px 24px 0.1px 24px; font-family: Helvetica, Arial, sans-serif; font-size: 16px; line-height: 25px;">\n'
+        '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">do<br />\n'
+        're</p>\n'
+        '<blockquote style="background: #F1F1F1; padding: 24px 24px 0.1px 24px; font-family: Helvetica, Arial, sans-serif; font-size: 16px; line-height: 25px;">\n'
+        '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">mi<br />\n'
+        'fa<br />\n'
+        'so</p>\n'
+        '</blockquote>\n'
+        '<p style="Margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">la<br />\n'
+        'ti</p>\n'
+        '</blockquote>'
+    )
+
+    assert get_html_email_body(content, value) == expected
+
+
 @pytest.mark.parametrize(
     'content, expected',
     [

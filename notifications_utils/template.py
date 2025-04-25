@@ -1,7 +1,10 @@
+from calendar import c
 import math
+import re
 import sys
 from html import unescape
 from os import path
+import mistune
 
 from jinja2 import Environment, FileSystemLoader
 from markupsafe import Markup
@@ -492,10 +495,14 @@ def get_html_email_body(
         do_nice_typography,
     )
     if nested_block_quote_content: 
-        return output 
-        # TODO perform post processing  on output
-        # feed postprocessed html to method that subs out the NESTED_BLOCKQUOTE values
-
+        nested_blocks = re.finditer(r'(^NESTED_BLOCKQUOTE.*(?:\nNESTED_BLOCKQUOTE.*)*)', output, flags=re.MULTILINE)
+        for block in nested_blocks:
+            nested_content = block.group()
+            processed_nested_content = re.sub(r'NESTED_BLOCKQUOTE', '>', nested_content, flags=re.MULTILINE)
+            mistune_html = mistune.html(processed_nested_content)
+            updated_output = output.replace(nested_content, mistune_html)
+            return updated_output
+    
     return output
 
 
