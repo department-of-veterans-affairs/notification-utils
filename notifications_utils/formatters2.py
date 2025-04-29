@@ -19,25 +19,28 @@ ACTION_LINK_PATTERN = re.compile(
 )
 
 
-def insert_action_link(markdown: str) -> str:
+def insert_action_links(markdown: str, as_html: bool = True) -> str:
     """
     Finds an "action link," and replaces it with the desired format. This preprocessing should take place before
-    any manipulation by Mistune.
+    any manipulation by Mistune.  The CSS class "action_link" should be defined in a Jinja2 template.
 
     Given:
         >>[text](url)
 
-    Output:
+    HTML Output:
         \n\n<a href="url"><img alt="call to action img" src="..." class="action_link"><b>text</b></a>\n\n
 
-    Note:
-        Text portion may contain placeholder markup for preview mode or test emails
+    For plain text, this function converts the action link to an ordinary link.  As with HTML output,
+    text after the link will break to the next line.
     """
 
-    img_src = get_action_link_image_url()
-    substitution = r'\n\n<a href="\3">' \
-                   fr'<img alt="call to action img" src="{img_src}" class="action_link">' \
-                   r'<b>\2</b></a>\n\n'
+    if as_html:
+        img_src = get_action_link_image_url()
+        substitution = r'\n\n<a href="\3">' \
+                       fr'<img alt="call to action img" src="{img_src}" class="action_link">' \
+                       r'<b>\2</b></a>\n\n'
+    else:
+        substitution = r'\n\n[\2](\3)\n\n'
 
     return ACTION_LINK_PATTERN.sub(substitution, markdown)
 
