@@ -18,6 +18,8 @@ def generate_markdown_test_files() -> Generator[str, None, None]:
     yield 'images.md'
     yield 'tables.md'
     yield 'thematic_break.md'
+    yield 'links.md'
+    yield 'action_links.md'
 
     # TODO - This code will be restored during tickets that follow #213.
     # for f in scandir('tests/test_files/markdown/'):

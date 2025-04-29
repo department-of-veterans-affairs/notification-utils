@@ -1,5 +1,45 @@
+import re
+
 import mistune
 from mistune.renderers.html import HTMLRenderer
+
+from notifications_utils.formatters import get_action_link_image_url
+
+
+ACTION_LINK_PATTERN = re.compile(
+    # Matches a Markdown-style action link: >>[text](url)
+    # Example: >>[Action](https://example.com)
+    r'(>|&gt;){2}'   # match exactly two '>' symbols, either literal '>' or HTML-encoded '&gt;'
+    r'\['            # opening square bracket for link text
+    r'([^\]]+)'      # capture group: link text (allows any character except ']')
+    r'\]'            # closing square bracket
+    r'\('            # opening parenthesis for URL
+    r'(\S+)'         # capture group: URL (non-whitespace characters only; assumes pre-encoded)
+    r'\)'            # closing parenthesis
+)
+
+
+def insert_action_link(markdown: str) -> str:
+    """
+    Finds an "action link," and replaces it with the desired format. This preprocessing should take place before
+    any manipulation by Mistune.
+
+    Given:
+        >>[text](url)
+
+    Output:
+        \n\n<a href="url"><img alt="call to action img" src="..." class="action_link"><b>text</b></a>\n\n
+
+    Note:
+        Text portion may contain placeholder markup for preview mode or test emails
+    """
+
+    img_src = get_action_link_image_url()
+    substitution = r'\n\n<a href="\3">' \
+                   fr'<img alt="call to action img" src="{img_src}" class="action_link">' \
+                   r'<b>\2</b></a>\n\n'
+
+    return ACTION_LINK_PATTERN.sub(substitution, markdown)
 
 
 class NotifyHTMLRenderer(HTMLRenderer):
@@ -36,6 +76,5 @@ class NotifyHTMLRenderer(HTMLRenderer):
 notify_html_markdown = mistune.create_markdown(
     hard_wrap=True,
     renderer=NotifyHTMLRenderer(escape=False),
-    plugins=['strikethrough', 'table'],
-    # plugins=['strikethrough', 'table', 'url'],
+    plugins=['strikethrough', 'table', 'url'],
 )

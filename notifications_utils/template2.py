@@ -1,5 +1,5 @@
 from notifications_utils.formatters import notify_markdown
-from notifications_utils.formatters2 import notify_html_markdown
+from notifications_utils.formatters2 import insert_action_link, notify_html_markdown
 
 
 def render_notify_markdown(markdown: str, personalization: dict | None = None, as_html: bool = True) -> str:
@@ -10,6 +10,7 @@ def render_notify_markdown(markdown: str, personalization: dict | None = None, a
     # TODO - Perform substitutions in the markdown.  Raise ValueError for missing fields.
 
     if as_html:
+        markdown = insert_action_link(markdown)
         return notify_html_markdown(markdown)
     else:
         return notify_markdown(markdown)
