@@ -37,7 +37,8 @@ def insert_action_links(markdown: str, as_html: bool = True) -> str:
     if as_html:
         img_src = get_action_link_image_url()
         substitution = r'\n\n<a href="\3">' \
-                       fr'<img alt="call to action img" aria-hidden="true" src="{img_src}" class="action_link">' \
+                       fr'<img alt="call to action img" aria-hidden="true"' \
+                       fr'src="{img_src}" class="action_link">' \
                        r'<b>\2</b></a>\n\n'
     else:
         substitution = r'\n\n[\2](\3)\n\n'
