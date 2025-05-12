@@ -396,7 +396,8 @@ def insert_action_link_block_quote(markdown: str) -> str:
         markdown (str): ^ >> [text](url) additional text
 
     Returns:
-        str: <a href="url"><img alt="call to action img" aria-hidden="true" src="..." style="..."> <b>text</b></a><br />additional text
+        str: <a href="url"><img alt="call to action img" aria-hidden="true" src="..." style="...">
+        <b>text</b></a><br />additional text
     """
     img_src = get_action_link_image_url()
 
