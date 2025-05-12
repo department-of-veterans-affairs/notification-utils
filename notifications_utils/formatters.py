@@ -440,8 +440,8 @@ def insert_block_quotes(md: str) -> str:
         ^ This is a block quote OR ^ >> [text](url)
 
     Output:
-        > This is a block quote OR  > <a href="url"><img alt="call to action img" aria-hidden="true" src="..." style="...">
-         <b>text</b></a>
+        > This is a block quote OR  > <a href="url"><img alt="call to action img" aria-hidden="true"
+        src="..."style="..."> <b>text</b></a>
     """
     modified_md = md
 
