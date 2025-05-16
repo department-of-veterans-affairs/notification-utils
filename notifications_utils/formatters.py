@@ -360,7 +360,7 @@ def insert_action_link(markdown: str) -> str:
         >>[text](url)
 
     Output:
-        \n\n<a href="url"><img alt="call to action img" src="..." style="..."> <b>text</b></a>\n\n
+        \n\n<a href="url"><img alt="call to action img" aria-hidden="true" src="..." style="..."> <b>text</b></a>\n\n
 
     Note:
         Text portion may contain placeholder markup for preview mode or test emails
@@ -368,7 +368,8 @@ def insert_action_link(markdown: str) -> str:
 
     img_src = get_action_link_image_url()
     substitution = r'\n\n<a href="\3">' \
-                   fr'<img alt="call to action img" src="{img_src}" style="{ACTION_LINK_IMAGE_STYLE}"> ' \
+                   fr'<img alt="call to action img" aria-hidden="true" src="{img_src}" ' \
+                   fr'style="{ACTION_LINK_IMAGE_STYLE}"> ' \
                    r'<b>\2</b></a>\n\n'
 
     action_link_pattern = re.compile(
@@ -395,7 +396,8 @@ def insert_action_link_block_quote(markdown: str) -> str:
         markdown (str): ^ >> [text](url) additional text
 
     Returns:
-        str: <a href="url"><img alt="call to action img" src="..." style="..."> <b>text</b></a><br />additional text
+        str: <a href="url"><img alt="call to action img" aria-hidden="true" src="..." style="...">
+        <b>text</b></a><br />additional text
     """
     img_src = get_action_link_image_url()
 
@@ -404,7 +406,8 @@ def insert_action_link_block_quote(markdown: str) -> str:
 
         link_html = (
             f'<a href="{match.group(3)}">'
-            f'<img alt="call to action img" src="{img_src}" style="{ACTION_LINK_IMAGE_STYLE}"> '
+            f'<img alt="call to action img" aria-hidden="true" src="{img_src}" '
+            f'style="{ACTION_LINK_IMAGE_STYLE}"> '
             f'<b>{match.group(2)}</b></a>'
         )
 
@@ -437,7 +440,8 @@ def insert_block_quotes(md: str) -> str:
         ^ This is a block quote OR ^ >> [text](url)
 
     Output:
-        > This is a block quote OR  > <a href="url"><img alt="call to action img" src="..." style="..."> <b>text</b></a>
+        > This is a block quote OR  > <a href="url"><img alt="call to action img" aria-hidden="true"
+        src="..."style="..."> <b>text</b></a>
     """
     modified_md = md
 
