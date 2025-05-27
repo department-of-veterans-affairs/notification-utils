@@ -1,6 +1,7 @@
 import re
 
 import mistune
+from mistune.plugins import import_plugin
 from mistune.renderers.html import HTMLRenderer
 
 from notifications_utils.formatters import get_action_link_image_url
@@ -88,8 +89,15 @@ class NotifyHTMLRenderer(HTMLRenderer):
         return ''
 
 
-notify_html_markdown = mistune.create_markdown(
-    hard_wrap=True,
+# notify_html_markdown = mistune.create_markdown(
+#    hard_wrap=True,
+#    renderer=NotifyHTMLRenderer(escape=False),
+#    plugins=['strikethrough', 'table', 'url'],
+# )
+
+notify_html_markdown = mistune.Markdown(
     renderer=NotifyHTMLRenderer(escape=False),
-    plugins=['strikethrough', 'table', 'url'],
+    block=None,
+    inline=mistune.InlineParser(hard_wrap=True),
+    plugins=[import_plugin(plugin) for plugin in ('strikethrough', 'table', 'url')],
 )
