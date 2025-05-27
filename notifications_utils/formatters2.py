@@ -18,6 +18,8 @@ ACTION_LINK_PATTERN = re.compile(
     r'\)'            # closing parenthesis
 )
 
+NON_STANDARD_BLOCK_QUOTE_PATTERN = re.compile(r'^\^(?=\s|$)', flags=re.MULTILINE)
+
 
 def insert_action_links(markdown: str, as_html: bool = True) -> str:
     """
@@ -44,6 +46,15 @@ def insert_action_links(markdown: str, as_html: bool = True) -> str:
         substitution = r'\n\n[\2](\3)\n\n'
 
     return ACTION_LINK_PATTERN.sub(substitution, markdown)
+
+
+def process_nonstandard_block_quotes(markdown):
+    """
+    This preprocessing should take place before any manipulation by Mistune.  Notify supports the non-standard
+    use of "^" to denote a block quote.  This function converts that to the standard ">".
+    """
+
+    return NON_STANDARD_BLOCK_QUOTE_PATTERN.sub('>', markdown)
 
 
 class NotifyHTMLRenderer(HTMLRenderer):

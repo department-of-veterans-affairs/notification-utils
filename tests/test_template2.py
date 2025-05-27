@@ -1,4 +1,4 @@
-# from os import scandir
+from os import scandir
 from typing import Generator
 
 import pytest
@@ -12,19 +12,9 @@ def generate_markdown_test_files() -> Generator[str, None, None]:
     Do not yield subdirectories or their files.
     """
 
-    # TODO - When all inputs are expected to pass, remove these individual yields, and restore the subsequent loop.
-    yield 'headers.md'
-    yield 'emphasis.md'
-    yield 'images.md'
-    yield 'tables.md'
-    yield 'thematic_break.md'
-    yield 'links.md'
-    yield 'action_links.md'
-
-    # TODO - This code will be restored during tickets that follow #213.
-    # for f in scandir('tests/test_files/markdown/'):
-    #     if f.is_file():
-    #         yield f.name
+    for f in scandir('tests/test_files/markdown/'):
+        if f.is_file():
+            yield f.name
 
 
 @pytest.mark.parametrize('as_html', (True, False))
@@ -207,18 +197,16 @@ class TestRenderNotifyMarkdownBlockQuotesPlaceholders:
         (
             (
                 {
-                    'bottom': 'C',
+                    'bottom': 'B',
                     'claims': 'one, two, three',
-                    'nested': 'B',
                     'top': 'A',
                 },
                 'simple',
             ),
             (
                 {
-                    'bottom': ['G', 'H', 'I'],
+                    'bottom': ['D', 'E', 'F'],
                     'claims': ['one', 'two', 'three'],
-                    'nested': ['D', 'E', 'F'],
                     'top': ['A', 'B', 'C'],
                 },
                 'lists',
