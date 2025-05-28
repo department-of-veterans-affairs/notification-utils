@@ -1,6 +1,14 @@
+"""
+This file implements custom behavior with Mistune, which is a Python library for processing markdown.
+Advanced use cases are not well documented and require inspection of the Mistune source code.
+    - https://mistune.lepture.com/en/latest/index.html
+    - https://github.com/lepture/mistune/tree/main
+"""
+
 import re
 
 import mistune
+from mistune.block_parser import BlockParser
 from mistune.plugins import import_plugin
 from mistune.renderers.html import HTMLRenderer
 
@@ -19,7 +27,11 @@ ACTION_LINK_PATTERN = re.compile(
     r'\)'            # closing parenthesis
 )
 
-NON_STANDARD_BLOCK_QUOTE_PATTERN = re.compile(r'^\^(?=\s|$)', flags=re.MULTILINE)
+# Block quotes can be denoted with > (standard) or ^ (Notify).  This pattern matches the latter syntax.
+NOTIFY_BLOCK_QUOTE_RULE = r'^ {0,3}\^(?P<quote_1>.*?)$'
+
+# List items can be denoted with -|+|* (standard ) or • (Notify).  This pattern matches the latter syntax.
+NOTIFY_LIST_RULE = r''
 
 
 def insert_action_links(markdown: str, as_html: bool = True) -> str:
@@ -49,7 +61,7 @@ def insert_action_links(markdown: str, as_html: bool = True) -> str:
     return ACTION_LINK_PATTERN.sub(substitution, markdown)
 
 
-def process_nonstandard_block_quotes(markdown):
+def process_nonstandard_block_quotes(markdown: str) -> str:
     """
     This preprocessing should take place before any manipulation by Mistune.  Notify supports the non-standard
     use of "^" to denote a block quote.  This function converts that to the standard ">".
@@ -89,15 +101,12 @@ class NotifyHTMLRenderer(HTMLRenderer):
         return ''
 
 
-# notify_html_markdown = mistune.create_markdown(
-#    hard_wrap=True,
-#    renderer=NotifyHTMLRenderer(escape=False),
-#    plugins=['strikethrough', 'table', 'url'],
-# )
-
 notify_html_markdown = mistune.Markdown(
     renderer=NotifyHTMLRenderer(escape=False),
-    block=None,
+    block=NotifyBlockParser(
+        block_quote_rules=None,
+        list_rules=None,
+    ),
     inline=mistune.InlineParser(hard_wrap=True),
     plugins=[import_plugin(plugin) for plugin in ('strikethrough', 'table', 'url')],
 )
