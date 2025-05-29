@@ -6,13 +6,16 @@ Advanced use cases are not well documented and require inspection of the Mistune
 """
 
 import re
+from typing import Any, Match
 
 import mistune
 from mistune.block_parser import BlockParser
+from mistune.core import BlockState
+from mistune.list_parser import _parse_list_item, _transform_tight_list
 from mistune.plugins import import_plugin
 from mistune.renderers.html import HTMLRenderer
-
-from notifications_utils.formatters import get_action_link_image_url
+from mistune.util import expand_leading_tab, expand_tab
+from notifications_utils.formatters import get_action_link_image_url, NotifyMarkdownRenderer
 
 
 ACTION_LINK_PATTERN = re.compile(
@@ -27,11 +30,19 @@ ACTION_LINK_PATTERN = re.compile(
     r'\)'            # closing parenthesis
 )
 
-# Block quotes can be denoted with > (standard) or ^ (Notify).  This pattern matches the latter syntax.
-NOTIFY_BLOCK_QUOTE_RULE = r'^ {0,3}\^(?P<quote_1>.*?)$'
+# These are copied and modified, as necessary, from Mistune's block_parser.py file for Notify's non-standard
+# block quote markdown using ^.
+_BLOCK_QUOTE_LEADING = re.compile(r"^ *(?:>|\^)", flags=re.M)
+_BLOCK_QUOTE_TRIM = re.compile(r"^ ?", flags=re.M)
+_LINE_BLANK_END = re.compile(r"\n[ \t]*\n$")
+_STRICT_BLOCK_QUOTE = re.compile(r"( {0,3}(?:>|\^)[^\n]*(?:\n|$))+")
 
-# List items can be denoted with -|+|* (standard ) or • (Notify).  This pattern matches the latter syntax.
-NOTIFY_LIST_RULE = r''
+# List items can be denoted with -|+|* (standard ) or • (Notify).
+NOTIFY_LIST_PATTERN = (
+    r'^(?P<list_1> {0,3})'
+    r'(?P<list_2>[\*\+•-]|\d{1,9}[.)])'
+    r'(?P<list_3>[ \t]*|[ \t].+)$'
+)
 
 
 def insert_action_links(markdown: str, as_html: bool = True) -> str:
@@ -59,15 +70,6 @@ def insert_action_links(markdown: str, as_html: bool = True) -> str:
         substitution = r'\n\n[\2](\3)\n\n'
 
     return ACTION_LINK_PATTERN.sub(substitution, markdown)
-
-
-def process_nonstandard_block_quotes(markdown: str) -> str:
-    """
-    This preprocessing should take place before any manipulation by Mistune.  Notify supports the non-standard
-    use of "^" to denote a block quote.  This function converts that to the standard ">".
-    """
-
-    return NON_STANDARD_BLOCK_QUOTE_PATTERN.sub('>', markdown)
 
 
 class NotifyHTMLRenderer(HTMLRenderer):
@@ -101,12 +103,190 @@ class NotifyHTMLRenderer(HTMLRenderer):
         return ''
 
 
+class NotifyBlockParser(BlockParser):
+    """
+    Parse standard Github markdown with some Notify-specific additions.
+
+    https://github.com/lepture/mistune/blob/main/src/mistune/block_parser.py
+    """
+
+    def __init__(self) -> None:
+        # Block quotes can be denoted with > (standard) or ^ (Notify).
+        self.SPECIFICATION['block_quote'] = r'^ {0,3}(?:>|\^)(?P<quote_1>.*?)$'
+        self.SPECIFICATION['list'] = NOTIFY_LIST_PATTERN
+
+        super(NotifyBlockParser, self).__init__()
+
+    def extract_block_quote(self, m: Match[str], state: BlockState) -> tuple[str, int]:  # noqa: C901
+        """
+        Extract text and the cursor end position of a block quote.
+
+        This method mostly is copied from the parent class, which uses module level
+        regular expressions.  This method uses modified regular expressions correctly
+        to extract block quotes using the non-standard ^ denotation.
+        """
+
+        # Cleanup to detect if this is a code block.
+        text = m.group('quote_1') + '\n'
+        text = expand_leading_tab(text, 3)
+        text = _BLOCK_QUOTE_TRIM.sub('', text)
+
+        sc = self.compile_sc(["blank_line", "indent_code", "fenced_code"])
+        require_marker = bool(sc.match(text))
+        state.cursor = m.end() + 1
+        end_pos: int | None = None
+
+        if require_marker:
+            m2 = _STRICT_BLOCK_QUOTE.match(state.src, state.cursor)
+            if m2:
+                quote = m2.group(0)
+                quote = _BLOCK_QUOTE_LEADING.sub("", quote)
+                quote = expand_leading_tab(quote, 3)
+                quote = _BLOCK_QUOTE_TRIM.sub("", quote)
+                text += quote
+                state.cursor = m2.end()
+        else:
+            prev_blank_line = False
+            break_sc = self.compile_sc(
+                [
+                    "blank_line",
+                    "thematic_break",
+                    "fenced_code",
+                    "list",
+                    "block_html",
+                ]
+            )
+            while state.cursor < state.cursor_max:
+                m3 = _STRICT_BLOCK_QUOTE.match(state.src, state.cursor)
+                if m3:
+                    quote = m3.group(0)
+                    quote = _BLOCK_QUOTE_LEADING.sub("", quote)
+                    quote = expand_leading_tab(quote, 3)
+                    quote = _BLOCK_QUOTE_TRIM.sub("", quote)
+                    text += quote
+                    state.cursor = m3.end()
+                    if not quote.strip():
+                        prev_blank_line = True
+                    else:
+                        prev_blank_line = bool(_LINE_BLANK_END.search(quote))
+                    continue
+
+                if prev_blank_line:
+                    # CommonMark Example 249
+                    # Because of laziness, a blank line is needed between a block quote and a following paragraph.
+                    break
+
+                m4 = break_sc.match(state.src, state.cursor)
+                if m4:
+                    end_pos = self.parse_method(m4, state)
+                    if end_pos:
+                        break
+
+                # lazy continuation line
+                pos = state.find_line_end()
+                line = state.get_text(pos)
+                line = expand_leading_tab(line, 3)
+                text += line
+                state.cursor = pos
+
+        # According to CommonMark Example 6, the second tab should be treated as 4 spaces.
+        return expand_tab(text), end_pos
+
+    def parse_list(self, m: Match[str], state: BlockState) -> int:  # noqa: C901
+        """
+        Parse tokens for ordered and unordered list.
+
+        This method mostly is copied from mistune.list_parser.py::parse_list.  It contains minor
+        modifications correctly to handle Notify's non-standard use of • for unordered lists.
+        """
+
+        text = m.group("list_3")
+        if not text.strip():
+            # An empty list item cannot interrupt a paragraph.
+            end_pos = state.append_paragraph()
+            if end_pos:
+                return end_pos
+
+        marker = m.group("list_2")
+        ordered = len(marker) > 1
+        depth = state.depth()
+        token: dict[str, Any] = {
+            "type": "list",
+            "children": [],
+            "tight": True,
+            "bullet": marker[-1],
+            "attrs": {
+                "depth": depth,
+                "ordered": ordered,
+            },
+        }
+
+        if ordered:
+            start = int(marker[:-1])
+            if start != 1:
+                # Allow only lists starting with 1 to interrupt paragraphs.
+                end_pos = state.append_paragraph()
+                if end_pos:
+                    return end_pos
+                token["attrs"]["start"] = start
+
+        state.cursor = m.end() + 1
+        groups = (m.group("list_1"), marker, text)
+
+        if depth >= self.max_nested_level - 1:
+            rules = list(self.list_rules)
+            rules.remove("list")
+        else:
+            rules = self.list_rules
+
+        bullet = _get_list_bullet(marker[-1])
+        while groups:
+            groups = _parse_list_item(self, bullet, groups, token, state, rules)
+
+        end_pos = token.pop("_end_pos", None)
+        _transform_tight_list(token)
+        if end_pos:
+            index = token.pop("_tok_index")
+            state.tokens.insert(index, token)
+            return end_pos
+
+        state.append_token(token)
+        return state.cursor
+
+
+def _get_list_bullet(c: str) -> str:
+    """
+    Copied from mistune.list_parser.py::parse_list, and modified.
+    """
+
+    if c == '.':
+        bullet = r'\d{0,9}\.'
+    elif c == ")":
+        bullet = r'\d{0,9}\)'
+    elif c == '*':
+        bullet = r'\*'
+    elif c == '+':
+        bullet = r'\+'
+    elif c == '•':
+        # Accommodate Notify's non-standard markdown.
+        bullet = r'•'
+    else:
+        bullet = '-'
+    return bullet
+
+
+# Use this markdown for HTML.
 notify_html_markdown = mistune.Markdown(
     renderer=NotifyHTMLRenderer(escape=False),
-    block=NotifyBlockParser(
-        block_quote_rules=None,
-        list_rules=None,
-    ),
+    block=NotifyBlockParser(),
     inline=mistune.InlineParser(hard_wrap=True),
     plugins=[import_plugin(plugin) for plugin in ('strikethrough', 'table', 'url')],
+)
+
+# Use this markdown for plain text.
+notify_markdown = mistune.Markdown(
+    renderer=NotifyMarkdownRenderer(),
+    block=NotifyBlockParser(),
+    inline=mistune.InlineParser(hard_wrap=True),
+    plugins=[import_plugin(plugin) for plugin in ('strikethrough', 'table')],
 )

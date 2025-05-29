@@ -1,8 +1,7 @@
-from notifications_utils.formatters import notify_markdown
 from notifications_utils.formatters2 import (
     insert_action_links,
     notify_html_markdown,
-    process_nonstandard_block_quotes,
+    notify_markdown,
 )
 
 
@@ -15,7 +14,6 @@ def render_notify_markdown(markdown: str, personalization: dict | None = None, a
 
     # Perform all pre-processing steps to handle non-standard markdown.
     markdown = insert_action_links(markdown, as_html)
-    markdown = process_nonstandard_block_quotes(markdown)
 
     if as_html:
         return notify_html_markdown(markdown)
