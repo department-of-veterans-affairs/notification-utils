@@ -14,8 +14,10 @@ from mistune.core import BlockState
 from mistune.list_parser import _parse_list_item, _transform_tight_list
 from mistune.plugins import import_plugin
 from mistune.renderers.html import HTMLRenderer
+from mistune.renderers.markdown import MarkdownRenderer
 from mistune.util import expand_leading_tab, expand_tab
-from notifications_utils.formatters import get_action_link_image_url, NotifyMarkdownRenderer
+
+from notifications_utils.formatters import get_action_link_image_url
 
 
 ACTION_LINK_PATTERN = re.compile(
@@ -30,6 +32,9 @@ ACTION_LINK_PATTERN = re.compile(
     r'\)'            # closing parenthesis
 )
 
+# Used for rendering plain text
+COLUMN_WIDTH = 65
+
 # These are copied and modified, as necessary, from Mistune's block_parser.py file for Notify's non-standard
 # block quote markdown using ^.
 _BLOCK_QUOTE_LEADING = re.compile(r"^ *(?:>|\^)", flags=re.M)
@@ -37,7 +42,8 @@ _BLOCK_QUOTE_TRIM = re.compile(r"^ ?", flags=re.M)
 _LINE_BLANK_END = re.compile(r"\n[ \t]*\n$")
 _STRICT_BLOCK_QUOTE = re.compile(r"( {0,3}(?:>|\^)[^\n]*(?:\n|$))+")
 
-# List items can be denoted with -|+|* (standard ) or • (Notify).
+# List items can be denoted with -|+|* (standard ) or • (Notify).  This is copied from Mistune's list_parser.py
+# and modified.
 NOTIFY_LIST_PATTERN = (
     r'^(?P<list_1> {0,3})'
     r'(?P<list_2>[\*\+•-]|\d{1,9}[.)])'
@@ -73,6 +79,12 @@ def insert_action_links(markdown: str, as_html: bool = True) -> str:
 
 
 class NotifyHTMLRenderer(HTMLRenderer):
+    # TODO - delete?
+    def block_quote(self, text):
+        print('block quote text =', text)  # TODO - delete
+        print('block quote result =', super().block_quote(text))  # TODO - delete
+        return super().block_quote(text)
+
     def image(self, alt, url, title=None):
         """
         VA e-mail messages generally contain only 1 header image that is not managed by clients.
@@ -103,6 +115,68 @@ class NotifyHTMLRenderer(HTMLRenderer):
         return ''
 
 
+class NotifyMarkdownRenderer(MarkdownRenderer):
+    def block_quote(self, token, state):
+        value = super().block_quote(token, state)
+
+        # The superclass method prepends each line with "> ".  Remove that prefix.
+        return '\n\n' + re.sub(r'^> ', '', value, flags=re.M)
+
+    def heading(self, token, state):
+        value = super().heading(token, state)
+        indentation = 3 if token['attrs']['level'] == 1 else 2
+        return ('\n' * indentation) + value.strip('#\n ') + '\n' + ('-' * COLUMN_WIDTH) + '\n'
+
+    def image(self, token, state):
+        """
+        Delete images.  VA e-mail messages contain only 1 image that is not managed by clients.
+        """
+
+        return ''
+
+    def link(self, token, state):
+        """
+        Input:
+            [text](url)
+        Output:
+            text: url
+        """
+
+        return self.render_children(token, state) + ': ' + token['attrs']['url']
+
+    def list(self, token, state):
+        """
+        Use the bullet character as the actual bullet output for all input (asterisks, pluses, and minues)
+        when the list is unordered.
+        """
+
+        if not token['attrs']['ordered']:
+            token['bullet'] = '•'
+
+        return super().list(token, state)
+
+    def strikethrough(self, token, state):
+        """
+        https://mistune.lepture.com/en/latest/renderers.html#with-plugins
+        """
+
+        return '\n\n' + self.render_children(token, state)
+
+    def table(self, token, state):
+        """
+        Delete tables.
+        """
+
+        return ''
+
+    def thematic_break(self, token, state):
+        """
+        Thematic breaks were known as horizontal rules (hrule) in earlier versions of Mistune.
+        """
+
+        return '=' * COLUMN_WIDTH + '\n'
+
+
 class NotifyBlockParser(BlockParser):
     """
     Parse standard Github markdown with some Notify-specific additions.
@@ -113,6 +187,8 @@ class NotifyBlockParser(BlockParser):
     def __init__(self) -> None:
         # Block quotes can be denoted with > (standard) or ^ (Notify).
         self.SPECIFICATION['block_quote'] = r'^ {0,3}(?:>|\^)(?P<quote_1>.*?)$'
+
+        # Lists can be denoted with *|-|+ (standard) or • (Notify).
         self.SPECIFICATION['list'] = NOTIFY_LIST_PATTERN
 
         super(NotifyBlockParser, self).__init__()
@@ -198,6 +274,8 @@ class NotifyBlockParser(BlockParser):
 
         This method mostly is copied from mistune.list_parser.py::parse_list.  It contains minor
         modifications correctly to handle Notify's non-standard use of • for unordered lists.
+
+        https://github.com/lepture/mistune/blob/main/src/mistune/list_parser.py
         """
 
         text = m.group("list_3")
@@ -256,7 +334,7 @@ class NotifyBlockParser(BlockParser):
 
 def _get_list_bullet(c: str) -> str:
     """
-    Copied from mistune.list_parser.py::parse_list, and modified.
+    Copied from mistune.list_parser.py::parse_list, and modified to support the literal bullet.
     """
 
     if c == '.':
@@ -287,6 +365,5 @@ notify_html_markdown = mistune.Markdown(
 notify_markdown = mistune.Markdown(
     renderer=NotifyMarkdownRenderer(),
     block=NotifyBlockParser(),
-    inline=mistune.InlineParser(hard_wrap=True),
     plugins=[import_plugin(plugin) for plugin in ('strikethrough', 'table')],
 )

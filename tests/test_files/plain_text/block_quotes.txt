@@ -28,19 +28,6 @@ This should not be part of the list.
 
 
 
-This is a multiline block quote with a nested multiline block quote using Github markdown syntax.
-
-
-do
-re
-
-
-mi
-fa
-so
-
-la
-ti
 
 
 This is a block quote using Notify markdown syntax.
@@ -48,6 +35,7 @@ This is a block quote using Notify markdown syntax.
 
 
 This is a multiline block quote using Notify markdown syntax.
+
 
 
 do
@@ -69,18 +57,5 @@ Block quote start
 This should not be part of the list.
 
 
-
-This is a multiline block quote with a nested multiline block quote using Notify markdown syntax.
-
-do
-re
-
-
-mi
-fa
-so
-
-la
-ti
 
 Don't convert n^2 to a block quote.

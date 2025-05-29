@@ -116,7 +116,7 @@ class TestRenderNotifyMarkdownWithPreprocessing:
     ###############################
 
     # Notify uses the nonstandard "^" to denote a block quote.
-    # TODO - #203 is closed.  Should these still be skipped?
+    # TODO - #203 is closed.  This never worked and will be fixed in the new implementation.
 
     @pytest.mark.xfail(reason='#203')
     def test_block_quotes_html(self, block_quotes_md_preprocessed: str):

@@ -15,10 +15,7 @@ def render_notify_markdown(markdown: str, personalization: dict | None = None, a
     # Perform all pre-processing steps to handle non-standard markdown.
     markdown = insert_action_links(markdown, as_html)
 
-    if as_html:
-        return notify_html_markdown(markdown)
-    else:
-        return notify_markdown(markdown)
+    return notify_html_markdown(markdown) if as_html else notify_markdown(markdown)
 
 
 # TODO - The signature and return type might change for #215 or later, during integration with notifcation-api.
