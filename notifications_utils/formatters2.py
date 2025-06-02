@@ -20,30 +20,29 @@ from mistune.util import expand_leading_tab, expand_tab
 from notifications_utils.formatters import get_action_link_image_url
 
 
-ACTION_LINK_PATTERN = re.compile(
-    # Matches a Markdown-style action link: >>[text](url)
-    # Example: >>[Action](https://example.com)
-    r'(>|&gt;){2}'   # match exactly two '>' symbols, either literal '>' or HTML-encoded '&gt;'
-    r'\['            # opening square bracket for link text
-    r'([^\]]+)'      # capture group: link text (allows any character except ']')
-    r'\]'            # closing square bracket
-    r'\('            # opening parenthesis for URL
-    r'(\S+)'         # capture group: URL (non-whitespace characters only; assumes pre-encoded)
-    r'\)'            # closing parenthesis
-)
-
 # Used for rendering plain text
 COLUMN_WIDTH = 65
 
 # These are copied and modified, as necessary, from Mistune's block_parser.py file for Notify's non-standard
 # block quote markdown using ^.
-_BLOCK_QUOTE_LEADING = re.compile(r"^ *(?:>|\^)", flags=re.M)
-_BLOCK_QUOTE_TRIM = re.compile(r"^ ?", flags=re.M)
-_LINE_BLANK_END = re.compile(r"\n[ \t]*\n$")
-_STRICT_BLOCK_QUOTE = re.compile(r"( {0,3}(?:>|\^)[^\n]*(?:\n|$))+")
+_BLOCK_QUOTE_LEADING = re.compile(r'^ *(?:>|\^)', flags=re.M)
+_BLOCK_QUOTE_TRIM = re.compile(r'^ ?', flags=re.M)
+_LINE_BLANK_END = re.compile(r'\n[ \t]*\n$')
+_STRICT_BLOCK_QUOTE = re.compile(r'( {0,3}(?:>|\^)[^\n]*(?:\n|$))+')
 
-# List items can be denoted with -|+|* (standard ) or • (Notify).  This is copied from Mistune's list_parser.py
-# and modified.
+# Matches a Markdown-style action link: >>[text](url)
+# Example: >>[Action](https://example.com)
+ACTION_LINK_PATTERN = re.compile(
+    r'^(?P<block_quote> {0,3}(?:>|\^)[ \t]+)?(>|&gt;){2}\[(?P<link_text>[^\]]+)\]\((?P<url>\S+)\)(?P<extra>.+?)?$',
+    flags=re.M
+)
+
+# Block quotes can be denoted with > (standard) or ^ (Notify).  This is a modification of the regex found in
+# mistune.block_parser.py.
+NOTIFY_BLOCK_QUOTE_PATTERN = r'^ {0,3}(?:>|\^)(?P<quote_1>.*?)$'
+
+# List items can be denoted with -|+|* (standard ) or • (Notify).  This is a modification of the regex found
+# in mistune.list_parser.py.
 NOTIFY_LIST_PATTERN = (
     r'^(?P<list_1> {0,3})'
     r'(?P<list_2>[\*\+•-]|\d{1,9}[.)])'
@@ -54,7 +53,8 @@ NOTIFY_LIST_PATTERN = (
 def insert_action_links(markdown: str, as_html: bool = True) -> str:
     """
     Finds an "action link," and replaces it with the desired format. This preprocessing should take place before
-    any manipulation by Mistune.  The CSS class "action_link" should be defined in a Jinja2 template.
+    any manipulation by Mistune.  The CSS class "action_link" should be defined in a Jinja2 template.  If the
+    action links is in a block quote, new lines must also be in a block quote.
 
     Given:
         >>[text](url)
@@ -68,23 +68,41 @@ def insert_action_links(markdown: str, as_html: bool = True) -> str:
     """
 
     if as_html:
-        img_src = get_action_link_image_url()
-        substitution = r'\n\n<a href="\3">' \
-                       fr'<img alt="call to action img" aria-hidden="true" src="{img_src}" class="action_link">' \
-                       r'<b>\2</b></a>\n\n'
-    else:
-        substitution = r'\n\n[\2](\3)\n\n'
+        return ACTION_LINK_PATTERN.sub(_get_action_link_html_substitution, markdown)
 
-    return ACTION_LINK_PATTERN.sub(substitution, markdown)
+    return ACTION_LINK_PATTERN.sub(_get_action_link_plain_text_substitution, markdown)
+
+
+def _get_action_link_html_substitution(m: Match[str]) -> str:
+    url = m.group('url')
+    link_text = m.group('link_text')
+    img_src = get_action_link_image_url()
+
+    substitution = f'\n\n<a href="{url}">' \
+                   f'<img alt="call to action img" aria-hidden="true" src="{img_src}" class="action_link">' \
+                   f'<b>{link_text}</b></a>\n\n'
+
+    if m.group('extra') is not None:
+        extra = m.group('extra')
+        substitution += f'{extra}\n'
+
+    return substitution
+
+
+def _get_action_link_plain_text_substitution(m: Match[str]) -> str:
+    url = m.group('url')
+    link_text = m.group('link_text')
+
+    substitution = f'\n\n[{link_text}]({url})\n\n'
+
+    if m.group('extra') is not None:
+        extra = m.group('extra')
+        substitution += f'{extra}\n'
+
+    return substitution
 
 
 class NotifyHTMLRenderer(HTMLRenderer):
-    # TODO - delete?
-    def block_quote(self, text):
-        print('block quote text =', text)  # TODO - delete
-        print('block quote result =', super().block_quote(text))  # TODO - delete
-        return super().block_quote(text)
-
     def image(self, alt, url, title=None):
         """
         VA e-mail messages generally contain only 1 header image that is not managed by clients.
@@ -185,12 +203,8 @@ class NotifyBlockParser(BlockParser):
     """
 
     def __init__(self) -> None:
-        # Block quotes can be denoted with > (standard) or ^ (Notify).
-        self.SPECIFICATION['block_quote'] = r'^ {0,3}(?:>|\^)(?P<quote_1>.*?)$'
-
-        # Lists can be denoted with *|-|+ (standard) or • (Notify).
+        self.SPECIFICATION['block_quote'] = NOTIFY_BLOCK_QUOTE_PATTERN
         self.SPECIFICATION['list'] = NOTIFY_LIST_PATTERN
-
         super(NotifyBlockParser, self).__init__()
 
     def extract_block_quote(self, m: Match[str], state: BlockState) -> tuple[str, int]:  # noqa: C901
