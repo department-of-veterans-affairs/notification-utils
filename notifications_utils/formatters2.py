@@ -33,7 +33,7 @@ _STRICT_BLOCK_QUOTE = re.compile(r'( {0,3}(?:>|\^)[^\n]*(?:\n|$))+')
 # Matches a Markdown-style action link: >>[text](url)
 # Example: >>[Action](https://example.com)
 ACTION_LINK_PATTERN = re.compile(
-    r'^(?P<block_quote> {0,3}(?:>|\^)[ \t]+)?(>|&gt;){2}\[(?P<link_text>[^\]]+)\]\((?P<url>\S+)\)(?P<extra>.+?)?$',
+    r'^(?P<block_quote> {0,3}(?:>|\^)[ \t]+)?(?:>|&gt;){2}\[(?P<link_text>[^\]]+)\]\((?P<url>\S+)\)(?P<extra>.+?)?$',
     flags=re.M
 )
 
@@ -54,17 +54,8 @@ def insert_action_links(markdown: str, as_html: bool = True) -> str:
     """
     Finds an "action link," and replaces it with the desired format. This preprocessing should take place before
     any manipulation by Mistune.  The CSS class "action_link" should be defined in a Jinja2 template.  If the
-    action links is in a block quote, new lines must also be in a block quote.
-
-    Given:
-        >>[text](url)
-
-    HTML Output:
-        \n\n<a href="url"><img alt="call to action img" aria-hidden="true" src="..."
-        class="action_link"><b>text</b></a>\n\n
-
-    For plain text, this function converts the action link to an ordinary link.  As with HTML output,
-    text after the link will break to the next line.
+    action links is in a block quote, new lines must also be in a block quote.  Text following the action link,
+    if any, should break onto a new line.
     """
 
     if as_html:
@@ -74,22 +65,44 @@ def insert_action_links(markdown: str, as_html: bool = True) -> str:
 
 
 def _get_action_link_html_substitution(m: Match[str]) -> str:
+    """
+    Given:
+        >>[text](url)
+
+    HTML Output:
+        \n\n<a href="url"><img alt="call to action img" aria-hidden="true" src="..."
+        class="action_link"><b>text</b></a>\n\n
+    """
+
     url = m.group('url')
     link_text = m.group('link_text')
     img_src = get_action_link_image_url()
+    is_block_quote = m.group('block_quote') is not None
 
-    substitution = f'\n\n<a href="{url}">' \
-                   f'<img alt="call to action img" aria-hidden="true" src="{img_src}" class="action_link">' \
-                   f'<b>{link_text}</b></a>\n\n'
+    if is_block_quote:
+        # The action link is in a block quote.
+        substitution = f'>\n>\n> <a href="{url}">' \
+                       f'<img alt="call to action img" aria-hidden="true" src="{img_src}" class="action_link">' \
+                       f'<b>{link_text}</b></a>\n>\n'
+
+    else:
+        substitution = f'\n\n<a href="{url}">' \
+                       f'<img alt="call to action img" aria-hidden="true" src="{img_src}" class="action_link">' \
+                       f'<b>{link_text}</b></a>\n\n'
 
     if m.group('extra') is not None:
         extra = m.group('extra')
-        substitution += f'{extra}\n'
+        prefix = '> ' if is_block_quote else ''
+        substitution += f'{prefix}{extra}\n'
 
     return substitution
 
 
 def _get_action_link_plain_text_substitution(m: Match[str]) -> str:
+    """
+    Substitute an ordinary link for an action link.
+    """
+
     url = m.group('url')
     link_text = m.group('link_text')
 
