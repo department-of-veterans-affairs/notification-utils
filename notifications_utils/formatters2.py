@@ -84,7 +84,6 @@ def _get_action_link_html_substitution(m: Match[str]) -> str:
         substitution = f'>\n>\n> <a href="{url}">' \
                        f'<img alt="call to action img" aria-hidden="true" src="{img_src}" class="action_link">' \
                        f'<b>{link_text}</b></a>\n>\n'
-
     else:
         substitution = f'\n\n<a href="{url}">' \
                        f'<img alt="call to action img" aria-hidden="true" src="{img_src}" class="action_link">' \
@@ -105,12 +104,18 @@ def _get_action_link_plain_text_substitution(m: Match[str]) -> str:
 
     url = m.group('url')
     link_text = m.group('link_text')
+    is_block_quote = m.group('block_quote') is not None
 
-    substitution = f'\n\n[{link_text}]({url})\n\n'
+    if is_block_quote:
+        # The action link is in a block quote.
+        substitution = f'> [{link_text}]({url})\n>\n'
+    else:
+        substitution = f'[{link_text}]({url})\n\n'
 
     if m.group('extra') is not None:
         extra = m.group('extra')
-        substitution += f'{extra}\n'
+        prefix = '> ' if is_block_quote else ''
+        substitution += f'{prefix}{extra}\n'
 
     return substitution
 
