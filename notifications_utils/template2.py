@@ -10,12 +10,24 @@ def render_notify_markdown(markdown: str, personalization: dict | None = None, a
     Substitute personalization values into markdown, and return the markdown as HTML or plain text.
     """
 
-    # TODO - Perform substitutions in the markdown.  Raise ValueError for missing fields.
-
     # Perform all pre-processing steps to handle non-standard markdown.
     markdown = insert_action_links(markdown, as_html)
 
-    return notify_html_markdown(markdown) if as_html else notify_markdown(markdown)
+    rendered = notify_html_markdown(markdown) if as_html else notify_markdown(markdown)
+
+    if isinstance(personalization, dict):
+        rendered = make_substitutions(rendered, personalization, as_html)
+    elif personalization is not None:
+        raise TypeError('Personalization should be a dictionary or None.')
+
+    return rendered
+
+
+def make_substitutions(template: str, personalization: dict, as_html: bool) -> str:
+    for key, value in personalization.items():
+        template = template.replace(f'(({key}))', value)
+
+    return template
 
 
 # TODO - The signature and return type might change for #215 or later, during integration with notifcation-api.

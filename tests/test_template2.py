@@ -65,6 +65,54 @@ def test_render_notify_markdown_extra_personalization():
     assert render_notify_markdown(md, {'test': 'some', 'extra': 'extra'}, False) == plain_text
 
 
+class TestRenderNotifyMarkdownHeadersPlaceholders:
+    """
+    headers_placeholders.md has the personalizations p1 and p2.
+    """
+
+    @pytest.fixture(scope='class')
+    def md(self) -> str:
+        with open('tests/test_files/markdown/placeholders/headers_placeholders.md') as f:
+            return f.read()
+
+    @pytest.mark.parametrize(
+        'personalization, suffix',
+        (
+            (None, 'none'),
+            (
+                {
+                    'p1': 'there',
+                    'p2': 'This is an H2',
+                },
+                'simple',
+            ),
+        ),
+        ids=(
+            # No substitution.
+            'none',
+            # No list values.
+            'simple',
+        )
+    )
+    @pytest.mark.parametrize('as_html', (True, False))
+    def test_placeholders(self, as_html: bool, personalization: dict, suffix: str, md: str):
+        """
+        Substitute the given personalization, render the template, and compare the output with
+        the expected output.  All spaces in URLs should be URL safe encoded so the presentation
+        is correct.  It is the users' responsibility to ensure a link is valid.
+        """
+
+        if as_html:
+            expected_filename = f'tests/test_files/html/placeholders/headers_placeholders_{suffix}.html'
+        else:
+            expected_filename = f'tests/test_files/plain_text/placeholders/headers_placeholders_{suffix}.txt'
+
+        with open(expected_filename) as f:
+            expected = f.read()
+
+        assert render_notify_markdown(md, personalization, as_html) == expected
+
+
 @pytest.mark.skip(reason='not implemented')
 class TestRenderNotifyMarkdownLinksPlaceholders:
     """
