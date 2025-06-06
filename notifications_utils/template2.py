@@ -25,7 +25,15 @@ def render_notify_markdown(markdown: str, personalization: dict | None = None, a
 
 def make_substitutions(template: str, personalization: dict, as_html: bool) -> str:
     for key, value in personalization.items():
-        template = template.replace(f'(({key}))', value)
+        if isinstance(value, list):
+            if as_html:
+                substitution = '\n<ul>\n' + '\n'.join((f'<li>{li}</li>') for li in value) + '\n</ul>\n'
+            else:
+                substitution = '\n'.join((f'• {li}') for li in value) + '\n'
+        else:
+            substitution = value
+
+        template = template.replace(f'(({key}))', substitution)
 
     return template
 

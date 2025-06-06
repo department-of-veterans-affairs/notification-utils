@@ -67,7 +67,7 @@ def test_render_notify_markdown_extra_personalization():
 
 class TestRenderNotifyMarkdownHeadersPlaceholders:
     """
-    headers_placeholders.md has the personalizations p1 and p2.
+    headers_placeholders.md has the personalizations p1, p2, and p3.
     """
 
     @pytest.fixture(scope='class')
@@ -83,8 +83,17 @@ class TestRenderNotifyMarkdownHeadersPlaceholders:
                 {
                     'p1': 'there',
                     'p2': 'This is an H2',
+                    'p3': 'test',
                 },
                 'simple',
+            ),
+            (
+                {
+                    'p1': 'there',
+                    'p2': 'This is an H2',
+                    'p3': ['A', 'B', 'C'],
+                },
+                'lists',
             ),
         ),
         ids=(
@@ -92,6 +101,8 @@ class TestRenderNotifyMarkdownHeadersPlaceholders:
             'none',
             # No list values.
             'simple',
+            # List values.
+            'lists',
         )
     )
     @pytest.mark.parametrize('as_html', (True, False))
