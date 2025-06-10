@@ -1,24 +1,35 @@
+import re
+
 from notifications_utils.formatters2 import (
     insert_action_links,
     notify_html_markdown,
     notify_markdown,
 )
 
+# TODO - Does this need to accept whitespace?
+PLACEHOLDER_REGEX = re.compile(r'\(\((?P<key>\w+)\)\)')
+
 
 def render_notify_markdown(markdown: str, personalization: dict | None = None, as_html: bool = True) -> str:
     """
-    Substitute personalization values into markdown, and return the markdown as HTML or plain text.
+    Return markdown as HTML or plain text, and perform substitutions with personalization data, if any.
     """
 
+    if not (personalization is None or isinstance(personalization, dict)):
+        raise TypeError('Personalization should be a dictionary or None.')
+
+    # Passing markdown with placeholders of the format ((key)) can break Mistune.
+    # Convert this syntax to something that won't break Mistune.
+    markdown = PLACEHOLDER_REGEX.sub('\g<key>_PLACEHOLDER', markdown)  # noqa W605
+
     # Perform all pre-processing steps to handle non-standard markdown.
+    # TODO #243 - Use a Mistune plug-in for action links
     markdown = insert_action_links(markdown, as_html)
 
     rendered = notify_html_markdown(markdown) if as_html else notify_markdown(markdown)
 
-    if isinstance(personalization, dict):
+    if personalization:
         rendered = make_substitutions(rendered, personalization, as_html)
-    elif personalization is not None:
-        raise TypeError('Personalization should be a dictionary or None.')
 
     return rendered
 
@@ -33,7 +44,7 @@ def make_substitutions(template: str, personalization: dict, as_html: bool) -> s
         else:
             substitution = value
 
-        template = template.replace(f'(({key}))', substitution)
+        template = template.replace(f'{key}_PLACEHOLDER', substitution)
 
     return template
 

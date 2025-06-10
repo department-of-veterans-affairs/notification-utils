@@ -124,7 +124,6 @@ class TestRenderNotifyMarkdownHeadersPlaceholders:
         assert render_notify_markdown(md, personalization, as_html) == expected
 
 
-@pytest.mark.skip(reason='not implemented')
 class TestRenderNotifyMarkdownLinksPlaceholders:
     """
     links_placeholders.md has these personalizations: url, url_fragment, url_text, and yt_video_id.

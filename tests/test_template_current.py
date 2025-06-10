@@ -221,7 +221,7 @@ class TestRenderNotifyMarkdownLinksPlaceholders:
         if as_html:
             expected_filename = f'tests/test_files/html_current/placeholders/links_placeholders_{suffix}.html'
         else:
-            expected_filename = f'tests/test_files/plain_text/placeholders/links_placeholders_{suffix}.txt'
+            expected_filename = f'tests/test_files/plain_text_legacy/placeholders/links_placeholders_{suffix}.txt'
 
         with open(expected_filename) as f:
             expected = f.read()
