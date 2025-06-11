@@ -1,4 +1,5 @@
 import re
+from typing import Match
 
 from notifications_utils.formatters2 import (
     insert_action_links,
@@ -35,6 +36,26 @@ def render_notify_markdown(markdown: str, personalization: dict | None = None, a
 
 
 def make_substitutions(template: str, personalization: dict, as_html: bool) -> str:
+    """
+    Given a template this has already been converted to HTML or plain text, as indicated by the "as_html"
+    parameter, substitute personalized values.
+
+    Ensure that spaces in URLs, if any, are properly escaped so the content displays correctly in an e-mail
+    client.  For HTML, escaping is straight forward after substitution because URLs appear in an href attribute.
+
+    However, for plain text, escaping requires escaping the personalized value before substitution.  Otherwise,
+    there is no way to recongnize that text following a link is not part of the link.
+    """
+
+    if not as_html:
+        # Escape whitespace in plain text URLs, if any.
+        placeholders = re.findall(r'(?<=: )(\S*?_PLACEHOLDER\S*)', template)
+
+        for key in personalization:
+            if any((f'{key}_PLACEHOLDER' in placeholder) for placeholder in placeholders):
+                # Escape whitespace in plain text URL substitution data.
+                personalization[key] = re.sub(r'\s', encode_whitespace, personalization[key])
+
     for key, value in personalization.items():
         if isinstance(value, list):
             if as_html:
@@ -46,7 +67,19 @@ def make_substitutions(template: str, personalization: dict, as_html: bool) -> s
 
         template = template.replace(f'{key}_PLACEHOLDER', substitution)
 
+    if as_html:
+        # Escape whitespace in HTML URLs, if any.
+        template = re.sub(r'(?<=href=")(?P<url>.+?)(?=")', encode_whitespace, template)
+
     return template
+
+
+def encode_whitespace(m: Match[str]) -> str:
+    """
+    Replace each whitespace character in the matched text with its percent-encoded form.
+    """
+
+    return re.sub(r'\s', lambda m: f'%{ord(m.group(0)):02X}', m.group(0))
 
 
 # TODO - The signature and return type might change for #215 or later, during integration with notifcation-api.
