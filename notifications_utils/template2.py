@@ -67,7 +67,7 @@ def make_substitutions(template: str, personalization: dict, as_html: bool) -> s
             if as_html:
                 substitution = '\n<ul>\n' + '\n'.join((f'<li>{li}</li>') for li in value) + '\n</ul>\n'
             else:
-                substitution = '\n'.join((f'• {li}') for li in value) + '\n'
+                substitution = '\n' + '\n'.join((f'• {li}') for li in value) + '\n'
         else:
             substitution = value
 
