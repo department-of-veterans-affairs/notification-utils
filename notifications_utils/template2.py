@@ -35,7 +35,7 @@ def render_notify_markdown(markdown: str, personalization: dict | None = None, a
     return rendered
 
 
-def make_substitutions(template: str, personalization: dict, as_html: bool) -> str:
+def make_substitutions(template: str, personalization: dict, as_html: bool) -> str:  # noqa C901
     """
     Given a template this has already been converted to HTML or plain text, as indicated by the "as_html"
     parameter, substitute personalized values.
@@ -49,11 +49,17 @@ def make_substitutions(template: str, personalization: dict, as_html: bool) -> s
 
     if not as_html:
         # Escape whitespace in plain text URLs, if any.
-        placeholders = re.findall(r'(?<=: )(\S*?_PLACEHOLDER\S*)', template)
+        placeholders = re.findall(r'(?<=: http)(\S*?_PLACEHOLDER\S*)', template)
 
         for key in personalization:
-            if any((f'{key}_PLACEHOLDER' in placeholder) for placeholder in placeholders):
-                # Escape whitespace in plain text URL substitution data.
+            if isinstance(personalization[key], list):
+                # Users should not insert list values into URLs, so don't attempt to escape them.
+                continue
+
+            if 'http' in personalization[key].lower() or \
+                    any((f'{key}_PLACEHOLDER' in placeholder) for placeholder in placeholders):
+                # Escape whitespace in plain text URL substitution data.  The value either is a complete URL or
+                # is part of a URL (ex. query parameters).
                 personalization[key] = re.sub(r'\s', encode_whitespace, personalization[key])
 
     for key, value in personalization.items():

@@ -12,13 +12,14 @@ Github markdown syntax
 Your claims: one, two, three
 
 
+
+
+
 A
-
-
 B
 
 
-C
+
 
 
 Notify markdown syntax
@@ -28,11 +29,8 @@ Notify markdown syntax
 Your claims: one, two, three
 
 
+
+
+
 A
-
-
 B
-
-
-C
-

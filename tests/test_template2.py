@@ -238,7 +238,6 @@ class TestRenderNotifyMarkdownActionLinksPlaceholders:
         assert render_notify_markdown(md, personalization, as_html) == expected
 
 
-@pytest.mark.skip(reason='not implemented')
 class TestRenderNotifyMarkdownBlockQuotesPlaceholders:
     """
     block_quotes_placeholders.md has these personalizations: bottom, claims, nested, and top.
