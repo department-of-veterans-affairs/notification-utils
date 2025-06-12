@@ -7,7 +7,6 @@ from notifications_utils.formatters2 import (
     notify_markdown,
 )
 
-# TODO - Does this need to accept whitespace?
 PLACEHOLDER_REGEX = re.compile(r'\(\((?P<key>\w+)\)\)')
 
 
@@ -21,7 +20,7 @@ def render_notify_markdown(markdown: str, personalization: dict | None = None, a
 
     # Passing markdown with placeholders of the format ((key)) can break Mistune.
     # Convert this syntax to something that won't break Mistune.
-    markdown = PLACEHOLDER_REGEX.sub('\g<key>_PLACEHOLDER', markdown)  # noqa W605
+    markdown = PLACEHOLDER_REGEX.sub('PLACEHOLDER_\g<key>_PLACEHOLDER', markdown)  # noqa W605
 
     # Perform all pre-processing steps to handle non-standard markdown.
     # TODO #243 - Use a Mistune plug-in for action links
@@ -47,17 +46,21 @@ def make_substitutions(template: str, personalization: dict, as_html: bool) -> s
     there is no way to recongnize that text following a link is not part of the link.
     """
 
+    placeholders = re.findall(r'(http)?(?:\S*?PLACEHOLDER_)(\S+?)(?:_PLACEHOLDER)', template)
+    unique_placeholders = frozenset((key) for _, key in placeholders)
+
+    if len(personalization) < len(unique_placeholders):
+        missing_personalization = ','.join(key for key in unique_placeholders if key not in personalization)
+        raise ValueError(f'Missing required personalization: {missing_personalization}')
+
     if not as_html:
         # Escape whitespace in plain text URLs, if any.
-        placeholders = re.findall(r'(?<=: http)(\S*?_PLACEHOLDER\S*)', template)
-
         for key in personalization:
             if isinstance(personalization[key], list):
                 # Users should not insert list values into URLs, so don't attempt to escape them.
                 continue
 
-            if 'http' in personalization[key].lower() or \
-                    any((f'{key}_PLACEHOLDER' in placeholder) for placeholder in placeholders):
+            if 'http' in personalization[key].lower() or any((bool(http)) for http, k in placeholders if k == key):
                 # Escape whitespace in plain text URL substitution data.  The value either is a complete URL or
                 # is part of a URL (ex. query parameters).
                 personalization[key] = re.sub(r'\s', encode_whitespace, personalization[key])
@@ -71,7 +74,7 @@ def make_substitutions(template: str, personalization: dict, as_html: bool) -> s
         else:
             substitution = value
 
-        template = template.replace(f'{key}_PLACEHOLDER', substitution)
+        template = template.replace(f'PLACEHOLDER_{key}_PLACEHOLDER', substitution)
 
     if as_html:
         # Escape whitespace in HTML URLs, if any.

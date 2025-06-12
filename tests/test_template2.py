@@ -41,18 +41,23 @@ def test_render_notify_markdown(filename: str, as_html: bool):
     assert render_notify_markdown(md, as_html=as_html) == expected
 
 
-@pytest.mark.skip(reason='not implemented')
 def test_render_notify_markdown_missing_personalization():
     """
-    Calling render_notify_markdown without all of the personalizations should raise
-    ValueError.
+    Calling render_notify_markdown without all of the personalizations should raise ValueError.
     """
 
-    with pytest.raises(ValueError, match='missing required personalization'):
-        render_notify_markdown('This is ((test)) markdown.')
+    with pytest.raises(ValueError, match='Missing required personalization: test2'):
+        render_notify_markdown('This is ((test1)) markdown ((test2)).', {'test1': 'test'})
 
 
-@pytest.mark.skip(reason='not implemented')
+def test_render_notify_markdown_empty_personalization():
+    """
+    An empty personalization dictionary should not raise an exception.
+    """
+
+    render_notify_markdown('This is ((test1)) markdown ((test2)).', {})
+
+
 def test_render_notify_markdown_extra_personalization():
     """
     Calling render_notify_markdown with more than the required personalizations should
