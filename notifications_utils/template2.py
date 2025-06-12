@@ -42,8 +42,8 @@ def make_substitutions(template: str, personalization: dict, as_html: bool) -> s
     Ensure that spaces in URLs, if any, are properly escaped so the content displays correctly in an e-mail
     client.  For HTML, escaping is straight forward after substitution because URLs appear in an href attribute.
 
-    However, for plain text, escaping requires escaping the personalized value before substitution.  Otherwise,
-    there is no way to recongnize that text following a link is not part of the link.
+    For plain text, escaping must happen before substitution.  Otherwise, there is no way to recongnize that
+    text following a link is not part of the link.
     """
 
     placeholders = re.findall(r'(http)?(?:\S*?PLACEHOLDER_)(\S+?)(?:_PLACEHOLDER)', template)
@@ -61,8 +61,7 @@ def make_substitutions(template: str, personalization: dict, as_html: bool) -> s
                 continue
 
             if 'http' in personalization[key].lower() or any((bool(http)) for http, k in placeholders if k == key):
-                # Escape whitespace in plain text URL substitution data.  The value either is a complete URL or
-                # is part of a URL (ex. query parameters).
+                # The value either is a complete URL or is part of a URL (ex. query parameters).
                 personalization[key] = re.sub(r'\s', encode_whitespace, personalization[key])
 
     for key, value in personalization.items():
