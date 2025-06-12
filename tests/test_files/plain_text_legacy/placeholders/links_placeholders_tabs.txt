@@ -1,34 +1,32 @@
-
-
-
 Links With Placeholders
 -----------------------------------------------------------------
 
 
 Links that are the entire line
 -----------------------------------------------------------------
-here: https://www.example.com/watch?t=abc%20def
+here: https://www.example.com/watch?t=abc%09def
 
 click this: https://www.youtube.com/watch?v=dQw4w9WgXcQ
 
-click this: https://www.example.com/watch?t=abc%20def
+click this: https://www.example.com/watch?t=abc%09def
 
-YouTube link: https://www.youtube.com/watch?v=dQw4w%20%20%209WgXcQ
+YouTube link: https://www.youtube.com/watch?v=dQw4w%09%09%099WgXcQ
 
 
 
 Links with other text
 -----------------------------------------------------------------
-right here: https://www.example.com/watch?t=abc%20def right now
+right here: https://www.example.com/watch?t=abc%09def right now
 
 cat click this: https://www.youtube.com/watch?v=dQw4w9WgXcQ dog
 
-peanut butter click this: https://www.example.com/watch?t=abc%20def jelly
+peanut butter click this: https://www.example.com/watch?t=abc%09def jelly
 
-Behold! This: https://www.youtube.com/watch?v=dQw4w%20%20%209WgXcQ is a YouTube link.
+Behold! This: https://www.youtube.com/watch?v=dQw4w%09%09%099WgXcQ is a YouTube link.
 
 
 
 Substitution in the middle of a link
 -----------------------------------------------------------------
-here: https://www.the%20va.gov
+here: https://www.the%09va.gov
+

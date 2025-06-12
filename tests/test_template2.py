@@ -41,18 +41,23 @@ def test_render_notify_markdown(filename: str, as_html: bool):
     assert render_notify_markdown(md, as_html=as_html) == expected
 
 
-@pytest.mark.skip(reason='not implemented')
 def test_render_notify_markdown_missing_personalization():
     """
-    Calling render_notify_markdown without all of the personalizations should raise
-    ValueError.
+    Calling render_notify_markdown without all of the personalizations should raise ValueError.
     """
 
-    with pytest.raises(ValueError, match='missing required personalization'):
-        render_notify_markdown('This is ((test)) markdown.')
+    with pytest.raises(ValueError, match='Missing required personalization: test2'):
+        render_notify_markdown('This is ((test1)) markdown ((test2)).', {'test1': 'test'})
 
 
-@pytest.mark.skip(reason='not implemented')
+def test_render_notify_markdown_empty_personalization():
+    """
+    An empty personalization dictionary should not raise an exception.
+    """
+
+    render_notify_markdown('This is ((test1)) markdown ((test2)).', {})
+
+
 def test_render_notify_markdown_extra_personalization():
     """
     Calling render_notify_markdown with more than the required personalizations should
@@ -65,7 +70,65 @@ def test_render_notify_markdown_extra_personalization():
     assert render_notify_markdown(md, {'test': 'some', 'extra': 'extra'}, False) == plain_text
 
 
-@pytest.mark.skip(reason='not implemented')
+class TestRenderNotifyMarkdownHeadersPlaceholders:
+    """
+    headers_placeholders.md has the personalizations p1, p2, and p3.
+    """
+
+    @pytest.fixture(scope='class')
+    def md(self) -> str:
+        with open('tests/test_files/markdown/placeholders/headers_placeholders.md') as f:
+            return f.read()
+
+    @pytest.mark.parametrize(
+        'personalization, suffix',
+        (
+            (None, 'none'),
+            (
+                {
+                    'p1': 'there',
+                    'p2': 'This is an H2',
+                    'p3': 'test',
+                },
+                'simple',
+            ),
+            (
+                {
+                    'p1': 'there',
+                    'p2': 'This is an H2',
+                    'p3': ['A', 'B', 'C'],
+                },
+                'lists',
+            ),
+        ),
+        ids=(
+            # No substitution.
+            'none',
+            # No list values.
+            'simple',
+            # List values.
+            'lists',
+        )
+    )
+    @pytest.mark.parametrize('as_html', (True, False))
+    def test_placeholders(self, as_html: bool, personalization: dict, suffix: str, md: str):
+        """
+        Substitute the given personalization, render the template, and compare the output with
+        the expected output.  All spaces in URLs should be URL safe encoded so the presentation
+        is correct.  It is the users' responsibility to ensure a link is valid.
+        """
+
+        if as_html:
+            expected_filename = f'tests/test_files/html/placeholders/headers_placeholders_{suffix}.html'
+        else:
+            expected_filename = f'tests/test_files/plain_text/placeholders/headers_placeholders_{suffix}.txt'
+
+        with open(expected_filename) as f:
+            expected = f.read()
+
+        assert render_notify_markdown(md, personalization, as_html) == expected
+
+
 class TestRenderNotifyMarkdownLinksPlaceholders:
     """
     links_placeholders.md has these personalizations: url, url_fragment, url_text, and yt_video_id.
@@ -124,7 +187,6 @@ class TestRenderNotifyMarkdownLinksPlaceholders:
         assert render_notify_markdown(md, personalization, as_html) == expected
 
 
-@pytest.mark.skip(reason='not implemented')
 class TestRenderNotifyMarkdownActionLinksPlaceholders:
     """
     action_links_placeholders.md has these personalizations: url, url_text, and yt_video_id.
@@ -181,7 +243,6 @@ class TestRenderNotifyMarkdownActionLinksPlaceholders:
         assert render_notify_markdown(md, personalization, as_html) == expected
 
 
-@pytest.mark.skip(reason='not implemented')
 class TestRenderNotifyMarkdownBlockQuotesPlaceholders:
     """
     block_quotes_placeholders.md has these personalizations: bottom, claims, nested, and top.

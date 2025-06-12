@@ -9,10 +9,15 @@ Github markdown syntax
 -----------------------------------------------------------------
 
 
-Your claims:
+Your claims: 
 • one
 • two
 • three
+
+
+
+
+
 
 
 • A
@@ -25,19 +30,23 @@ Your claims:
 • F
 
 
-• G
-• H
-• I
+
+
 
 
 Notify markdown syntax
 -----------------------------------------------------------------
 
 
-Your claims:
+Your claims: 
 • one
 • two
 • three
+
+
+
+
+
 
 
 • A
@@ -48,9 +57,4 @@ Your claims:
 • D
 • E
 • F
-
-
-• G
-• H
-• I
 
