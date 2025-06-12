@@ -20,7 +20,7 @@ def render_notify_markdown(markdown: str, personalization: dict | None = None, a
 
     # Passing markdown with placeholders of the format ((key)) can break Mistune.
     # Convert this syntax to something that won't break Mistune.
-    markdown = PLACEHOLDER_REGEX.sub('PLACEHOLDER_\g<key>_PLACEHOLDER', markdown)  # noqa W605
+    markdown = PLACEHOLDER_REGEX.sub(r'PLACEHOLDER_\g<key>_PLACEHOLDER', markdown)
 
     # Perform all pre-processing steps to handle non-standard markdown.
     # TODO #243 - Use a Mistune plug-in for action links
