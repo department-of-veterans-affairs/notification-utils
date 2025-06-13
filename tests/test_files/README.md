@@ -11,7 +11,7 @@ The HTML files should not include any styling.  The HTML output should get inser
 VA Notify markdown support mostly aligns with [Github markdown](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet).  Some additionally supported markdown includes:
 
 - The use of bullets ("•") to denote unordered lists
-- The use of "^" to denote a block quote.  The standard ">" also works.  Block quotes can be nested, but this looks bad in plain text.
+- The use of "^" to denote a block quote.  The standard ">" also works.
 - Preface a link with ">>" to denote an "action link," with has specific styling for HTML output.  Action links are treated like standard links for plain text output.
 
 ## Unsupported markdown
@@ -21,3 +21,4 @@ VA Notify markdown is not guaranteed to support:
 - Ordered sublists.  Github markdown discusses ordered sublists [here](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#lists), but a close inspection of the rendered output reveals that ordered sublists are not actually nested.  (Unordered sublists are nested.)
 - Sublists nested more than once
 - Images and tables in markdown will be deleted and not present in the resulting HTML or plain text output.
+- Nested blockquotes are not guaranteed to render properly and are not tested.

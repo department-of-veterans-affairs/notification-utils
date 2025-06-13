@@ -18,7 +18,7 @@ BLOCK_QUOTE_STYLE = 'background: #F1F1F1; ' \
                     'font-size: 16px; line-height: 25px;'
 COLUMN_WIDTH = 65
 H1_STYLE = 'Margin: 0 0 16px 0; padding: 0; font-size: 32px; line-height: 38px; ' \
-           'font-weight: bold; color: #323A45;'
+           'font-weight: bold; color: #323A45; font-family: Helvetica, Arial, sans-serif;'
 H2_STYLE = 'Margin: 0 0 14px 0; padding: 0; font-size: 24px; line-height: 26px; ' \
            'font-weight: bold; color: #323A45; font-family: Helvetica, Arial, sans-serif;'
 H3_STYLE = 'Margin: 0 0 12px 0; padding: 0; font-size: 20px; line-height: 26px; ' \

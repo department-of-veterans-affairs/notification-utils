@@ -1,0 +1,181 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html lang="en">
+
+<head>
+    <title>Page title</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta content="telephone=no" name="format-detection" /> <!-- need to add formatting for real phone numbers -->
+    <meta name="viewport" content="width=device-width" />
+    <meta name="x-apple-disable-message-reformatting" />
+
+    {% if preview_mode %}
+    {% block javascript %}
+    <script type="text/javascript">{% include "scripts/iframeResizer.contentWindow.min.js" %}</script>
+    {% endblock %}
+    {% endif %} <!-- preview_mode -->
+
+    <style type="text/css">
+    @media only screen and (min-device-width: 601px) {
+        .content {
+            width: 600px !important;
+        }
+
+        blockquote {
+            padding: 24px 24px 0.1px 24px;
+        }
+    }
+    @media all and (max-width: 600px) {
+        img#header {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            max-height: 36px;
+        }
+
+        blockquote {
+            padding: 8px 8px 0.1px 8px;
+        }
+    }
+    a {
+        color: #004795;
+        word-wrap: break-word;
+    }
+    blockquote {
+        background: #F1F1F1;
+        font-family: Helvetica, Arial, sans-serif;
+        font-size: 16px;
+        line-height: 25px;
+    }
+    body {
+        color: #323A45;
+        font-family: Helvetica, Arial, sans-serif;
+        font-size: 16px;
+        margin: 0 !important;
+        mso-line-height-rule: exactly;
+    }
+    div[style*="margin: 16px 0"] { margin:0 !important; }
+    h1, h2, h3, h4, h5, h6 {
+        color: #323A45;
+        font-family: Helvetica, Arial, sans-serif;
+        font-weight: bold;
+        padding: 0;
+    }
+    h1 {
+        font-size: 32px;
+        line-height: 38px;
+        margin: 0 0 16px 0;
+    }
+    h2 {
+        font-size: 24px;
+        line-height: 26px;
+        margin: 0 0 14px 0;
+    }
+    h3 {
+        font-size: 20px;
+        line-height: 26px;
+        margin: 0 0 12px 0;
+    }
+    h4 {
+        font-size: 18px;
+        line-height: 26px;
+        margin: 0 0 10px 0;
+    }
+    h5 {
+        font-size: 16px;
+        line-height: 24px;
+        margin: 0 0 8px 0;
+    }
+    h6 {
+        font-size: 14px;
+        line-height: 22px;
+        margin: 0 0 6px 0;
+    }
+    header {
+        background-color: #112e51;
+        width: 100% !important;
+    }
+    header img {
+        padding: 16px 0;
+        vertical-align: middle;
+    }
+    hr {
+        background: #BFC1C3;
+        border: 0;
+        height: 1px;
+        margin: 30px 0 30px 0;
+    }
+    img.action_link {
+        margin-right: 1cm;
+        vertical-align: middle;
+    }
+    li {
+        color: #323A45;
+        font-size: 16px;
+        line-height: 25px;
+        margin: 5px 0 5px;
+        padding: 0 0 0 5px;
+    }
+    main {
+        border: 0;
+        font-family: Helvetica, Arial, sans-serif;
+        font-size: 16px;
+        line-height: 1.315789474;
+        margin-top: 19px;
+        max-width: 600px;
+        padding-top: 19px;
+        width: 100% !important;
+    }
+    mark {
+        background-color: #fada81;
+        padding-top: 0.3rem;
+        padding-bottom: 0.3rem;
+    }
+    ol {
+        font-family: Helvetica, Arial, sans-serif;
+        list-style-type: decimal;
+        margin: 0 0 0 20px;
+        padding: 0 0 20px 0;
+    }
+    p {
+        color: #323A45;
+        font-size: 16px;
+        line-height: 25px;
+        margin: 0 0 20px 0;
+    }
+    span.preheader {
+        display: none;
+        font-size: 1px;
+        color: #fff;
+        max-height: 0;
+    }
+    ul {
+        font-family: Helvetica, Arial, sans-serif;
+        list-style-type: disc;
+        margin: 0 0 0 20px;
+        padding: 0 0 20px 0;
+    }
+    </style>
+</head>
+
+<body>
+
+<span class="preheader">{{ preheader }}…</span>
+
+<header role="presentation">
+    <!-- VA logo banner -->
+    <img src="https://prod-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-header-logo.png"
+         alt="U.S. Department of Veterans Affairs"
+         id="header"
+         height="48"
+    />
+</div>
+
+<!-- Notify template content goes here. -->
+<main role="presentation">{{ body|safe }}</main>
+
+{% if ga4_open_email_event_url %}
+<img id="ga4_open_email_event_url" src="{{ ga4_open_email_event_url }}" alt="" />
+{% endif %}
+
+</body>
+</html>
