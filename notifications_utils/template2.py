@@ -1,5 +1,8 @@
 import re
+from os import path
 from typing import Match
+
+from jinja2 import Environment, FileSystemLoader
 
 from notifications_utils.formatters2 import (
     insert_action_links,
@@ -8,6 +11,8 @@ from notifications_utils.formatters2 import (
 )
 
 PLACEHOLDER_REGEX = re.compile(r'\(\((?P<key>\w+)\)\)')
+
+jinja2_env = Environment(loader=FileSystemLoader(path.join(path.dirname(path.abspath(__file__)), 'jinja_templates')))
 
 
 def render_notify_markdown(markdown: str, personalization: dict | None = None, as_html: bool = True) -> str:
@@ -90,25 +95,22 @@ def encode_whitespace(m: Match[str]) -> str:
     return re.sub(r'\s', lambda m: f'%{ord(m.group(0)):02X}', m.group(0))
 
 
-# TODO - The signature and return type might change for #215 or later, during integration with notifcation-api.
-def render_email(
-    html_content: str | None = None,
-    plain_text_content: str | None = None,
-    subject_personalization: dict | None = None
-) -> tuple[str | None, str | None]:
+def render_html_email(
+    content: str,
+    preheader: str | None = None,
+    ga4_open_email_event_url: str | None = None,
+) -> str:
     """
-    In addition to the content body, e-mail notifications might have personalization values in the
-    subject line, and the content body might be plugged into a Jinja2 template.
-
-    The two "content" parameters generally are the output of render_notify_markdown (above).
-
-    returns: A 2-tuple in which the first value is the full HTML e-mail; the second, the plain text e-mail.
+    Return the text of an HTML e-mail by substituting the parameters into a Jinja2 template.
+    The template should include all CSS styling for the message.
     """
 
-    if html_content is None and plain_text_content is None:
-        raise ValueError('You must supply one of these parameters.')
+    template = jinja2_env.get_template('email_template2.jinja2')
 
-    # TODO #215 - Perform substitutions in the subject.  Raise ValueError for missing fields.
-    # TODO #215 - Jinja2 template substitution
-
-    raise NotImplementedError
+    return template.render(
+        {
+            'body': content,
+            'preheader': preheader,
+            'ga4_open_email_event_url': ga4_open_email_event_url,
+        }
+    )

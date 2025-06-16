@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    <title>Page title</title>
+    <title>VA</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta content="telephone=no" name="format-detection" /> <!-- need to add formatting for real phone numbers -->
     <meta name="viewport" content="width=device-width" />
@@ -16,24 +16,32 @@
 
     <style type="text/css">
     @media only screen and (min-device-width: 601px) {
-        .content {
-            width: 600px !important;
-        }
-
         blockquote {
             padding: 24px 24px 0.1px 24px;
         }
-    }
-    @media all and (max-width: 600px) {
-        img#header {
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
+
+        header img {
+            margin-left: 1cm;
             max-height: 36px;
         }
 
+        main {
+            margin: 19px auto;
+            width: 600px !important;
+        }
+    }
+    @media all and (max-width: 600px) {
         blockquote {
             padding: 8px 8px 0.1px 8px;
+        }
+
+        header img {
+            margin-left: 2mm;
+            max-height: 36px;
+        }
+
+        main {
+            margin: 19px 2mm 19px 2mm;
         }
     }
     a {
@@ -95,6 +103,7 @@
         width: 100% !important;
     }
     header img {
+        margin-left: 1cm;
         padding: 16px 0;
         vertical-align: middle;
     }
@@ -105,7 +114,7 @@
         margin: 30px 0 30px 0;
     }
     img.action_link {
-        margin-right: 1cm;
+        margin-right: 2mm;
         vertical-align: middle;
     }
     li {
@@ -120,10 +129,6 @@
         font-family: Helvetica, Arial, sans-serif;
         font-size: 16px;
         line-height: 1.315789474;
-        margin-top: 19px;
-        max-width: 600px;
-        padding-top: 19px;
-        width: 100% !important;
     }
     mark {
         background-color: #fada81;
@@ -168,7 +173,7 @@
          id="header"
          height="48"
     />
-</div>
+</header>
 
 <!-- Notify template content goes here. -->
 <main role="presentation">{{ body|safe }}</main>
