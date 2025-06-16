@@ -8,12 +8,6 @@
     <meta name="viewport" content="width=device-width" />
     <meta name="x-apple-disable-message-reformatting" />
 
-    {% if preview_mode %}
-    {% block javascript %}
-    <script type="text/javascript">{% include "scripts/iframeResizer.contentWindow.min.js" %}</script>
-    {% endblock %}
-    {% endif %} <!-- preview_mode -->
-
     <style type="text/css">
     @media only screen and (min-device-width: 601px) {
         blockquote {
@@ -103,7 +97,6 @@
         width: 100% !important;
     }
     header img {
-        margin-left: 1cm;
         padding: 16px 0;
         vertical-align: middle;
     }
