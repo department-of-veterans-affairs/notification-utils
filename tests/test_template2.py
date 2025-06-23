@@ -300,4 +300,4 @@ class TestRenderNotifyMarkdownBlockQuotesPlaceholders:
 
 def test_make_substitutions_in_subject():
     subject = 'Hello, ((name))!'
-    assert make_substitutions_in_subject(subject, {'name': 'Bob'}) == 'Hello, Bob!'
+    assert make_substitutions_in_subject(subject, {'name': 'Bob', 'other': ['one', 'two']}) == 'Hello, Bob!'

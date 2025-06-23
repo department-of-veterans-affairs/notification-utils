@@ -118,10 +118,14 @@ def render_html_email(
 
 def make_substitutions_in_subject(subject: str, personalization: dict) -> str:
     """
-    Given an e-mail subject, insert personalizations, if any.
+    Given an e-mail subject, insert personalizations, if any.  Do not substitute list values
+    into subjects.
     """
 
     for key, value in personalization.items():
+        if not isinstance(value, str):
+            continue
+
         subject = subject.replace(f'(({key}))', value)
 
     return subject
