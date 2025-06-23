@@ -14,8 +14,7 @@
             padding: 24px 24px 0.1px 24px;
         }
 
-        header img {
-            margin-left: 1cm;
+        header table tr td div img {
             max-height: 36px;
         }
 
@@ -29,8 +28,7 @@
             padding: 8px 8px 0.1px 8px;
         }
 
-        header img {
-            margin-left: 2mm;
+        header table tr td div img {
             max-height: 36px;
         }
 
@@ -100,6 +98,17 @@
         padding: 16px 0;
         vertical-align: middle;
     }
+    header table {
+        border: 0;
+        border-collapse: collapse;
+        min-width: 100%;
+        width: 100% !important;
+    }
+    header table tr td div {
+        margin: 0 auto;
+        max-width: 600px;
+        width: 100% !important;
+    }
     hr {
         background: #BFC1C3;
         border: 0;
@@ -159,13 +168,23 @@
 
 <span class="preheader">{{ preheader }}…</span>
 
+<!-- The header content uses tables for layout to support legacy e-mail clients that do not properly support CSS. -->
 <header role="presentation">
-    <!-- VA logo banner -->
-    <img src="https://prod-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-header-logo.png"
-         alt="U.S. Department of Veterans Affairs"
-         id="header"
-         height="48"
-    />
+    <!-- All table and table division (td) attributes below other than "role" are deprecated or obsolete.  They are here for legacy e-mail client support. -->
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+            <td>
+                <div>
+                    <!-- VA logo banner -->
+                    <img src="https://prod-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-header-logo.png"
+                         alt="U.S. Department of Veterans Affairs"
+                         id="header"
+                         height="48"
+                    />
+                </div>
+            </td>
+        </tr>
+    </table>
 </header>
 
 <!-- Notify template content goes here. -->

@@ -114,3 +114,14 @@ def render_html_email(
             'ga4_open_email_event_url': ga4_open_email_event_url,
         }
     )
+
+
+def make_substitutions_in_subject(subject: str, personalization: dict) -> str:
+    """
+    Given an e-mail subject, insert personalizations, if any.
+    """
+
+    for key, value in personalization.items():
+        subject = subject.replace(f'(({key}))', value)
+
+    return subject

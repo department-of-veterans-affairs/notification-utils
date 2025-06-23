@@ -3,7 +3,7 @@ from typing import Generator
 
 import pytest
 
-from notifications_utils.template2 import render_notify_markdown
+from notifications_utils.template2 import make_substitutions_in_subject, render_notify_markdown
 
 
 def generate_markdown_test_files() -> Generator[str, None, None]:
@@ -296,3 +296,8 @@ class TestRenderNotifyMarkdownBlockQuotesPlaceholders:
             expected = f.read()
 
         assert render_notify_markdown(md, personalization, as_html) == expected
+
+
+def test_make_substitutions_in_subject():
+    subject = 'Hello, ((name))!'
+    assert make_substitutions_in_subject(subject, {'name': 'Bob'}) == 'Hello, Bob!'
