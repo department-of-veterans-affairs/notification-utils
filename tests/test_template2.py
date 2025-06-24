@@ -298,6 +298,10 @@ class TestRenderNotifyMarkdownBlockQuotesPlaceholders:
         assert render_notify_markdown(md, personalization, as_html) == expected
 
 
+def test_render_notify_markdown_preview_mode():
+    assert render_notify_markdown('Hello, ((name))!', preview_mode=True) == '<p>Hello, <mark>((name))</mark>!</p>\n'
+
+
 def test_make_substitutions_in_subject():
     subject = 'Hello, ((name))!'
     assert make_substitutions_in_subject(subject, {'name': 'Bob', 'other': ['one', 'two']}) == 'Hello, Bob!'
