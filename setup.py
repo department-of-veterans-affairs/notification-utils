@@ -33,7 +33,7 @@ setup(
         'Flask-Redis>=0.4.0',
         'Jinja2>=3.1.5',
         'MarkupSafe>=3.0.2',
-        'mistune==3.0.2',  # Pinned: Will be addressed in #192
+        'mistune==3.1.3',  # Pinned: Will be addressed in #192
         'monotonic>=1.6',
         'phonenumbers~=8.13.54',
         'pypdf>= 5.1.0',
