@@ -1,5 +1,9 @@
 on: push
 name: Continuous Integration
+
+permissions:
+  contents: read
+
 jobs:
   build:
     name: PyTest

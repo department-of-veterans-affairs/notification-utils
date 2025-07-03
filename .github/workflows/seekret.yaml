@@ -1,5 +1,9 @@
 on: push
 name: Seekret
+
+permissions:
+  contents: read
+
 jobs:
   build:
     name: docker://cdssnc/seekret-github-action
