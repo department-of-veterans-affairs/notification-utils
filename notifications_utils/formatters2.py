@@ -23,6 +23,8 @@ from notifications_utils.formatters import get_action_link_image_url
 # These styles are included in email_template2.jinja2, but some mail clients seem to drop them when a message
 # is forwarded.  Include them inline as a workaround.
 ACTION_LINK_IMG_STYLE = 'margin-right: 2mm; vertical-align: middle;'
+BLOCK_QUOTE_STYLE = 'background: #F1F1F1; font-family: Helvetica, Arial, sans-serif; ' \
+                    'font-size: 16px; line-height: 25px; margin: 16px 0;'
 
 # Used for rendering plain text
 COLUMN_WIDTH = 65
@@ -127,6 +129,14 @@ def _get_action_link_plain_text_substitution(m: Match[str]) -> str:
 
 
 class NotifyHTMLRenderer(HTMLRenderer):
+    def block_quote(self, text):
+        """
+        Add styling for block quotes.
+        """
+
+        value = super().block_quote(text)
+        return value[:11] + f' class="notify" style="{BLOCK_QUOTE_STYLE}"' + value[11:]
+
     def image(self, alt, url, title=None):
         """
         VA e-mail messages generally contain only 1 header image that is not managed by clients.
