@@ -20,6 +20,10 @@ from mistune.util import expand_leading_tab, expand_tab
 from notifications_utils.formatters import get_action_link_image_url
 
 
+# These styles are included in email_template2.jinja2, but some mail clients seem to drop them when a message
+# is forwarded.  Include them inline as a workaround.
+ACTION_LINK_IMG_STYLE = 'margin-right: 2mm; vertical-align: middle;'
+
 # Used for rendering plain text
 COLUMN_WIDTH = 65
 
@@ -83,12 +87,12 @@ def _get_action_link_html_substitution(m: Match[str]) -> str:
         # The action link is in a block quote.
         substitution = f'> <a href="{url}">' \
                        f'<img alt="call to action img" aria-hidden="true" src="{img_src}" class="action_link" ' \
-                       'style="vertical-align: middle;">' \
+                       f'style="{ACTION_LINK_IMG_STYLE}">' \
                        f'<b>{link_text}</b></a>\n>'
     else:
         substitution = f'\n\n<a href="{url}">' \
                        f'<img alt="call to action img" aria-hidden="true" src="{img_src}" class="action_link" ' \
-                       'style="vertical-align: middle;">' \
+                       f'style="{ACTION_LINK_IMG_STYLE}">' \
                        f'<b>{link_text}</b></a>\n\n'
 
     if m.group('extra') is not None:
