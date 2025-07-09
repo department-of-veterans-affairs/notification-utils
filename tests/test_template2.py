@@ -216,12 +216,21 @@ class TestRenderNotifyMarkdownActionLinksPlaceholders:
                 },
                 'spaces',
             ),
+            (
+                {
+                    'url': 'https://www.example.com/watch?t=abc\tdef',
+                    'url_text': 'click this',
+                    'yt_video_id': 'dQw4w\t\t\t9WgXcQ',
+                },
+                'tabs',
+            ),
         ),
         ids=(
             # No special characters or spaces.  Verbatim substitution.
             'simple',
             # Personalization has spaces.  URL safe encoding, when applicable.
             'spaces',
+            'tabs',
         )
     )
     @pytest.mark.parametrize('as_html', (True, False))
