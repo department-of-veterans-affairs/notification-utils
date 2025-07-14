@@ -149,15 +149,15 @@
 <body style="mso-line-height-rule: exactly;">
     <!-- This content uses tables for layout to support legacy e-mail clients that do not properly support CSS. -->
     <!-- All table and table division (td) attributes below other than "role" are deprecated or obsolete.  They are here for legacy e-mail client support. -->
+
+    <!--[if mso]>
+    <center>
+    <![endif]-->
+
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
             <td class="va_logo" bgcolor="#112e51">
-                <div
-                    <!--[if mso]>
-                    style="margin-left: auto; margin-right: auto;"
-                    width="600"
-                    <![endif]-->
-                >
+                <div>
                     <!-- VA logo banner -->
                     <img src="https://prod-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-header-logo.png"
                          alt="U.S. Department of Veterans Affairs"
@@ -180,6 +180,10 @@
             </td>
         </tr>
     </table>
+
+    <!--[if mso]>
+    </center>
+    <![endif]-->
 
     {% if ga4_open_email_event_url %}
     <img id="ga4_open_email_event_url" src="{{ ga4_open_email_event_url }}" alt="" />
