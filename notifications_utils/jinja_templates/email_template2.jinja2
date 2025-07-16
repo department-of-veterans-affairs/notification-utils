@@ -150,11 +150,7 @@
     <!-- This content uses tables for layout to support legacy e-mail clients that do not properly support CSS. -->
     <!-- All table and table division (td) attributes below other than "role" are deprecated or obsolete.  They are here for legacy e-mail client support. -->
 
-    <!--[if mso]>
-    <center>
-    <![endif]-->
-
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" align="center">
         <tr>
             <td class="va_logo" bgcolor="#112e51">
                 <div>
@@ -170,7 +166,7 @@
         </tr>
     </table>
 
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" align="center">
         <tr>
             <td>
                 <div>
@@ -180,10 +176,6 @@
             </td>
         </tr>
     </table>
-
-    <!--[if mso]>
-    </center>
-    <![endif]-->
 
     {% if ga4_open_email_event_url %}
     <img id="ga4_open_email_event_url" src="{{ ga4_open_email_event_url }}" alt="" />
