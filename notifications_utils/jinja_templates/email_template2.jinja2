@@ -150,29 +150,52 @@
     <!-- This content uses tables for layout to support legacy e-mail clients that do not properly support CSS. -->
     <!-- All table and table division (td) attributes below other than "role" are deprecated or obsolete.  They are here for legacy e-mail client support. -->
 
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" align="center">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
             <td class="va_logo" bgcolor="#112e51">
+
+                <!--[if mso]>
+                <center>
+                  <table><tr><td width="600">
+                <![endif]-->
+
                 <div>
                     <!-- VA logo banner -->
                     <img src="https://prod-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-header-logo.png"
                          alt="U.S. Department of Veterans Affairs"
                          id="header"
                          height="48"
-                         style="vertical-align: middle;"
+                         style="color: white; padding: 16px 0; vertical-align: middle;"
                     />
                 </div>
+
+                <!--[if mso]>
+                  </td></tr></table>
+                </center>
+                <![endif]-->
+
             </td>
         </tr>
     </table>
 
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" align="center">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
             <td>
+
+                <!--[if mso]>
+                <center>
+                  <table><tr><td width="600">
+                <![endif]-->
+
                 <div>
                     <!-- Notify template content goes here. -->
                     {{ body|safe }}
                 </div>
+
+                <!--[if mso]>
+                  </td></tr></table>
+                </center>
+                <![endif]-->
             </td>
         </tr>
     </table>
