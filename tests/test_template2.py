@@ -312,5 +312,16 @@ def test_render_notify_markdown_preview_mode():
 
 
 def test_make_substitutions_in_subject():
+    """
+    Test the happy path.  Extra values should not cause a problem.
+    """
+
     subject = 'Hello, ((name))!'
     assert make_substitutions_in_subject(subject, {'name': 'Bob', 'other': ['one', 'two']}) == 'Hello, Bob!'
+
+
+def test_make_substitutions_in_subject_missing_value():
+    subject = 'Hello, ((name))!  Happy ((day)).'
+
+    with pytest.raises(ValueError, match='Missing required subject personalization: name, day'):
+        make_substitutions_in_subject(subject, {'not_name': 'uh oh'})

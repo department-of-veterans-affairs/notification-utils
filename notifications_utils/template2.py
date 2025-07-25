@@ -1,6 +1,6 @@
 import re
 from os import path
-from typing import Match
+from typing import Any, Match
 
 from jinja2 import Environment, FileSystemLoader
 
@@ -123,14 +123,19 @@ def render_html_email(
     )
 
 
-def make_substitutions_in_subject(subject: str, personalization: dict) -> str:
+def make_substitutions_in_subject(subject: str, personalization: dict[str, Any]) -> str:
     """
     Given an e-mail subject, insert personalizations, if any.  Do not substitute list values
-    into subjects.
+    into subjects.  Raise ValueError if any placeholders remain.
     """
 
     for key, value in personalization.items():
         if isinstance(value, str):
             subject = subject.replace(f'(({key}))', value)
+
+    placeholders = re.findall(r'(?:\(\()(\S+?)(?:\)\))', subject)
+    if placeholders:
+        missing_values = ', '.join(placeholders)
+        raise ValueError(f'Missing required subject personalization: {missing_values}')
 
     return subject
