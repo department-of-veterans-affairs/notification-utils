@@ -130,6 +130,14 @@
             margin-bottom: 19px;
             min-width: 100%;
         }
+        table.va_logo {
+            max-width: 600px;
+        }
+        table.content {
+            margin-left: auto;
+            margin-right: auto;
+            max-width: 600px;
+        }
         td.va_logo {
             background-color: #112e51;
         }
@@ -154,7 +162,7 @@
                   <table><tr><td width="600" style="vertical-align: middle;" valign="middle">
                 <![endif]-->
 
-                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" align="center">
+                <table class="va_logo" role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" align="center">
                     <tr>
                         <td>
                             <!-- VA logo banner -->
@@ -178,27 +186,24 @@
         </tr>
     </table>
 
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" align="center">
+    <!--[if mso]>
+    <center>
+      <table><tr><td width="600" style="vertical-align: middle;" valign="middle">
+    <![endif]-->
+
+    <table style="content" role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" align="center">
         <tr>
             <td>
-
-                <!--[if mso]>
-                <center>
-                  <table><tr><td width="600">
-                <![endif]-->
-
-                <div>
-                    <!-- Notify template content goes here. -->
-                    {{ body|safe }}
-                </div>
-
-                <!--[if mso]>
-                  </td></tr></table>
-                </center>
-                <![endif]-->
+                <!-- Notify template content goes here. -->
+                {{ body|safe }}
             </td>
         </tr>
     </table>
+
+    <!--[if mso]>
+      </td></tr></table>
+    </center>
+    <![endif]-->
 
     {% if ga4_open_email_event_url %}
     <img id="ga4_open_email_event_url" src="{{ ga4_open_email_event_url }}" alt="" />
