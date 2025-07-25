@@ -130,9 +130,7 @@ def make_substitutions_in_subject(subject: str, personalization: dict) -> str:
     """
 
     for key, value in personalization.items():
-        if not isinstance(value, str):
-            continue
-
-        subject = subject.replace(f'(({key}))', value)
+        if isinstance(value, str):
+            subject = subject.replace(f'(({key}))', value)
 
     return subject
