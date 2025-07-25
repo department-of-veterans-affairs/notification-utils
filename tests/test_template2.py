@@ -325,3 +325,10 @@ def test_make_substitutions_in_subject_missing_value():
 
     with pytest.raises(ValueError, match='Missing required subject personalization: name, day'):
         make_substitutions_in_subject(subject, {'not_name': 'uh oh'})
+
+
+def test_make_substitutions_in_subject_none_value():
+    subject = 'Hello, ((name))!'
+
+    with pytest.raises(ValueError, match='Missing required subject personalization: name'):
+        make_substitutions_in_subject(subject, {'name': None})
