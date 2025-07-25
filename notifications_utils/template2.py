@@ -28,7 +28,7 @@ def render_notify_markdown(
     # Passing markdown with placeholders of the format ((key)) can break Mistune.
     # Convert this syntax to something that won't break Mistune.
     if as_html and preview_mode:
-        # Mark the placeholders for display in Portal.  The CSS in the Jinja2 templates should make this a hightlight.
+        # Mark the placeholders for display in Portal.  The CSS in the Jinja2 templates should make this a highlight.
         placeholder_substitution = r'<mark>&#40;&#40;\g<key>&#41;&#41;</mark>'
     else:
         placeholder_substitution = r'PLACEHOLDER_\g<key>_PLACEHOLDER'
