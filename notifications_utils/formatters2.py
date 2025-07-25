@@ -20,6 +20,12 @@ from mistune.util import expand_leading_tab, expand_tab
 from notifications_utils.formatters import get_action_link_image_url
 
 
+# These styles are included in email_template2.jinja2, but some mail clients seem to drop them when a message
+# is forwarded.  Include them inline as a workaround.
+ACTION_LINK_IMG_STYLE = 'margin-right: 2mm; vertical-align: middle;'
+BLOCK_QUOTE_STYLE = 'background: #F1F1F1; font-family: Helvetica, Arial, sans-serif; ' \
+                    'font-size: 16px; line-height: 25px; margin: 16px 0;'
+
 # Used for rendering plain text
 COLUMN_WIDTH = 65
 
@@ -81,17 +87,19 @@ def _get_action_link_html_substitution(m: Match[str]) -> str:
 
     if is_block_quote:
         # The action link is in a block quote.
-        substitution = f'>\n>\n> <a href="{url}">' \
-                       f'<img alt="call to action img" aria-hidden="true" src="{img_src}" class="action_link">' \
-                       f'<b>{link_text}</b></a>\n>\n'
+        substitution = f'> <a href="{url}">' \
+                       f'<img alt="call to action img" aria-hidden="true" src="{img_src}" class="action_link" ' \
+                       f'style="{ACTION_LINK_IMG_STYLE}">' \
+                       f'<b>{link_text}</b></a>\n>'
     else:
         substitution = f'\n\n<a href="{url}">' \
-                       f'<img alt="call to action img" aria-hidden="true" src="{img_src}" class="action_link">' \
+                       f'<img alt="call to action img" aria-hidden="true" src="{img_src}" class="action_link" ' \
+                       f'style="{ACTION_LINK_IMG_STYLE}">' \
                        f'<b>{link_text}</b></a>\n\n'
 
     if m.group('extra') is not None:
         extra = m.group('extra')
-        prefix = '> ' if is_block_quote else ''
+        prefix = '\n> ' if is_block_quote else ''
         substitution += f'{prefix}{extra}\n'
 
     return substitution
@@ -108,19 +116,27 @@ def _get_action_link_plain_text_substitution(m: Match[str]) -> str:
 
     if is_block_quote:
         # The action link is in a block quote.
-        substitution = f'> [{link_text}]({url})\n>\n'
+        substitution = f'> [{link_text}]({url})\n>'
     else:
         substitution = f'[{link_text}]({url})\n\n'
 
     if m.group('extra') is not None:
         extra = m.group('extra')
-        prefix = '> ' if is_block_quote else ''
+        prefix = '\n> ' if is_block_quote else ''
         substitution += f'{prefix}{extra}\n'
 
     return substitution
 
 
 class NotifyHTMLRenderer(HTMLRenderer):
+    def block_quote(self, text):
+        """
+        Add styling for block quotes.
+        """
+
+        value = super().block_quote(text)
+        return value[:11] + f' class="notify" style="{BLOCK_QUOTE_STYLE}"' + value[11:]
+
     def image(self, alt, url, title=None):
         """
         VA e-mail messages generally contain only 1 header image that is not managed by clients.

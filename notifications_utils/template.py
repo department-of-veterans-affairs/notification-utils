@@ -399,63 +399,6 @@ class HTMLEmailTemplate(WithSubjectTemplate):
         })
 
 
-class EmailPreviewTemplate(WithSubjectTemplate):
-
-    def __init__(
-        self,
-        template,
-        values=None,
-        from_name=None,
-        from_address=None,
-        reply_to=None,
-        show_recipient=True,
-        redact_missing_personalisation=False,
-        jinja_path=None,
-    ):
-        super().__init__(template,
-                         values,
-                         redact_missing_personalisation=redact_missing_personalisation,
-                         jinja_path=jinja_path)
-        self.from_name = from_name
-        self.from_address = from_address
-        self.reply_to = reply_to
-        self.show_recipient = show_recipient
-        self.jinja_template = self.template_env.get_template('email_preview_template.jinja2')
-
-    def __str__(self):
-        return Markup(self.jinja_template.render({
-            'body': get_html_email_body(
-                self.content, self.values, redact_missing_personalisation=self.redact_missing_personalisation
-            ),
-            'subject': self.subject,
-            'from_name': escape_html(self.from_name),
-            'from_address': self.from_address,
-            'reply_to': self.reply_to,
-            'recipient': Field("((email address))", self.values, with_brackets=False),
-            'show_recipient': self.show_recipient
-        }))
-
-    @property
-    def subject(self):
-        field = Field(
-            self._subject,
-            self.values,
-            html='escape',
-            redact_missing_personalisation=self.redact_missing_personalisation
-        )
-        return compose1(field, do_nice_typography, normalise_whitespace)
-
-
-class NeededByTemplateError(Exception):
-    def __init__(self, keys):
-        super(NeededByTemplateError, self).__init__(", ".join(keys))
-
-
-class NoPlaceholderForDataError(Exception):
-    def __init__(self, keys):
-        super(NoPlaceholderForDataError, self).__init__(", ".join(keys))
-
-
 def get_sms_fragment_count(character_count, is_unicode):
     if is_unicode:
         return 1 if character_count <= 70 else math.ceil(float(character_count) / 67)

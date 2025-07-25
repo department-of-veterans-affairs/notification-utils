@@ -3,7 +3,7 @@ from typing import Generator
 
 import pytest
 
-from notifications_utils.template2 import render_notify_markdown
+from notifications_utils.template2 import make_substitutions_in_subject, render_notify_markdown
 
 
 def generate_markdown_test_files() -> Generator[str, None, None]:
@@ -216,12 +216,21 @@ class TestRenderNotifyMarkdownActionLinksPlaceholders:
                 },
                 'spaces',
             ),
+            (
+                {
+                    'url': 'https://www.example.com/watch?t=abc\tdef',
+                    'url_text': 'click this',
+                    'yt_video_id': 'dQw4w\t\t\t9WgXcQ',
+                },
+                'tabs',
+            ),
         ),
         ids=(
             # No special characters or spaces.  Verbatim substitution.
             'simple',
             # Personalization has spaces.  URL safe encoding, when applicable.
             'spaces',
+            'tabs',
         )
     )
     @pytest.mark.parametrize('as_html', (True, False))
@@ -296,3 +305,30 @@ class TestRenderNotifyMarkdownBlockQuotesPlaceholders:
             expected = f.read()
 
         assert render_notify_markdown(md, personalization, as_html) == expected
+
+
+def test_render_notify_markdown_preview_mode():
+    assert render_notify_markdown('Hello, ((name))!', preview_mode=True) == '<p>Hello, <mark>((name))</mark>!</p>\n'
+
+
+def test_make_substitutions_in_subject():
+    """
+    Test the happy path.  Extra values should not cause a problem.
+    """
+
+    subject = 'Hello, ((name))!'
+    assert make_substitutions_in_subject(subject, {'name': 'Bob', 'other': ['one', 'two']}) == 'Hello, Bob!'
+
+
+def test_make_substitutions_in_subject_missing_value():
+    subject = 'Hello, ((name))!  Happy ((day)).'
+
+    with pytest.raises(ValueError, match='Missing required subject personalization: name, day'):
+        make_substitutions_in_subject(subject, {'not_name': 'uh oh'})
+
+
+def test_make_substitutions_in_subject_none_value():
+    subject = 'Hello, ((name))!'
+
+    with pytest.raises(ValueError, match='Missing required subject personalization: name'):
+        make_substitutions_in_subject(subject, {'name': None})

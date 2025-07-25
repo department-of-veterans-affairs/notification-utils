@@ -1,6 +1,6 @@
 import re
 from os import path
-from typing import Match
+from typing import Any, Match
 
 from jinja2 import Environment, FileSystemLoader
 
@@ -15,7 +15,9 @@ PLACEHOLDER_REGEX = re.compile(r'\(\((?P<key>\w+)\)\)')
 jinja2_env = Environment(loader=FileSystemLoader(path.join(path.dirname(path.abspath(__file__)), 'jinja_templates')))
 
 
-def render_notify_markdown(markdown: str, personalization: dict | None = None, as_html: bool = True) -> str:
+def render_notify_markdown(
+    markdown: str, personalization: dict | None = None, as_html: bool = True, preview_mode: bool = False
+) -> str:
     """
     Return markdown as HTML or plain text, and perform substitutions with personalization data, if any.
     """
@@ -25,7 +27,12 @@ def render_notify_markdown(markdown: str, personalization: dict | None = None, a
 
     # Passing markdown with placeholders of the format ((key)) can break Mistune.
     # Convert this syntax to something that won't break Mistune.
-    markdown = PLACEHOLDER_REGEX.sub(r'PLACEHOLDER_\g<key>_PLACEHOLDER', markdown)
+    if as_html and preview_mode:
+        # Mark the placeholders for display in Portal.  The CSS in the Jinja2 templates should make this a highlight.
+        placeholder_substitution = r'<mark>&#40;&#40;\g<key>&#41;&#41;</mark>'
+    else:
+        placeholder_substitution = r'PLACEHOLDER_\g<key>_PLACEHOLDER'
+    markdown = PLACEHOLDER_REGEX.sub(placeholder_substitution, markdown)
 
     # Perform all pre-processing steps to handle non-standard markdown.
     # TODO #243 - Use a Mistune plug-in for action links
@@ -33,7 +40,7 @@ def render_notify_markdown(markdown: str, personalization: dict | None = None, a
 
     rendered = notify_html_markdown(markdown) if as_html else notify_markdown(markdown)
 
-    if personalization:
+    if personalization and not preview_mode:
         rendered = make_substitutions(rendered, personalization, as_html)
 
     return rendered
@@ -97,8 +104,8 @@ def encode_whitespace(m: Match[str]) -> str:
 
 def render_html_email(
     content: str,
-    preheader: str | None = None,
     ga4_open_email_event_url: str | None = None,
+    preview_mode: bool = False,
 ) -> str:
     """
     Return the text of an HTML e-mail by substituting the parameters into a Jinja2 template.
@@ -110,7 +117,25 @@ def render_html_email(
     return template.render(
         {
             'body': content,
-            'preheader': preheader,
             'ga4_open_email_event_url': ga4_open_email_event_url,
+            'preview_mode': preview_mode,
         }
     )
+
+
+def make_substitutions_in_subject(subject: str, personalization: dict[str, Any]) -> str:
+    """
+    Given an e-mail subject, insert personalizations, if any.  Do not substitute list values
+    into subjects.  Raise ValueError if any placeholders remain.
+    """
+
+    for key, value in personalization.items():
+        if isinstance(value, str):
+            subject = subject.replace(f'(({key}))', value)
+
+    placeholders = re.findall(r'(?:\(\()(\S+?)(?:\)\))', subject)
+    if placeholders:
+        missing_values = ', '.join(placeholders)
+        raise ValueError(f'Missing required subject personalization: {missing_values}')
+
+    return subject
