@@ -4,9 +4,13 @@
 <head>
     <title>VA</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta content="telephone=no" name="format-detection" /> <!-- need to add formatting for real phone numbers -->
     <meta name="viewport" content="width=device-width" />
+
+    <!-- This is not documented at developer.apple.com. -->
     <meta name="x-apple-disable-message-reformatting" />
+
+    <!-- https://developer.apple.com/library/archive/documentation/AppleApplications/Reference/SafariHTMLRef/Articles/MetaTags.html#//apple_ref/doc/uid/TP40008193-SW5 -->
+    <meta name="format-detection" content="telephone=no" />
 
     {% if preview_mode %}
     <script type="text/javascript">{% include "scripts/iframeResizer.contentWindow.min.js" %}</script>
@@ -85,16 +89,11 @@
             line-height: 22px;
             margin: 0 0 6px 0;
         }
-        img#header {
-            color: white;
-            padding: 16px 0;
-            vertical-align: middle;
-        }
         hr {
             background: #BFC1C3;
             border: 0;
             height: 1px;
-            margin: 30px 0 30px 0;
+            margin: 30px 0;
         }
         img.action_link {
             margin-right: 2mm;
@@ -166,9 +165,9 @@
                     <tr>
                         <td>
                             <!-- VA logo banner -->
-                            <img src="https://prod-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-header-logo.png"
+                            <img id="header"
+                                 src="https://prod-va-gov-assets.s3-us-gov-west-1.amazonaws.com/img/vanotify-header-logo.png"
                                  alt="U.S. Department of Veterans Affairs"
-                                 id="header"
                                  height="48"
                                  style="color: white; padding: 16px 0; vertical-align: middle;"
                                  align="middle"
