@@ -4,5 +4,5 @@ fileignoreconfig:
 - filename: notifications_utils/sanitise_text.py
   checksum: 96cf794e49031d454616ae36522a62082e68e3019ba4533084cebf6a6ce0ec0d
 - filename: notifications_utils/template2.py
-  checksum: 166e7b19f049cf4ae79b8533b07bb4762e524e3067779fa826375d5e352cbab0
+  checksum: b6059efd2dd614c027aa0568b11570ce0b920686e95cb8d117c673639bd0145d
 version: "1.0"

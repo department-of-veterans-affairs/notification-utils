@@ -10,7 +10,9 @@ from notifications_utils.formatters2 import (
     notify_markdown,
 )
 
-PLACEHOLDER_REGEX = re.compile(r'\(\((?P<key>\w+)\)\)')
+# Use these regexes to "mark" placeholders for display in Portal.
+PLACEHOLDER_REGEX = re.compile(r'\(\((?P<key>\w+?)\)\)')
+URL_REGEX = re.compile(r'(?P<link_text>\[[ \S]*?\])(?P<url>\([ \S]*\))')
 
 jinja2_env = Environment(loader=FileSystemLoader(path.join(path.dirname(path.abspath(__file__)), 'jinja_templates')))
 
@@ -28,10 +30,14 @@ def render_notify_markdown(
     # Passing markdown with placeholders of the format ((key)) can break Mistune.
     # Convert this syntax to something that won't break Mistune.
     if as_html and preview_mode:
-        # Mark the placeholders for display in Portal.  The CSS in the Jinja2 templates should make this a highlight.
+        # Mark placeholders in URLs.
+        markdown = URL_REGEX.sub(mark_links, markdown)
+
+        # This will be used to mark the remaining placeholders that are not part of a link.
         placeholder_substitution = r'<mark>&#40;&#40;\g<key>&#41;&#41;</mark>'
     else:
         placeholder_substitution = r'PLACEHOLDER_\g<key>_PLACEHOLDER'
+
     markdown = PLACEHOLDER_REGEX.sub(placeholder_substitution, markdown)
 
     # Perform all pre-processing steps to handle non-standard markdown.
@@ -44,6 +50,21 @@ def render_notify_markdown(
         rendered = make_substitutions(rendered, personalization, as_html)
 
     return rendered
+
+
+def mark_links(m: Match[str]) -> str:
+    """
+    Mark the placeholders associated with a link for display in Portal.  The CSS in the Jinja2 templates should
+    make this a highlight.
+
+    Placeholders might be in the link text, or they might be part of the URL.  Do not add "mark" elements to URLs
+    because Mistune will not correctly handle it.
+    """
+
+    marked_link_text = PLACEHOLDER_REGEX.sub(r'<mark>&#40;&#40;\g<key>&#41;&#41;</mark>', m.group('link_text'))
+    escaped_url = PLACEHOLDER_REGEX.sub(r'&#40;&#40;\g<key>&#41;&#41;', m.group('url'))
+
+    return marked_link_text + escaped_url
 
 
 def make_substitutions(template: str, personalization: dict, as_html: bool) -> str:  # noqa C901
