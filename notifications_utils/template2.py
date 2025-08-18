@@ -6,8 +6,10 @@ from jinja2 import Environment, FileSystemLoader
 
 from notifications_utils.formatters2 import (
     insert_action_links,
+    LIST_ITEM_STYLE,
     notify_html_markdown,
     notify_markdown,
+    UNORDERED_LIST_STYLE,
 )
 
 # Use these regexes to "mark" placeholders for display in Portal.
@@ -100,7 +102,9 @@ def make_substitutions(template: str, personalization: dict, as_html: bool) -> s
     for key, value in personalization.items():
         if isinstance(value, list):
             if as_html:
-                substitution = '\n<ul>\n' + '\n'.join((f'<li>{li}</li>') for li in value) + '\n</ul>\n'
+                substitution = f'\n<ul role="presentation" style="{UNORDERED_LIST_STYLE}">\n' + \
+                               '\n'.join((f'<li style="{LIST_ITEM_STYLE}">{li}</li>') for li in value) + \
+                               '\n</ul>\n'
             else:
                 substitution = '\n' + '\n'.join((f'• {li}') for li in value) + '\n'
         else:

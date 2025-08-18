@@ -160,12 +160,22 @@ class TestRenderNotifyMarkdownLinksPlaceholders:
                 },
                 'spaces',
             ),
+            (
+                {
+                    'url': 'https://www.example.com/watch?t=abc\tdef',
+                    'url_fragment': 'the va',
+                    'url_text': 'click this',
+                    'yt_video_id': 'dQw4w\t\t\t9WgXcQ',
+                },
+                'tabs',
+            ),
         ),
         ids=(
             # No special characters or spaces.  Verbatim substitution.
             'simple',
             # Personalization has spaces.  URL safe encoding, when applicable.
             'spaces',
+            'tabs',
         )
     )
     @pytest.mark.parametrize('as_html', (True, False))
@@ -312,7 +322,7 @@ class TestRenderNotifyMarkdownBlockQuotesPlaceholders:
     (
         (
             'Hello, ((name))!',
-            '<p>Hello, <mark>((name))</mark>!</p>\n',
+            '<p style="margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">Hello, <mark>((name))</mark>!</p>\n',  # noqa E501
         ),
         (
             '1. placeholder in link text: [link text ((link_text))](https://test.com)',

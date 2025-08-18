@@ -26,9 +26,23 @@ from notifications_utils.formatters import get_action_link_image_url
 ACTION_LINK_IMG_STYLE = 'margin-right: 2mm; vertical-align: middle;'
 BLOCK_QUOTE_STYLE = 'background: #F1F1F1; font-family: Helvetica, Arial, sans-serif; ' \
                     'font-size: 16px; line-height: 25px; margin: 16px 0;'
+H1_STYLE = 'margin: 0 0 16px 0; padding: 0; font-size: 32px; line-height: 38px; ' \
+           'font-weight: bold; color: #323A45; font-family: Helvetica, Arial, sans-serif;'
+H2_STYLE = 'margin: 0 0 14px 0; padding: 0; font-size: 24px; line-height: 26px; ' \
+           'font-weight: bold; color: #323A45; font-family: Helvetica, Arial, sans-serif;'
+H3_STYLE = 'margin: 0 0 12px 0; padding: 0; font-size: 20px; line-height: 26px; ' \
+           'font-weight: bold; color: #323A45; font-family: Helvetica, Arial, sans-serif;'
+H4_STYLE = 'margin: 0 0 10px 0; padding: 0; font-size: 18px; line-height: 26px; ' \
+           'font-weight: bold; color: #323A45; font-family: Helvetica, Arial, sans-serif;'
+H5_STYLE = 'margin: 0 0 8px 0; padding: 0; font-size: 16px; line-height: 24px; ' \
+           'font-weight: bold; color: #323A45; font-family: Helvetica, Arial, sans-serif;'
+H6_STYLE = 'margin: 0 0 6px 0; padding: 0; font-size: 14px; line-height: 22px; ' \
+           'font-weight: bold; color: #323A45; font-family: Helvetica, Arial, sans-serif;'
 LIST_ITEM_STYLE = 'margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; line-height: 25px; color: #323A45;'
 ORDERED_LIST_STYLE = 'margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: decimal; ' \
                      'font-family: Helvetica, Arial, sans-serif;'
+PARAGRAPH_STYLE = 'margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;'
+THEMATIC_BREAK_STYLE = 'border: 0; height: 1px; background: #BFC1C3; Margin: 30px 0 30px 0;'
 UNORDERED_LIST_STYLE = 'margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: disc; ' \
                        'font-family: Helvetica, Arial, sans-serif;'
 
@@ -144,6 +158,23 @@ class NotifyHTMLRenderer(HTMLRenderer):
         value = super().block_quote(text)
         return value[:11] + f' class="notify" style="{BLOCK_QUOTE_STYLE}"' + value[11:]
 
+    def heading(self, text, level, **attrs):
+        if level == 1:
+            style = H1_STYLE
+        elif level == 2:
+            style = H2_STYLE
+        elif level == 3:
+            style = H3_STYLE
+        elif level == 4:
+            style = H4_STYLE
+        elif level == 5:
+            style = H5_STYLE
+        elif level == 6:
+            style = H6_STYLE
+
+        value = super().heading(text, level, **attrs)
+        return value[:3] + f' style="{style}"' + value[3:]
+
     def image(self, alt, url, title=None):
         """
         VA e-mail messages generally contain only 1 header image that is not managed by clients.
@@ -174,7 +205,8 @@ class NotifyHTMLRenderer(HTMLRenderer):
 
     def paragraph(self, text):
         """
-        Remove empty paragraphs.
+        Remove empty paragraphs.  Otherwise, add CSS to paragraphs.  Consider deleting this method when supporting the
+        legacy Outlook desktop mail client is no longer necessary.
         """
 
         value = super().paragraph(text)
@@ -183,7 +215,7 @@ class NotifyHTMLRenderer(HTMLRenderer):
             # This is the case when all child elements, such as tables and images, are deleted.
             return ''
 
-        return value
+        return value[:2] + f' style="{PARAGRAPH_STYLE}"' + value[2:]
 
     def table(self, text):
         """
@@ -191,6 +223,16 @@ class NotifyHTMLRenderer(HTMLRenderer):
         """
 
         return ''
+
+    def thematic_break(self):
+        """
+        Add inline CSS for thematic breaks, which were known as horizontal rules (hrule) in earlier versions of
+        Mistune.  Consider deleting this method when supporting the legacy Outlook desktop mail client is no longer
+        necessary.
+        """
+
+        value = super().thematic_break()
+        return value[:3] + f' style="{THEMATIC_BREAK_STYLE}"' + value[3:]
 
 
 class NotifyMarkdownRenderer(MarkdownRenderer):
