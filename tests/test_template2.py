@@ -316,52 +316,68 @@ class TestRenderNotifyMarkdownBlockQuotesPlaceholders:
         ),
         (
             '1. placeholder in link text: [link text ((link_text))](https://test.com)',
-            '<ol>\n<li>placeholder in link text: '
+            '<ol role="presentation" style="margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: decimal; font-family: Helvetica, Arial, sans-serif;">\n'  # noqa E501
+            '<li style="margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; line-height: 25px; color: #323A45;">placeholder in link text: '  # noqa E501
             '<a href="https://test.com">link text <mark>((link_text))</mark></a>'
-            '</li>\n</ol>\n',
+            '</li>\n'
+            '</ol>\n',
         ),
         (
             '2. placeholder at end of URL: [link text](https://test.com/((url_path_fragment)))',
-            '<ol start="2">\n<li>placeholder at end of URL: '
+            '<ol role="presentation" style="margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: decimal; font-family: Helvetica, Arial, sans-serif;" start="2">\n'  # noqa E501
+            '<li style="margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; line-height: 25px; color: #323A45;">placeholder at end of URL: '  # noqa E501
             '<a href="https://test.com/((url_path_fragment))">link text</a>'
-            '</li>\n</ol>\n',
+            '</li>\n'
+            '</ol>\n',
         ),
         (
             '3. placeholder at start of URL: [link text](((url_prefix))test.com)',
-            '<ol start="3">\n<li>placeholder at start of URL: '
+            '<ol role="presentation" style="margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: decimal; font-family: Helvetica, Arial, sans-serif;" start="3">\n'  # noqa E501
+            '<li style="margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; line-height: 25px; color: #323A45;">placeholder at start of URL: '  # noqa E501
             '<a href="((url_prefix))test.com">link text</a>'
-            '</li>\n</ol>\n',
+            '</li>\n'
+            '</ol>\n',
         ),
         (
             '4. placeholder in middle of URL: [link text](https://((url_domain_fragment))-test.com)',
-            '<ol start="4">\n<li>placeholder in middle of URL: '
+            '<ol role="presentation" style="margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: decimal; font-family: Helvetica, Arial, sans-serif;" start="4">\n'  # noqa E501
+            '<li style="margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; line-height: 25px; color: #323A45;">placeholder in middle of URL: '  # noqa E501
             '<a href="https://((url_domain_fragment))-test.com">link text</a>'
-            '</li>\n</ol>\n',
+            '</li>\n'
+            '</ol>\n',
         ),
         (
             '5. placeholder for URL: [link text](((url)))',
-            '<ol start="5">\n<li>placeholder for URL: <a href="((url))">link text</a></li>\n</ol>\n',
+            '<ol role="presentation" style="margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: decimal; font-family: Helvetica, Arial, sans-serif;" start="5">\n'  # noqa E501
+            '<li style="margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; line-height: 25px; color: #323A45;">placeholder for URL: <a href="((url))">link text</a></li>\n'  # noqa E501
+            '</ol>\n',
         ),
         (
             '6. placeholders in middle of URL and as a query parameter: '
             '[link text](https://((url_domain_fragment))-test.com?x=((query_param)))',
-            '<ol start="6">\n<li>placeholders in middle of URL and as a query parameter: '
+            '<ol role="presentation" style="margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: decimal; font-family: Helvetica, Arial, sans-serif;" start="6">\n'  # noqa E501
+            '<li style="margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; line-height: 25px; color: #323A45;">placeholders in middle of URL and as a query parameter: '  # noqa E501
             '<a href="https://((url_domain_fragment))-test.com?x=((query_param))">link text</a>'
-            '</li>\n</ol>\n',
+            '</li>\n'
+            '</ol>\n',
         ),
         (
             '7. placeholders in link text and end of URL: '
             '[link ((link_text)) text](https://test.com/((url_path_fragment)))',
-            '<ol start="7">\n<li>placeholders in link text and end of URL: '
+            '<ol role="presentation" style="margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: decimal; font-family: Helvetica, Arial, sans-serif;" start="7">\n'  # noqa E501
+            '<li style="margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; line-height: 25px; color: #323A45;">placeholders in link text and end of URL: '  # noqa E501
             '<a href="https://test.com/((url_path_fragment))">link <mark>((link_text))</mark> text</a>'
-            '</li>\n</ol>\n',
+            '</li>\n'
+            '</ol>\n',
         ),
         (
             '8. placeholders in middle of URL and multiple query parameters: '
             '[link text](https://((url_domain_fragment))-test.com?x=((query_param))&y=((query_param)))',
-            '<ol start="8">\n<li>placeholders in middle of URL and multiple query parameters: '
+            '<ol role="presentation" style="margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: decimal; font-family: Helvetica, Arial, sans-serif;" start="8">\n'  # noqa E501
+            '<li style="margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; line-height: 25px; color: #323A45;">placeholders in middle of URL and multiple query parameters: '  # noqa E501
             '<a href="https://((url_domain_fragment))-test.com?x=((query_param))&amp;y=((query_param))">link text</a>'
-            '</li>\n</ol>\n',
+            '</li>\n'
+            '</ol>\n',
         ),
     ),
     ids=(

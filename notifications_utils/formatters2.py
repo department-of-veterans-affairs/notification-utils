@@ -21,10 +21,16 @@ from notifications_utils.formatters import get_action_link_image_url
 
 
 # These styles are included in email_template2.jinja2, but some mail clients seem to drop them when a message
-# is forwarded.  Include them inline as a workaround.
+# is forwarded.  Include them inline is a workaround.  Deleting them is probably acceptable when this code
+# no longer needs to support the legacy Outlook desktop mail client used internally at the VA.
 ACTION_LINK_IMG_STYLE = 'margin-right: 2mm; vertical-align: middle;'
 BLOCK_QUOTE_STYLE = 'background: #F1F1F1; font-family: Helvetica, Arial, sans-serif; ' \
                     'font-size: 16px; line-height: 25px; margin: 16px 0;'
+LIST_ITEM_STYLE = 'margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; line-height: 25px; color: #323A45;'
+ORDERED_LIST_STYLE = 'margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: decimal; ' \
+                     'font-family: Helvetica, Arial, sans-serif;'
+UNORDERED_LIST_STYLE = 'margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: disc; ' \
+                       'font-family: Helvetica, Arial, sans-serif;'
 
 # Used for rendering plain text
 COLUMN_WIDTH = 65
@@ -131,7 +137,8 @@ def _get_action_link_plain_text_substitution(m: Match[str]) -> str:
 class NotifyHTMLRenderer(HTMLRenderer):
     def block_quote(self, text):
         """
-        Add styling for block quotes.
+        Add styling for block quotes.  Consider deleting this method when supporting the legacy Outlook desktop mail
+        client is no longer necessary.
         """
 
         value = super().block_quote(text)
@@ -145,6 +152,25 @@ class NotifyHTMLRenderer(HTMLRenderer):
         """
 
         return ''
+
+    def list(self, text, ordered, **attrs):
+        """
+        Add styling for lists.  Consider deleting this method when supporting the legacy Outlook desktop mail
+        client is no longer necessary.
+        """
+
+        value = super().list(text, ordered, **attrs)
+        style = ORDERED_LIST_STYLE if ordered else UNORDERED_LIST_STYLE
+        return value[:3] + f' role="presentation" style="{style}"' + value[3:]
+
+    def list_item(self, text, **attrs):
+        """
+        Add styling for list items.  Consider deleting this method when supporting the legacy Outlook desktop mail
+        client is no longer necessary.
+        """
+
+        value = super().list_item(text, **attrs)
+        return value[:3] + f' style="{LIST_ITEM_STYLE}"' + value[3:]
 
     def paragraph(self, text):
         """
