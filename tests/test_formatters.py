@@ -22,6 +22,7 @@ from notifications_utils.formatters import (
     sms_encode,
     strip_and_remove_obscure_whitespace,
     strip_dvla_markup,
+    strip_parentheses_in_link_placeholders,
     strip_pipes,
     strip_unsupported_characters,
     strip_whitespace,
@@ -1118,3 +1119,32 @@ def test_normalise_whitespace():
 )
 def test_insert_list_spaces(actual, expected):
     assert insert_list_spaces(actual) == expected
+
+
+@pytest.mark.parametrize(
+    'value, expected_output',
+    [
+        (
+            '[link text](http://example.com/((foo)))',
+            '[link text](http://example.com/!!foo##)'
+        ),
+        (
+            '[link text](http://example.com/<span class="placeholder"><mark>((foo))</mark></span>)',
+            '[link text](http://example.com/!!foo##)'
+        ),
+        (
+            '![image](http://assets.example.com/((bar)))',
+            '![image](http://assets.example.com/!!bar##)'
+        ),
+        (
+            '[link text](((foo))://example.com)',
+            '[link text](!!foo##://example.com)'
+        ),
+        (
+            '[link text](http://((foo)).example.com/((bar)))',
+            '[link text](http://!!foo##.example.com/!!bar##)'
+        ),
+    ]
+)
+def test_strip_parentheses_in_link_placeholders(value, expected_output):
+    assert strip_parentheses_in_link_placeholders(value) == expected_output

@@ -160,12 +160,22 @@ class TestRenderNotifyMarkdownLinksPlaceholders:
                 },
                 'spaces',
             ),
+            (
+                {
+                    'url': 'https://www.example.com/watch?t=abc\tdef',
+                    'url_fragment': 'the va',
+                    'url_text': 'click this',
+                    'yt_video_id': 'dQw4w\t\t\t9WgXcQ',
+                },
+                'tabs',
+            ),
         ),
         ids=(
             # No special characters or spaces.  Verbatim substitution.
             'simple',
             # Personalization has spaces.  URL safe encoding, when applicable.
             'spaces',
+            'tabs',
         )
     )
     @pytest.mark.parametrize('as_html', (True, False))
@@ -307,8 +317,97 @@ class TestRenderNotifyMarkdownBlockQuotesPlaceholders:
         assert render_notify_markdown(md, personalization, as_html) == expected
 
 
-def test_render_notify_markdown_preview_mode():
-    assert render_notify_markdown('Hello, ((name))!', preview_mode=True) == '<p>Hello, <mark>((name))</mark>!</p>\n'
+@pytest.mark.parametrize(
+    'content, expected',
+    (
+        (
+            'Hello, ((name))!',
+            '<p style="margin: 0 0 20px 0; font-size: 16px; line-height: 25px; color: #323A45;">Hello, <mark>((name))</mark>!</p>\n',  # noqa E501
+        ),
+        (
+            '1. placeholder in link text: [link text ((link_text))](https://test.com)',
+            '<ol role="presentation" style="margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: decimal; font-family: Helvetica, Arial, sans-serif;">\n'  # noqa E501
+            '<li style="margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; line-height: 25px; color: #323A45;">placeholder in link text: '  # noqa E501
+            '<a href="https://test.com">link text <mark>((link_text))</mark></a>'
+            '</li>\n'
+            '</ol>\n',
+        ),
+        (
+            '2. placeholder at end of URL: [link text](https://test.com/((url_path_fragment)))',
+            '<ol role="presentation" style="margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: decimal; font-family: Helvetica, Arial, sans-serif;" start="2">\n'  # noqa E501
+            '<li style="margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; line-height: 25px; color: #323A45;">placeholder at end of URL: '  # noqa E501
+            '<a href="https://test.com/((url_path_fragment))">link text</a>'
+            '</li>\n'
+            '</ol>\n',
+        ),
+        (
+            '3. placeholder at start of URL: [link text](((url_prefix))test.com)',
+            '<ol role="presentation" style="margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: decimal; font-family: Helvetica, Arial, sans-serif;" start="3">\n'  # noqa E501
+            '<li style="margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; line-height: 25px; color: #323A45;">placeholder at start of URL: '  # noqa E501
+            '<a href="((url_prefix))test.com">link text</a>'
+            '</li>\n'
+            '</ol>\n',
+        ),
+        (
+            '4. placeholder in middle of URL: [link text](https://((url_domain_fragment))-test.com)',
+            '<ol role="presentation" style="margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: decimal; font-family: Helvetica, Arial, sans-serif;" start="4">\n'  # noqa E501
+            '<li style="margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; line-height: 25px; color: #323A45;">placeholder in middle of URL: '  # noqa E501
+            '<a href="https://((url_domain_fragment))-test.com">link text</a>'
+            '</li>\n'
+            '</ol>\n',
+        ),
+        (
+            '5. placeholder for URL: [link text](((url)))',
+            '<ol role="presentation" style="margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: decimal; font-family: Helvetica, Arial, sans-serif;" start="5">\n'  # noqa E501
+            '<li style="margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; line-height: 25px; color: #323A45;">placeholder for URL: <a href="((url))">link text</a></li>\n'  # noqa E501
+            '</ol>\n',
+        ),
+        (
+            '6. placeholders in middle of URL and as a query parameter: '
+            '[link text](https://((url_domain_fragment))-test.com?x=((query_param)))',
+            '<ol role="presentation" style="margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: decimal; font-family: Helvetica, Arial, sans-serif;" start="6">\n'  # noqa E501
+            '<li style="margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; line-height: 25px; color: #323A45;">placeholders in middle of URL and as a query parameter: '  # noqa E501
+            '<a href="https://((url_domain_fragment))-test.com?x=((query_param))">link text</a>'
+            '</li>\n'
+            '</ol>\n',
+        ),
+        (
+            '7. placeholders in link text and end of URL: '
+            '[link ((link_text)) text](https://test.com/((url_path_fragment)))',
+            '<ol role="presentation" style="margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: decimal; font-family: Helvetica, Arial, sans-serif;" start="7">\n'  # noqa E501
+            '<li style="margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; line-height: 25px; color: #323A45;">placeholders in link text and end of URL: '  # noqa E501
+            '<a href="https://test.com/((url_path_fragment))">link <mark>((link_text))</mark> text</a>'
+            '</li>\n'
+            '</ol>\n',
+        ),
+        (
+            '8. placeholders in middle of URL and multiple query parameters: '
+            '[link text](https://((url_domain_fragment))-test.com?x=((query_param))&y=((query_param)))',
+            '<ol role="presentation" style="margin: 0 0 0 20px; padding: 0 0 20px 0; list-style-type: decimal; font-family: Helvetica, Arial, sans-serif;" start="8">\n'  # noqa E501
+            '<li style="margin: 5px 0 5px; padding: 0 0 0 5px; font-size: 16px; line-height: 25px; color: #323A45;">placeholders in middle of URL and multiple query parameters: '  # noqa E501
+            '<a href="https://((url_domain_fragment))-test.com?x=((query_param))&amp;y=((query_param))">link text</a>'
+            '</li>\n'
+            '</ol>\n',
+        ),
+    ),
+    ids=(
+        'simple',
+        'placeholder in link text',
+        'placeholder at end of URL',
+        'placeholder at start of URL',
+        'placeholder in middle of URL',
+        'placeholder for URL',
+        'placeholders in middle of URL and as a query parameter',
+        'placeholders in link text and end of URL',
+        'placeholders in middle of URL and multiple query parameters',
+    )
+)
+def test_render_notify_markdown_preview_mode(content, expected):
+    """
+    Placeholders in preview should be wrapped with the "mark" HTML element unless they are part of a URL.
+    """
+
+    assert render_notify_markdown(content, preview_mode=True) == expected
 
 
 def test_make_substitutions_in_subject():
