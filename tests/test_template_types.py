@@ -471,7 +471,7 @@ def test_brand_log_has_no_alt_text_when_brand_text_is_present():
         brand_banner=True,
         brand_name='Notify Logo'
     ))
-    assert 'alt="U.S. Department of Veterans Affairs"' in email
+    assert 'alt="VA Logo and Seal, U.S. Department of Veterans Affairs"' in email
     assert 'alt=" "' in email
     assert 'alt="Notify Logo"' not in email
 
@@ -485,7 +485,7 @@ def test_brand_logo_has_alt_text_when_no_brand_text():
         brand_banner=True,
         brand_name='Notify Logo'
     ))
-    assert 'alt="U.S. Department of Veterans Affairs"' in email
+    assert 'alt="VA Logo and Seal, U.S. Department of Veterans Affairs"' in email
     assert 'alt="Notify Logo"' in email
 
 
